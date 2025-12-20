@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Tienda Online</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--ecommerce-gray);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: var(--ecommerce-blue);
+            border-bottom: 3px solid var(--ecommerce-blue);
+        }
+        .wishlist-item {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .wishlist-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+        }
+        .btn-remove {
+            color: #ef4444;
+            transition: all 0.2s;
+        }
+        .btn-remove:hover {
+            color: #dc2626;
+            transform: scale(1.1);
+        }
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        .empty-icon {
+            font-size: 4rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg">Mi Perfil</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 flex items-center space-x-2 transition-colors">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 flex items-center space-x-2 transition-colors">
+                        <i class="fas fa-store"></i>
+                        <span>Tienda</span>
+                    </a>
+                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative" id="cart-button" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="ml-1 hidden md:inline">Carrito</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
+                    </button>
+                    <div id="user-info" class="flex items-center space-x-2 relative">
+                        <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-greeting">Usuario</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="user-dropdown" class="absolute right-0 top-12 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                            <div class="py-1">
+                                <button onclick="switchTab('info')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Mi Información
+                                </button>
+                                <button onclick="switchTab('wishlist')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-heart text-red-500 mr-2"></i>
+                                    Mis Favoritos
+                                </button>
+                                <div class="border-t border-gray-200"></div>
+                                <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>
+                                    Salir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-user-circle mr-2"></i>
+                Mi Perfil
+            </h1>
+            <p class="text-gray-600">Gestiona tu cuenta y preferencias</p>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button onclick="switchTab('info')" id="tab-info" class="tab-button active py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-user mr-2"></i>
+                    Información Personal
+                </button>
+                <button onclick="switchTab('wishlist')" id="tab-wishlist" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    <i class="fas fa-heart mr-2"></i>
+                    Mis Favoritos
+                    <span id="wishlist-count-badge" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content: User Info -->
+        <div id="content-info" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Información de la Cuenta</h2>
+                
+                <div class="space-y-6">
+                    <!-- User Avatar -->
+                    <div class="flex items-center space-x-4">
+                        <div class="h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h3 id="profile-nombre" class="text-lg font-semibold text-gray-900">Cargando...</h3>
+                            <p id="profile-email" class="text-gray-600">Cargando...</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <dl class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 mb-1">
+                                    <i class="fas fa-envelope mr-2"></i>Email
+                                </dt>
+                                <dd id="profile-email-2" class="text-gray-900">Cargando...</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 mb-1">
+                                    <i class="fas fa-phone mr-2"></i>Teléfono
+                                </dt>
+                                <dd id="profile-telefono" class="text-gray-900">No proporcionado</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 mb-1">
+                                    <i class="fas fa-calendar-alt mr-2"></i>Miembro desde
+                                </dt>
+                                <dd id="profile-fecha" class="text-gray-900">Cargando...</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 mb-1">
+                                    <i class="fas fa-shield-alt mr-2"></i>Estado
+                                </dt>
+                                <dd>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Activo
+                                    </span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Acciones rápidas</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <button class="btn-primary inline-flex items-center px-4 py-2" onclick="alert('Funcionalidad próximamente')">
+                                <i class="fas fa-edit mr-2"></i>
+                                Editar Perfil
+                            </button>
+                            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center" onclick="alert('Funcionalidad próximamente')">
+                                <i class="fas fa-key mr-2"></i>
+                                Cambiar Contraseña
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Wishlist -->
+        <div id="content-wishlist" class="tab-content hidden">
+            <!-- Loading State -->
+            <div id="loading" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <p class="mt-4 text-gray-600">Cargando tus favoritos...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden empty-state bg-white rounded-lg shadow-sm">
+                <i class="fas fa-heart-broken empty-icon"></i>
+                <h2 class="text-xl font-semibold text-gray-700 mb-2">Tu lista de deseos está vacía</h2>
+                <p class="text-gray-500 mb-6">Explora nuestra tienda y agrega tus productos favoritos</p>
+                <a href="/ecomerce/productos/tienda" class="btn-primary inline-flex items-center">
+                    <i class="fas fa-store mr-2"></i>
+                    Ir a la Tienda
+                </a>
+            </div>
+
+            <!-- Wishlist Grid -->
+            <div id="wishlist-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Products will be loaded here -->
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="hidden text-center py-12 bg-red-50 border border-red-200 rounded-lg">
+                <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                <p class="text-red-600">Error al cargar tu lista de deseos. Por favor, intenta nuevamente.</p>
+                <button onclick="loadWishlist()" class="mt-4 btn-primary">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Reintentar
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
+    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-shopping-cart text-white text-xl"></i>
+                <h2 class="text-xl font-bold text-white">Mi Carrito</h2>
+            </div>
+            <button id="close-cart" class="text-white hover:text-gray-200 transition-colors p-2 rounded-full hover:bg-white hover:bg-opacity-20">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Cart Items Container -->
+        <div id="cart-items-container" class="flex-1 overflow-y-auto p-4">
+            <div id="cart-items" class="space-y-3">
+                <!-- Items will be loaded here -->
+            </div>
+            <div id="empty-cart" class="hidden text-center py-12">
+                <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
+                <p class="text-gray-500 text-lg">Tu carrito está vacío</p>
+                <a href="/ecomerce/productos/tienda" class="inline-block mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-store mr-2"></i>
+                    Ir a la Tienda
+                </a>
+            </div>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="border-t border-gray-200 p-4 bg-gray-50">
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span id="cart-subtotal" class="font-medium">$0.00</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Envío:</span>
+                    <span id="cart-shipping" class="font-medium">Gratis</span>
+                </div>
+                <div class="border-t border-gray-300 pt-2 flex justify-between">
+                    <span class="font-bold text-lg">Total:</span>
+                    <span id="cart-total" class="font-bold text-lg text-blue-600">$0.00</span>
+                </div>
+            </div>
+            <button id="checkout-button" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <i class="fas fa-lock mr-2"></i>
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p>&copy; 2025 Tienda Online. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Variables globales
+        let wishlistData = [];
+        let currentTab = 'info';
+        let wishlistLoaded = false; // Bandera para saber si ya se cargó
+
+        // Cambiar entre pestañas
+        function switchTab(tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(el => {
+                el.classList.remove('active', 'text-blue-600', 'border-blue-600');
+                el.classList.add('text-gray-500', 'border-transparent');
+            });
+
+            // Mostrar pestaña seleccionada
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const tabButton = document.getElementById(`tab-${tabName}`);
+            tabButton.classList.add('active', 'text-blue-600');
+            tabButton.classList.remove('text-gray-500', 'border-transparent');
+
+            currentTab = tabName;
+
+            // Si cambiamos a wishlist y no hemos cargado datos, cargar
+            if (tabName === 'wishlist' && !wishlistLoaded) {
+                loadWishlist();
+            }
+        }
+
+        // Cargar información del usuario
+        async function loadUserInfo() {
+            try {
+                // Primero intentar obtener del authManager si está disponible
+                if (window.authManager && window.authManager.isAuthenticated) {
+                    const user = window.authManager.getCurrentUser();
+                    if (user) {
+                        console.log('👤 Usuario desde authManager:', user);
+                        updateUserUI(user);
+                        return;
+                    }
+                }
+
+                // Si no hay authManager, intentar con el endpoint
+                // Obtener token desde authManager o storage
+                let token = null;
+                if (window.authManager && typeof window.authManager.getToken === 'function') {
+                    token = window.authManager.getToken();
+                }
+                if (!token) {
+                    token = sessionStorage.getItem('ecommerce_token') ||
+                           localStorage.getItem('token') ||
+                           localStorage.getItem('access_token');
+                }
+                
+                if (!token) {
+                    console.log('⚠️ No hay token disponible para cargar información del usuario');
+                    return;
+                }
+
+                const response = await fetch('/ecomerce/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    console.log('👤 Información de usuario desde API:', user);
+                    updateUserUI(user);
+                } else {
+                    console.error('❌ Error al cargar información del usuario:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Error al cargar información del usuario:', error);
+            }
+        }
+
+        // Actualizar UI con información del usuario
+        function updateUserUI(user) {
+            const nombre = user.nombre || user.name || 'Usuario';
+            const email = user.email || 'No proporcionado';
+            
+            document.getElementById('profile-nombre').textContent = nombre;
+            document.getElementById('profile-email').textContent = email;
+            document.getElementById('profile-email-2').textContent = email;
+            document.getElementById('user-greeting').textContent = nombre;
+            document.getElementById('profile-telefono').textContent = user.telefono || 'No proporcionado';
+            
+            if (user.created_at || user.fecha_creacion) {
+                const fecha = new Date(user.created_at || user.fecha_creacion);
+                document.getElementById('profile-fecha').textContent = fecha.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } else {
+                document.getElementById('profile-fecha').textContent = 'No disponible';
+            }
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('=== PERFIL: Verificando autenticación ===');
+            
+            // Verificar autenticación con el backend (el token puede estar en cookie HTTP-only)
+            try {
+                // Obtener token desde authManager o storage
+                let token = null;
+                if (window.authManager && typeof window.authManager.getToken === 'function') {
+                    token = window.authManager.getToken();
+                }
+                if (!token) {
+                    token = sessionStorage.getItem('ecommerce_token') ||
+                           localStorage.getItem('token') ||
+                           localStorage.getItem('access_token');
+                }
+                
+                const response = await fetch('/ecomerce/auth/verify', {
+                    method: 'GET',
+                    headers: token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {},
+                    credentials: 'include' // Importante: incluir cookies
+                });
+                
+                console.log('✅ Auth verify response:', response.status);
+                
+                if (response.status === 200) {
+                    // Usuario autenticado, cargar perfil
+                    console.log('✅ AUTENTICADO - Cargando perfil');
+                    
+                    // Esperar a que authManager esté listo
+                    if (window.authManager) {
+                        await new Promise(resolve => {
+                            if (window.authManager.initialized) {
+                                resolve();
+                            } else {
+                                const checkInterval = setInterval(() => {
+                                    if (window.authManager.initialized) {
+                                        clearInterval(checkInterval);
+                                        resolve();
+                                    }
+                                }, 100);
+                                // Timeout después de 3 segundos
+                                setTimeout(() => {
+                                    clearInterval(checkInterval);
+                                    resolve();
+                                }, 3000);
+                            }
+                        });
+                    }
+                    
+                    await loadUserInfo(); // Cargar info del usuario
+                    setupUserInfo();
+                    // El carrito ya está en el DOM, no necesita cargarse
+                    // La wishlist se cargará cuando el usuario haga clic en la pestaña
+                } else {
+                    // No autenticado, redireccionar a login
+                    console.log('❌ NO AUTENTICADO - Redirigiendo a login');
+                    window.location.href = '/ecomerce/login?redirect=' + encodeURIComponent(window.location.pathname);
+                }
+            } catch (error) {
+                console.error('Error verificando autenticación:', error);
+                window.location.href = '/ecomerce/login?redirect=' + encodeURIComponent(window.location.pathname);
+            }
+        });
+
+        // Configurar información del usuario
+        function setupUserInfo() {
+            if (window.authManager && window.authManager.isAuthenticated) {
+                const user = window.authManager.getCurrentUser();
+                if (user) {
+                    const userGreeting = document.getElementById('user-greeting');
+                    if (userGreeting) {
+                        userGreeting.textContent = user.nombre || user.name || 'Usuario';
+                    }
+                }
+            }
+
+            // Dropdown toggle
+            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            const dropdown = document.getElementById('user-dropdown');
+            if (dropdownBtn && dropdown) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function() {
+                    dropdown.classList.add('hidden');
+                });
+            }
+        }
+
+        // Cargar lista de deseos
+        async function loadWishlist() {
+            console.log('🔄 Iniciando loadWishlist()...');
+            
+            // Intentar obtener token desde authManager primero
+            let token = null;
+            if (window.authManager && typeof window.authManager.getToken === 'function') {
+                token = window.authManager.getToken();
+                console.log('🔑 Token desde authManager:', token ? '✅ Encontrado' : '❌ No encontrado');
+            }
+            
+            // Fallback a storage directo si authManager no tiene el token
+            if (!token) {
+                token = sessionStorage.getItem('ecommerce_token') ||
+                       localStorage.getItem('token') ||
+                       localStorage.getItem('access_token');
+                console.log('🔑 Token desde storage directo:', token ? '✅ Encontrado' : '❌ No encontrado');
+            }
+            
+            if (!token) {
+                console.error('❌ No hay token disponible, abortando carga de wishlist');
+                return;
+            }
+            
+            console.log('✅ Token obtenido exitosamente, procediendo con la carga...');
+
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('empty-state');
+            const wishlistGrid = document.getElementById('wishlist-grid');
+            const errorState = document.getElementById('error-state');
+
+            loading.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            wishlistGrid.classList.add('hidden');
+            errorState.classList.add('hidden');
+
+            try {
+                const response = await fetch('/ecomerce/api/lista-deseos/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                console.log('Respuesta de wishlist:', response.status);
+
+                if (response.status === 401) {
+                    window.location.href = '/ecomerce/login?redirect=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar la lista');
+                }
+
+                const data = await response.json();
+                console.log('✅ Datos de wishlist recibidos:', data);
+                console.log('📊 Tipo de data:', Array.isArray(data) ? 'Array' : typeof data);
+                console.log('📦 Cantidad de items:', Array.isArray(data) ? data.length : 0);
+                
+                // Inspeccionar el primer item si existe
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log('🔍 Primer item:', data[0]);
+                    console.log('🔍 Estructura del item:', Object.keys(data[0]));
+                    if (data[0].producto) {
+                        console.log('🔍 Producto dentro del item:', data[0].producto);
+                    }
+                }
+                
+                // El endpoint devuelve directamente un array
+                wishlistData = Array.isArray(data) ? data : [];
+                console.log('💾 wishlistData guardado:', wishlistData.length, 'productos');
+
+                loading.classList.add('hidden');
+
+                if (wishlistData.length === 0) {
+                    console.log('Mostrando estado vacío');
+                    emptyState.classList.remove('hidden');
+                } else {
+                    console.log('Renderizando', wishlistData.length, 'productos');
+                    wishlistGrid.classList.remove('hidden');
+                    renderWishlist();
+                }
+
+                updateLocalWishlistCount(wishlistData.length);
+                wishlistLoaded = true; // Marcar como cargado
+
+            } catch (error) {
+                console.error('Error al cargar wishlist:', error);
+                loading.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                wishlistLoaded = true; // Marcar como cargado incluso con error
+            }
+        }
+
+        // Renderizar productos de la wishlist
+        function renderWishlist() {
+            const grid = document.getElementById('wishlist-grid');
+            grid.innerHTML = '';
+
+            wishlistData.forEach(item => {
+                const product = item.producto;
+                if (!product) return;
+
+                const card = document.createElement('div');
+                card.className = 'wishlist-item bg-white rounded-lg shadow-md overflow-hidden';
+                card.setAttribute('data-product-id', product.id);
+                
+                const imageUrl = product.imagen_url || '/static/img/logo.png';
+                const price = product.precio || 0;
+                const fechaAgregado = new Date(item.fecha_agregado).toLocaleDateString('es-ES');
+
+                card.innerHTML = `
+                    <div class="relative">
+                        <img src="${imageUrl}" alt="${product.nombre}" class="w-full h-48 object-cover" onerror="this.src='/static/img/logo.png'">
+                        <button class="btn-remove absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg" onclick="removeFromWishlist('${product.id}')" title="Remover de favoritos">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">${product.nombre}</h3>
+                        <p class="text-sm text-gray-600 mb-2 line-clamp-2">${product.descripcion || 'Sin descripción'}</p>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xl font-bold text-blue-600">$${price.toLocaleString('es-ES')}</span>
+                            <span class="text-xs text-gray-500">Agregado: ${fechaAgregado}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-primary flex-1 text-sm" onclick="addToCartFromWishlist('${product.id}', ${price})">
+                                <i class="fas fa-cart-plus mr-1"></i>
+                                Agregar al Carrito
+                            </button>
+                            <a href="/ecomerce/productos/${product.id}" class="flex items-center justify-center px-3 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Remover producto de la wishlist
+        async function removeFromWishlist(productId) {
+            // Obtener token desde authManager o storage
+            let token = null;
+            if (window.authManager && typeof window.authManager.getToken === 'function') {
+                token = window.authManager.getToken();
+            }
+            if (!token) {
+                token = sessionStorage.getItem('ecommerce_token') ||
+                       localStorage.getItem('token') ||
+                       localStorage.getItem('access_token');
+            }
+            if (!token) return;
+
+            // Encontrar el elemento del DOM
+            const card = document.querySelector(`[data-product-id="${productId}"]`);
+            if (!card) return;
+
+            try {
+                const response = await fetch(`/ecomerce/api/lista-deseos/productos/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Animar la salida del elemento
+                    card.style.transition = 'all 0.3s ease';
+                    card.style.transform = 'scale(0.8)';
+                    card.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Actualizar datos locales
+                        wishlistData = wishlistData.filter(item => item.producto.id !== productId);
+                        
+                        // Actualizar contador local y global
+                        updateLocalWishlistCount(wishlistData.length);
+                        
+                        // Si ya no hay productos, mostrar estado vacío
+                        if (wishlistData.length === 0) {
+                            document.getElementById('wishlist-grid').classList.add('hidden');
+                            document.getElementById('empty-state').classList.remove('hidden');
+                        }
+                    }, 300);
+                    
+                    showToast('Producto removido de favoritos', 'success');
+                } else {
+                    showToast('Error al remover producto', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        // Agregar al carrito desde wishlist
+        async function addToCartFromWishlist(productId, price) {
+            if (window.addToCart) {
+                const success = await window.addToCart(productId, 1, price);
+                if (success) {
+                    showToast('Producto agregado al carrito', 'success');
+                }
+            } else {
+                showToast('Error: Sistema de carrito no disponible', 'error');
+            }
+        }
+
+        // Actualizar contador local y global
+        function updateLocalWishlistCount(count) {
+            // Actualizar badge en la pestaña
+            const badge = document.getElementById('wishlist-count-badge');
+            if (badge) {
+                badge.textContent = count;
+            }
+            
+            // Actualizar contador global de la navbar
+            if (typeof window.updateGlobalWishlistCount === 'function') {
+                window.updateGlobalWishlistCount();
+            }
+        }
+
+        // Mostrar toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+            }`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Logout
+        function logout() {
+            if (window.authManager && typeof window.authManager.logout === 'function') {
+                window.authManager.logout();
+            } else {
+                sessionStorage.clear();
+                localStorage.clear();
+            }
+            window.location.href = '/ecomerce/login';
+        }
+    </script>
+
+    <!-- Scripts externos -->
+    <script src="/static/ecomerce/auth.js"></script>
+    <script src="/static/ecomerce/carrito.js"></script>
+    <script src="/static/config.js"></script>
+</body>
+</html>

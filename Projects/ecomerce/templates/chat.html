@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat E-commerce</title>
+</head>
+<body>
+    <h1>Chat con MCP</h1>
+    <div id="chat"></div>
+    <input id="message" type="text" placeholder="Escribe tu consulta (ej. listar productos)">
+    <button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8001/ws');
+        ws.onmessage = function(event) {
+            const chat = document.getElementById('chat');
+            chat.innerHTML += '<p>' + event.data + '</p>';
+        };
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            ws.send(message);
+            document.getElementById('message').value = '';
+        }
+    </script>
+</body>
+</html>

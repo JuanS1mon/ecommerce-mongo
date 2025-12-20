@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout MercadoPago - Test</title>
+
+    <!-- Tailwind CSS - Versión Local (Producción) -->
+    <link rel="stylesheet" href="/static/css/tailwind.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- MercadoPago SDK v2 - CDN Oficial -->
+    <!--
+    MercadoPago SDK v2 - Integración Frontend
+    ========================================
+    - Versión: v2 (última estable)
+    - Fuente: CDN oficial de MercadoPago
+    - Documentación: https://www.mercadopago.com.ar/developers/es/docs/checkout-bricks/landing
+    - Notas: Carga asíncrona, inicialización después del DOM ready
+    -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-left: 4px solid #047857;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-left: 4px solid #b91c1c;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="/ecomerce/productos/tienda" class="text-blue-600 hover:text-blue-800 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver a la tienda
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-900">Checkout MercadoPago - Test</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Resumen del pedido -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-shopping-bag mr-2 text-blue-600"></i>
+                    Resumen del pedido de prueba
+                </h2>
+
+                <!-- Loading state -->
+                <div id="loading-state" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                    <p class="text-gray-600">Cargando...</p>
+                </div>
+
+                <!-- Carrito de prueba -->
+                <div id="cart-summary" class="hidden">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                            <img src="/static/img/logo.png" alt="Producto de prueba"
+                                 class="w-16 h-16 object-cover rounded-lg">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-900">Producto de Prueba</h3>
+                                <p class="text-sm text-gray-600">SKU: TEST-001</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Cant: 1</p>
+                                <p class="text-lg font-bold text-gray-900">$100.00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4 mt-6">
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Total:</span>
+                            <span>$100.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Método de pago - Solo MercadoPago -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-credit-card mr-2 text-blue-600"></i>
+                    Pago con MercadoPago
+                </h2>
+
+                <!-- Información de depuración -->
+                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="text-sm font-medium text-blue-800 mb-2">Información de Depuración</h3>
+                    <div class="text-xs text-blue-700 space-y-1">
+                        <p><strong>URL Actual:</strong> <span id="current-url"></span></p>
+                        <p><strong>Parámetros GET:</strong> <span id="get-params"></span></p>
+                        <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+                        <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+                    </div>
+                </div>
+
+                <!-- Área de MercadoPago -->
+                <div id="mercadopago-container" class="mb-6">
+                    <div id="walletBrick_container" class="min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                        <div class="text-center text-gray-500">
+                            <i class="fab fa-mercadopago text-4xl mb-2"></i>
+                            <p>Cargando MercadoPago...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del pago -->
+                <div id="payment-info" class="mb-6 hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-700">
+                            Completa el pago de forma segura usando MercadoPago.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botón de confirmar -->
+                <button id="confirm-order-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-credit-card mr-2"></i>Crear Preferencia de Pago
+                </button>
+
+                <!-- Información de URLs de retorno -->
+                <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <h3 class="text-sm font-medium text-gray-800 mb-2">URLs de Retorno Configuradas:</h3>
+                    <div class="text-xs text-gray-600 space-y-1">
+                        <p><strong>Success:</strong> <code class="bg-white px-1 rounded">/ecomerce/checkout/success</code></p>
+                        <p><strong>Failure:</strong> <code class="bg-white px-1 rounded">/ecomerce/checkout/failure</code></p>
+                        <p><strong>Pending:</strong> <code class="bg-white px-1 rounded">/ecomerce/checkout/pending</code></p>
+                        <p><strong>Webhook:</strong> <code class="bg-white px-1 rounded">/ecomerce/checkout/webhook/mercadopago</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
+
+    <script>
+        // ============================================================================
+        // DETECCIÓN DE TRACKING PREVENTION
+        // ============================================================================
+
+        /**
+         * Detecta si el navegador tiene activada la prevención de tracking
+         * que bloquea el acceso al localStorage/sessionStorage para terceros
+         * @returns {boolean} True si se detecta bloqueo de storage
+         */
+        function detectTrackingPrevention() {
+            try {
+                // Intentar acceder al localStorage
+                const testKey = '__mp_test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                return false; // No hay bloqueo
+            } catch (error) {
+                console.warn('⚠️ Detección de Tracking Prevention:', error.message);
+                return true; // Hay bloqueo
+            }
+        }
+
+        /**
+         * Verifica si MercadoPago está siendo bloqueado por políticas del navegador
+         * @returns {boolean} True si MercadoPago está bloqueado
+         */
+        function isMercadoPagoBlocked() {
+            // Verificar si hay errores de tracking prevention en los logs
+            const trackingBlocked = detectTrackingPrevention();
+
+            // Verificar si el SDK de MercadoPago se cargó correctamente
+            const sdkLoaded = typeof MercadoPago !== 'undefined';
+
+            // Verificar si hay errores de red en la consola (puedes agregar más verificaciones)
+            const hasNetworkErrors = window.mercadoPagoErrors && window.mercadoPagoErrors.length > 0;
+
+            return trackingBlocked || !sdkLoaded || hasNetworkErrors;
+        }
+
+        // Variable global para almacenar errores de MercadoPago
+        window.mercadoPagoErrors = [];
+        /*
+        Configuración MercadoPago SDK v2
+        ================================
+        - Public Key: Se obtiene dinámicamente del backend
+        - Inicialización: Solo después de verificar disponibilidad del SDK
+        - Callbacks: Implementados para manejo de estados del brick
+        - Error Handling: Validación completa antes de inicialización
+        */
+
+        const API_BASE = '/ecomerce';
+        let mp = null;                    // Instancia del SDK de MercadoPago
+        let MERCADOPAGO_PUBLIC_KEY = null; // Public Key obtenida del backend
+        let currentPreferenceId = null;   // ID de la preferencia actual
+
+        // ============================================================================
+        // UTILIDADES
+        // ============================================================================
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type} slide-in fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            // Estilos específicos
+            if (type === 'success') {
+                toast.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                toast.style.color = 'white';
+            } else {
+                toast.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                toast.style.color = 'white';
+            }
+
+            document.getElementById('toast-container').appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getToken() {
+            // Obtener token desde authManager o storage
+            if (window.authManager && typeof window.authManager.getToken === 'function') {
+                const token = window.authManager.getToken();
+                if (token) return token;
+            }
+            return sessionStorage.getItem('ecommerce_token') || getCookie('ecommerce_token');
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        function formatPrice(price) {
+            const value = Number(price) || 0;
+            return new Intl.NumberFormat('es-ES', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        // Función para mostrar información de depuración
+        function updateDebugInfo() {
+            // URL actual
+            document.getElementById('current-url').textContent = window.location.href;
+
+            // Parámetros GET
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = {};
+            for (let [key, value] of urlParams) {
+                params[key] = value;
+            }
+            document.getElementById('get-params').textContent = JSON.stringify(params, null, 2);
+
+            // User Agent
+            document.getElementById('user-agent').textContent = navigator.userAgent;
+
+            // Timestamp
+            document.getElementById('timestamp').textContent = new Date().toISOString();
+
+            // Mostrar información adicional si hay parámetros
+            if (urlParams.toString()) {
+                console.log('=== PARÁMETROS RECIBIDOS DE MERCADOPAGO ===');
+                console.log('URL completa:', window.location.href);
+                console.log('Parámetros:', params);
+                console.log('Timestamp:', new Date().toISOString());
+                console.log('=====================================');
+
+                // Mostrar notificación
+                showToast('Parámetros de MercadoPago recibidos - revisa la consola', 'success');
+            }
+        }
+
+        // ============================================================================
+        // INICIALIZACIÓN DEL SDK - MERCADOPAGO
+        // ============================================================================
+
+        /**
+         * Carga la configuración de MercadoPago desde el backend
+         * @returns {Promise<boolean>} True si la configuración está disponible
+         */
+        async function loadMercadoPagoConfig() {
+            try {
+                const response = await fetch('/ecomerce/checkout/config/mercadopago');
+                if (response.ok) {
+                    const config = await response.json();
+                    MERCADOPAGO_PUBLIC_KEY = config.public_key;
+                    console.log('✅ Configuración de MercadoPago cargada:', config.is_configured ? 'Disponible' : 'No disponible');
+                    return config.is_configured;
+                } else {
+                    console.warn('⚠️ Error al cargar configuración de MercadoPago:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.warn('⚠️ Error de red al cargar configuración de MercadoPago:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Inicializa la instancia del SDK de MercadoPago
+         * Incluye verificación de tracking prevention
+         */
+        function initializeMercadoPago() {
+            // Verificar tracking prevention primero
+            if (detectTrackingPrevention()) {
+                console.warn('⚠️ Tracking Prevention detectado - MercadoPago puede no funcionar correctamente');
+                window.mercadoPagoErrors.push({
+                    type: 'tracking_prevention',
+                    message: 'El navegador está bloqueando el acceso al storage para MercadoPago'
+                });
+            }
+
+            // Validaciones previas a la inicialización
+            if (!MERCADOPAGO_PUBLIC_KEY) {
+                console.error('❌ MERCADOPAGO_PUBLIC_KEY no está disponible');
+                throw new Error('Public Key de MercadoPago no configurada');
+            }
+
+            if (typeof MercadoPago === 'undefined') {
+                console.error('❌ SDK de MercadoPago no se cargó correctamente');
+                throw new Error('SDK de MercadoPago no disponible');
+            }
+
+            try {
+                // Crear instancia del SDK
+                mp = new MercadoPago(MERCADOPAGO_PUBLIC_KEY);
+                console.log('✅ MercadoPago SDK inicializado exitosamente');
+                console.log('🔧 Versión del SDK:', mp.version || 'v2');
+
+                return mp;
+            } catch (error) {
+                console.error('❌ Error inicializando MercadoPago:', error);
+                window.mercadoPagoErrors.push({
+                    type: 'initialization_error',
+                    message: error.message
+                });
+                throw error;
+            }
+        }
+
+        /**
+         * Renderiza el Brick de Wallet de MercadoPago
+         * @param {string} preferenceId - ID de la preferencia de pago
+         * @returns {Promise<void>}
+         */
+        async function renderMercadoPagoBrick(preferenceId) {
+            if (!mp) {
+                console.error('❌ MercadoPago no inicializado');
+                throw new Error('SDK de MercadoPago no inicializado');
+            }
+
+            if (!preferenceId) {
+                console.error('❌ Preference ID no proporcionado');
+                throw new Error('Preference ID requerido');
+            }
+
+            const container = document.getElementById('walletBrick_container');
+
+            // Mostrar estado de carga
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-4">
+                    <i class="fas fa-spinner fa-spin text-blue-600 mr-2"></i>
+                    <span class="text-gray-600">Cargando MercadoPago...</span>
+                </div>
+            `;
+
+            try {
+                console.log('🔧 Renderizando brick con preferenceId:', preferenceId);
+
+                // Crear instancia de bricks
+                const bricksBuilder = mp.bricks();
+
+                // Configurar y renderizar el brick de wallet
+                await bricksBuilder.create("wallet", "walletBrick_container", {
+                    initialization: {
+                        preferenceId: preferenceId,
+                    },
+                    callbacks: {
+                        onReady: () => {
+                            console.log('✅ Brick de MercadoPago listo y renderizado');
+                            // Limpiar el contenedor (el brick se renderiza automáticamente)
+                            container.innerHTML = '';
+                        },
+                        onError: (error) => {
+                            console.error('❌ Error en brick de MercadoPago:', error);
+                            renderBrickError(error);
+                        },
+                        onSubmit: (formData) => {
+                            console.log('📤 Brick submit - Procesando pago:', formData);
+                        }
+                    },
+                    customization: {
+                        visual: {
+                            hideFormTitle: true,
+                            hidePaymentButton: false
+                        }
+                    }
+                });
+
+                console.log('✅ Brick de MercadoPago creado exitosamente');
+
+            } catch (error) {
+                console.error('❌ Error renderizando brick de MercadoPago:', error);
+                renderBrickError(error);
+                throw error;
+            }
+        }
+
+        /**
+         * Renderiza un mensaje de error en el contenedor del brick
+         * @param {Error} error - Error ocurrido
+         */
+        function renderBrickError(error) {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800 mb-2">
+                                Error con MercadoPago
+                            </h3>
+                            <p class="text-sm text-red-700">
+                                ${error.message || 'Error desconocido al cargar el sistema de pago'}
+                            </p>
+                            <button onclick="location.reload()" class="mt-2 text-sm text-red-600 hover:text-red-800 underline">
+                                Recargar página
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================================================
+        // CHECKOUT
+        // ============================================================================
+
+        async function confirmOrder() {
+            try {
+                const token = getToken();
+                if (!token) {
+                    window.location.href = '/ecomerce/login';
+                    return;
+                }
+
+                const confirmBtn = document.getElementById('confirm-order-btn');
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Agregando producto...';
+
+                // Paso 1: Agregar un producto de prueba al carrito
+                console.log('📦 Agregando producto de prueba al carrito...');
+                const addToCartResponse = await fetch(`${API_BASE}/carrito_items/simple`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        product_id: 1,  // Usar producto ID 1 (debería existir)
+                        quantity: 1,
+                        price: 100.50   // Precio de prueba
+                    })
+                });
+
+                if (!addToCartResponse.ok) {
+                    const errorData = await addToCartResponse.json();
+                    throw new Error(`Error agregando producto al carrito: ${errorData.detail || addToCartResponse.statusText}`);
+                }
+
+                const cartItem = await addToCartResponse.json();
+                console.log('✅ Producto agregado al carrito:', cartItem);
+
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creando preferencia...';
+
+                // Paso 2: Crear pedido de prueba
+                const response = await fetch(`${API_BASE}/checkout/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        payment_method: 'mercadopago'
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Respuesta del servidor:', result);
+
+                    if (result.preference_id) {
+                        currentPreferenceId = result.preference_id;
+                        console.log('Preference ID:', result.preference_id);
+
+                        // Renderizar brick de MercadoPago
+                        await renderMercadoPagoBrick(result.preference_id);
+
+                        showToast('Preferencia creada. Completa el pago con MercadoPago.', 'success');
+                        confirmBtn.innerHTML = `<i class="fas fa-credit-card mr-2"></i>Pago listo - Revisa abajo`;
+                        confirmBtn.disabled = true;
+
+                    } else {
+                        throw new Error('No se recibió preference_id');
+                    }
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al crear preferencia');
+                }
+
+            } catch (error) {
+                console.error('Error en checkout:', error);
+                showToast(error.message || 'Error al crear preferencia', 'error');
+
+                const confirmBtn = document.getElementById('confirm-order-btn');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = `<i class="fas fa-credit-card mr-2"></i>Crear Preferencia de Pago`;
+            }
+        }
+
+        // ============================================================================
+        // INICIALIZACIÓN DE LA PÁGINA
+        // ============================================================================
+
+        /**
+         * Inicialización principal de la página
+         * Se ejecuta cuando el DOM está completamente cargado
+         */
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Inicializando página de checkout MercadoPago');
+
+            try {
+                // Paso 1: Actualizar información de depuración
+                updateDebugInfo();
+
+                // Paso 2: Mostrar carrito de prueba
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('cart-summary').classList.remove('hidden');
+
+                // Paso 3: Verificar si MercadoPago está bloqueado
+                const mercadoPagoBlocked = isMercadoPagoBlocked();
+                if (mercadoPagoBlocked) {
+                    console.warn('⚠️ MercadoPago detectado como bloqueado por el navegador');
+                    renderMercadoPagoTrackingBlocked();
+                    return; // No continuar con la inicialización
+                }
+
+                // Paso 4: Cargar configuración de MercadoPago
+                console.log('📡 Cargando configuración de MercadoPago...');
+                const mpConfigured = await loadMercadoPagoConfig();
+
+                if (mpConfigured) {
+                    // Paso 5: Inicializar SDK de MercadoPago
+                    console.log('🔧 Inicializando SDK de MercadoPago...');
+                    initializeMercadoPago();
+
+                    // Paso 6: Mostrar información del pago
+                    document.getElementById('payment-info').classList.remove('hidden');
+
+                    console.log('✅ Checkout de MercadoPago inicializado correctamente');
+                } else {
+                    // MercadoPago no configurado - mostrar mensaje de error
+                    console.warn('⚠️ MercadoPago no está configurado en el servidor');
+                    renderMercadoPagoNotConfigured();
+                }
+
+            } catch (error) {
+                console.error('❌ Error durante la inicialización:', error);
+                renderInitializationError(error);
+            }
+        });
+
+        /**
+         * Renderiza mensaje cuando MercadoPago no está configurado
+         */
+        function renderMercadoPagoNotConfigured() {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-yellow-800 mb-2">
+                                MercadoPago no configurado
+                            </h3>
+                            <p class="text-sm text-yellow-700">
+                                La configuración de MercadoPago no está disponible en el servidor.
+                                Contacta al administrador para configurar las credenciales.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Renderiza mensaje de error de inicialización
+         */
+        function renderInitializationError(error) {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800 mb-2">
+                                Error de inicialización
+                            </h3>
+                            <p class="text-sm text-red-700">
+                                Error al inicializar el sistema de pago: ${error.message}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        /**
+         * Renderiza mensaje cuando MercadoPago está bloqueado por tracking prevention
+         */
+        function renderMercadoPagoTrackingBlocked() {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-shield-alt text-orange-400 text-2xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-lg font-medium text-orange-800 mb-3">
+                                MercadoPago no disponible
+                            </h3>
+                            <p class="text-sm text-orange-700 mb-4">
+                                Tu navegador tiene activadas configuraciones de privacidad que bloquean MercadoPago.
+                                Esto es común en navegadores con "Prevención de seguimiento" o "Bloqueo de cookies de terceros".
+                            </p>
+
+                            <div class="bg-orange-100 border border-orange-300 rounded-lg p-4 mb-4">
+                                <h4 class="text-sm font-medium text-orange-800 mb-2">Cómo solucionarlo:</h4>
+                                <div class="text-sm text-orange-700 space-y-2">
+                                    <div>
+                                        <strong>Chrome/Edge:</strong>
+                                        <ol class="list-decimal list-inside mt-1 ml-2">
+                                            <li>Haz clic en el ícono de candado en la barra de direcciones</li>
+                                            <li>Selecciona "Configuración del sitio"</li>
+                                            <li>Desactiva "Bloquear cookies de terceros"</li>
+                                        </ol>
+                                    </div>
+                                    <div class="mt-2">
+                                        <strong>Firefox:</strong>
+                                        <ol class="list-decimal list-inside mt-1 ml-2">
+                                            <li>Ve a Configuración > Privacidad y seguridad</li>
+                                            <li>En "Protección contra rastreo", selecciona "Personalizada"</li>
+                                            <li>Desactiva "Cookies de rastreo entre sitios"</li>
+                                        </ol>
+                                    </div>
+                                    <div class="mt-2">
+                                        <strong>Safari:</strong>
+                                        <ol class="list-decimal list-inside mt-1 ml-2">
+                                            <li>Preferencias > Privacidad</li>
+                                            <li>Desactiva "Prevenir seguimiento entre sitios"</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <button onclick="location.reload()" class="text-sm text-orange-600 hover:text-orange-800 underline">
+                                    <i class="fas fa-sync-alt mr-1"></i>Recargar página
+                                </button>
+                                <div class="text-xs text-orange-600">
+                                    O usa <strong>Efectivo</strong> o <strong>Presupuesto</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Deshabilitar el botón de checkout
+            const confirmBtn = document.getElementById('confirm-order-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>MercadoPago bloqueado`;
+            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        /**
+         * Renderiza mensaje cuando MercadoPago no está configurado
+         */
+        function renderMercadoPagoNotConfigured() {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-sm font-medium text-yellow-800 mb-2">
+                            MercadoPago no configurado
+                        </h3>
+                        <p class="text-sm text-yellow-700">
+                            La configuración de MercadoPago no está disponible en el servidor.
+                            Contacta al administrador para configurar las credenciales.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Renderiza mensaje de error de inicialización
+         */
+        function renderInitializationError(error) {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-sm font-medium text-red-800 mb-2">
+                            Error de inicialización
+                        </h3>
+                        <p class="text-sm text-red-700">
+                            Error al inicializar el sistema de pago: ${error.message}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================================================
+        // FUNCIONES GLOBALES DE DIAGNÓSTICO
+        // ============================================================================
+
+        /**
+         * Función global para diagnóstico completo del sistema MercadoPago
+         * Uso: diagnoseMercadoPago() en la consola del navegador
+         * @returns {Object} Estado completo del sistema
+         */
+        window.diagnoseMercadoPago = function() {
+            console.log('🔍 === DIAGNÓSTICO COMPLETO MERCADOPAGO ===');
+
+            const status = {
+                timestamp: new Date().toISOString(),
+                trackingPrevention: {
+                    detected: detectTrackingPrevention(),
+                    description: 'Bloquea acceso al localStorage/sessionStorage para terceros'
+                },
+                mercadoPagoBlocked: isMercadoPagoBlocked(),
+                sdk: {
+                    available: typeof MercadoPago !== 'undefined',
+                    version: typeof MercadoPago !== 'undefined' ? 'v2' : 'No disponible'
+                },
+                instance: {
+                    created: !!mp,
+                    type: mp ? mp.constructor.name : null
+                },
+                configuration: {
+                    publicKeyConfigured: !!MERCADOPAGO_PUBLIC_KEY,
+                    publicKeyPrefix: MERCADOPAGO_PUBLIC_KEY ? MERCADOPAGO_PUBLIC_KEY.substring(0, 10) + '...' : null
+                },
+                preference: {
+                    currentId: currentPreferenceId
+                },
+                errors: window.mercadoPagoErrors || [],
+                dom: {
+                    containerExists: !!document.getElementById('walletBrick_container'),
+                    containerVisible: document.getElementById('walletBrick_container')?.offsetParent !== null
+                },
+                network: {
+                    configEndpoint: '/ecomerce/checkout/config/mercadopago',
+                    lastConfigLoad: 'Ver logs anteriores'
+                }
+            };
+
+            console.table(status);
+            console.log('📋 Estado detallado:', status);
+            console.log('✅ Diagnóstico completado');
+            console.log('=====================================');
+
+            return status;
+        };
+
+        /**
+         * Función para probar la conectividad con el backend
+         * Uso: testBackendConnection() en la consola
+         */
+        window.testBackendConnection = async function() {
+            console.log('🌐 Probando conectividad con el backend...');
+
+            try {
+                const response = await fetch('/ecomerce/checkout/config/mercadopago');
+                const config = await response.json();
+
+                console.log('✅ Conexión exitosa:', {
+                    status: response.status,
+                    configured: config.is_configured,
+                    hasPublicKey: !!config.public_key
+                });
+
+                return { success: true, config };
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                return { success: false, error: error.message };
+            }
+        };
+    </script>
+</body>
+</html>

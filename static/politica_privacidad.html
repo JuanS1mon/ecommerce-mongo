@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidad - Tienda Online</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--ecommerce-gray);
+            color: var(--ecommerce-text);
+            line-height: 1.6;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+        }
+        .policy-section {
+            background: var(--ecommerce-light);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg">Tienda Online</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-store"></i>
+                        <span>Productos</span>
+                    </a>
+                    <!-- Usuario no autenticado -->
+                    <div id="auth-buttons" class="flex items-center space-x-2">
+                        <a href="/ecomerce/login" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                        <a href="/ecomerce/register" class="bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Registrarse</span>
+                        </a>
+                    </div>
+                    <!-- Usuario autenticado -->
+                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                        <div class="relative">
+                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="user-greeting">Hola, Usuario</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                                <div class="py-1">
+                                    <a href="/ecomerce/usuarios/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>
+                                        Salir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative" id="cart-button" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="ml-1 hidden md:inline">Carrito</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold mb-4">Política de Privacidad</h1>
+            <p class="text-xl text-blue-100">
+                Tu privacidad es importante para nosotros. Conoce cómo protegemos y utilizamos tu información.
+            </p>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Content -->
+    <section class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <p class="text-gray-600 text-sm mb-4">Última actualización: 1 de noviembre de 2025</p>
+                <p class="text-gray-600">
+                    Esta Política de Privacidad describe cómo Tienda Online recopila, utiliza y protege la información personal que nos proporcionas cuando utilizas nuestro sitio web y servicios.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">1. Información que Recopilamos</h2>
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Información Personal:</h3>
+                <ul class="list-disc list-inside text-gray-600 mb-4 space-y-1">
+                    <li>Nombre completo</li>
+                    <li>Dirección de correo electrónico</li>
+                    <li>Dirección de envío y facturación</li>
+                    <li>Número de teléfono</li>
+                    <li>Información de pago (procesada de forma segura por terceros)</li>
+                </ul>
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Información Automática:</h3>
+                <ul class="list-disc list-inside text-gray-600 space-y-1">
+                    <li>Dirección IP</li>
+                    <li>Tipo de navegador y versión</li>
+                    <li>Páginas visitadas en nuestro sitio</li>
+                    <li>Tiempo de visita y páginas de referencia</li>
+                    <li>Cookies y tecnologías similares</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">2. Cómo Utilizamos tu Información</h2>
+                <p class="text-gray-600 mb-4">Utilizamos la información recopilada para:</p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Procesar pedidos:</strong> Gestionar compras, pagos y envíos</li>
+                    <li><strong>Comunicación:</strong> Enviar confirmaciones, actualizaciones de pedidos y soporte al cliente</li>
+                    <li><strong>Cuenta de usuario:</strong> Crear y gestionar tu cuenta personal</li>
+                    <li><strong>Mejora del servicio:</strong> Analizar el uso del sitio para mejorar nuestros productos y servicios</li>
+                    <li><strong>Marketing:</strong> Enviar ofertas promocionales (con tu consentimiento)</li>
+                    <li><strong>Seguridad:</strong> Proteger contra fraudes y actividades ilegales</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">3. Compartir Información</h2>
+                <p class="text-gray-600 mb-4">No vendemos, alquilamos ni compartimos tu información personal con terceros, excepto en los siguientes casos:</p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Proveedores de servicios:</strong> Empresas que nos ayudan con envíos, procesamiento de pagos y análisis (bajo acuerdos de confidencialidad)</li>
+                    <li><strong>Requisitos legales:</strong> Cuando sea requerido por ley o para proteger nuestros derechos</li>
+                    <li><strong>Tu consentimiento:</strong> Con tu aprobación explícita</li>
+                    <li><strong>Transferencias de negocio:</strong> En caso de fusión, adquisición o venta de activos</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">4. Cookies y Tecnologías Similares</h2>
+                <p class="text-gray-600 mb-4">Utilizamos cookies para:</p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li>Recordar tus preferencias y configuración</li>
+                    <li>Mantener tu sesión activa</li>
+                    <li>Analizar el tráfico del sitio web</li>
+                    <li>Personalizar tu experiencia de compra</li>
+                    <li>Mostrar anuncios relevantes</li>
+                </ul>
+                <p class="text-gray-600">
+                    Puedes gestionar las cookies a través de la configuración de tu navegador. Sin embargo, desactivar ciertas cookies puede afectar la funcionalidad del sitio.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">5. Seguridad de la Información</h2>
+                <p class="text-gray-600">
+                    Implementamos medidas de seguridad técnicas, administrativas y físicas apropiadas para proteger tu información personal contra acceso no autorizado, alteración, divulgación o destrucción. Utilizamos encriptación SSL para proteger los datos transmitidos y almacenamos la información en servidores seguros.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">6. Tus Derechos</h2>
+                <p class="text-gray-600 mb-4">Tienes derecho a:</p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Acceder:</strong> Solicitar una copia de la información personal que tenemos sobre ti</li>
+                    <li><strong>Rectificar:</strong> Corregir información inexacta o incompleta</li>
+                    <li><strong>Eliminar:</strong> Solicitar la eliminación de tu información personal</li>
+                    <li><strong>Portabilidad:</strong> Obtener tus datos en un formato estructurado</li>
+                    <li><strong>Oponerte:</strong> Oponerte al procesamiento de tus datos para marketing</li>
+                    <li><strong>Retirar consentimiento:</strong> Retirar tu consentimiento en cualquier momento</li>
+                </ul>
+                <p class="text-gray-600">
+                    Para ejercer estos derechos, contacta con nosotros en info@tiendaonline.com.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">7. Retención de Datos</h2>
+                <p class="text-gray-600">
+                    Conservamos tu información personal solo durante el tiempo necesario para cumplir con los propósitos descritos en esta política, a menos que un período de retención más largo sea requerido o permitido por la ley. Los datos de pedidos se conservan por motivos fiscales y contables según lo requerido por la legislación aplicable.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">8. Enlaces a Terceros</h2>
+                <p class="text-gray-600">
+                    Nuestro sitio web puede contener enlaces a sitios web de terceros. No somos responsables de las prácticas de privacidad o el contenido de estos sitios. Te recomendamos revisar las políticas de privacidad de cualquier sitio web que visites.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">9. Cambios a esta Política</h2>
+                <p class="text-gray-600">
+                    Podemos actualizar esta Política de Privacidad periódicamente. Te notificaremos sobre cambios significativos mediante un aviso destacado en nuestro sitio web o enviándote un email. El uso continuado de nuestros servicios después de los cambios constituye tu aceptación de la política actualizada.
+                </p>
+            </div>
+
+            <div class="policy-section">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">10. Contacto</h2>
+                <p class="text-gray-600 mb-4">
+                    Si tienes preguntas sobre esta Política de Privacidad o nuestras prácticas de manejo de datos, puedes contactarnos:
+                </p>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-gray-600"><strong>Email:</strong> info@tiendaonline.com</p>
+                    <p class="text-gray-600"><strong>Teléfono:</strong> +1 (555) 123-4567</p>
+                    <p class="text-gray-600"><strong>Dirección:</strong> Tu Ciudad, País</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <img src="/static/img/logo.png" alt="Logo" class="h-8 w-auto mr-2" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="text-xl font-bold">Tienda Online</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Tu tienda online de confianza con los mejores productos y precios.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/ecomerce/productos/tienda" class="text-gray-400 hover:text-white transition-colors">Tienda</a></li>
+                        <li><a href="/ecomerce/login" class="text-gray-400 hover:text-white transition-colors">Iniciar Sesión</a></li>
+                        <li><a href="/ecomerce/register" class="text-gray-400 hover:text-white transition-colors">Registrarse</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Servicio al Cliente</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/static/servicio_al_cliente.html" class="text-gray-400 hover:text-white transition-colors">Servicio al Cliente</a></li>
+                        <li><a href="/static/centro_de_ayuda.html" class="text-gray-400 hover:text-white transition-colors">Centro de Ayuda</a></li>
+                        <li><a href="/static/envios_devoluciones.html" class="text-gray-400 hover:text-white transition-colors">Envíos y Devoluciones</a></li>
+                        <li><a href="/static/politica_privacidad.html" class="text-gray-400 hover:text-white transition-colors">Política de Privacidad</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span class="text-gray-400">info@tiendaonline.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <span class="text-gray-400">+1 (555) 123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span class="text-gray-400">Tu Ciudad, País</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    2025 Tienda Online. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Funciones de autenticación y carrito (igual que en index.html)
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function checkEcommerceAuth() {
+            const token = localStorage.getItem('ecommerce_token') || getCookie('ecommerce_token');
+            if (!token) {
+                showUnauthenticatedUI();
+                return;
+            }
+            try {
+                const response = await fetch('/ecomerce/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.valid && data.user) {
+                        showAuthenticatedUI(data.user);
+                    } else {
+                        showUnauthenticatedUI();
+                    }
+                } else {
+                    showUnauthenticatedUI();
+                }
+            } catch (error) {
+                console.error('Error verificando autenticación:', error);
+                showUnauthenticatedUI();
+            }
+        }
+
+        function showUnauthenticatedUI() {
+            document.getElementById('auth-buttons').classList.remove('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+        }
+
+        function showAuthenticatedUI(user) {
+            document.getElementById('auth-buttons').classList.add('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('user-greeting').textContent = `Hola, ${user.nombre}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('ecommerce_token');
+            localStorage.removeItem('ecommerce_user_id');
+            document.cookie = 'ecommerce_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            if (window.cart) {
+                window.cart.userId = null;
+                window.cart.cartItems = [];
+                window.cart.renderEmptyCart();
+            }
+            showUnauthenticatedUI();
+            showToast('Sesión cerrada exitosamente', 'success');
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function toggleCart() {
+            if (window.cart && typeof window.cart.toggle === 'function') {
+                window.cart.toggle();
+            } else {
+                const sidebar = document.getElementById('cart-sidebar');
+                const overlay = document.getElementById('cart-overlay');
+                if (sidebar && overlay) {
+                    if (sidebar.classList.contains('translate-x-full')) {
+                        sidebar.classList.remove('translate-x-full');
+                        overlay.classList.remove('hidden');
+                    } else {
+                        sidebar.classList.add('translate-x-full');
+                        overlay.classList.add('hidden');
+                    }
+                }
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' :
+                                   type === 'error' ? 'fa-exclamation-circle' :
+                                   'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get('token');
+            if (tokenFromUrl) {
+                localStorage.setItem('ecommerce_token', tokenFromUrl);
+                document.cookie = `ecommerce_token=${tokenFromUrl}; path=/; max-age=86400`;
+                const url = new URL(window.location);
+                url.searchParams.delete('token');
+                window.history.replaceState({}, document.title, url.pathname + url.hash);
+            }
+            checkEcommerceAuth();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleUserDropdown();
+                });
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.getElementById('user-dropdown');
+            const userButton = document.getElementById('user-dropdown-btn');
+            if (userButton && !userButton.contains(event.target) && userDropdown && !userDropdown.contains(event.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <script defer src="/static/ecomerce/carrito.js"></script>
+    <script defer src="/static/ecomerce/cart_button.js"></script>
+</body>
+</html>

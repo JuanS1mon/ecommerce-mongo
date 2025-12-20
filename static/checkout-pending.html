@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Pendiente - Mi Tienda</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .pulse-icon {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-50 to-orange-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Tarjeta de pendiente -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
+            <!-- Ícono de pendiente -->
+            <div class="mb-6 flex justify-center">
+                <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center pulse-icon">
+                    <i class="fas fa-clock text-yellow-600 text-5xl"></i>
+                </div>
+            </div>
+            
+            <!-- Título -->
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">
+                Pago Pendiente
+            </h1>
+            
+            <!-- Descripción -->
+            <p class="text-gray-600 mb-6 text-lg">
+                Tu pago está siendo procesado. Te notificaremos cuando se confirme.
+            </p>
+            
+            <!-- Información del pago -->
+            <div class="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center justify-center mb-2">
+                    <i class="fas fa-hourglass-half text-yellow-600 text-2xl mr-2"></i>
+                    <span class="text-yellow-800 font-semibold">Estado: En proceso</span>
+                </div>
+                <p class="text-sm text-gray-600" id="payment-info">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Cargando información del pago...
+                </p>
+            </div>
+            
+            <!-- Explicación según método de pago -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-left">
+                <h3 class="font-semibold text-blue-800 mb-2">
+                    <i class="fas fa-info-circle mr-2"></i>¿Por qué está pendiente?
+                </h3>
+                <ul class="text-sm text-blue-700 space-y-2">
+                    <li>• <strong>Pago en efectivo:</strong> Paga en el punto indicado para confirmar</li>
+                    <li>• <strong>Transferencia:</strong> Puede tardar hasta 48hs en acreditarse</li>
+                    <li>• <strong>Otros medios:</strong> Estamos esperando la confirmación bancaria</li>
+                </ul>
+            </div>
+            
+            <!-- Qué esperar -->
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 text-left">
+                <h3 class="font-semibold text-green-800 mb-2">
+                    <i class="fas fa-check-circle mr-2"></i>Qué esperar:
+                </h3>
+                <ul class="text-sm text-green-700 space-y-1">
+                    <li>✓ Recibirás un email cuando se confirme el pago</li>
+                    <li>✓ Tu pedido se reservará por 48 horas</li>
+                    <li>✓ Puedes consultar el estado en "Mis pedidos"</li>
+                </ul>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="space-y-3">
+                <a href="/ecomerce/pedidos" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg">
+                    <i class="fas fa-box mr-2"></i>Ver mis pedidos
+                </a>
+                <a href="/ecomerce" class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-300">
+                    <i class="fas fa-home mr-2"></i>Volver a la tienda
+                </a>
+            </div>
+            
+            <!-- Soporte -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-500">
+                    ¿Necesitas ayuda? 
+                    <a href="/ecomerce/contacto" class="text-blue-600 hover:text-blue-700 font-medium">
+                        Contáctanos
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Mensaje de seguridad -->
+        <div class="mt-4 text-center">
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-shield-alt text-yellow-600 mr-1"></i>
+                Pago procesado de forma segura por MercadoPago
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('payment_id');
+        const status = urlParams.get('status');
+        const externalReference = urlParams.get('external_reference');
+        const paymentType = urlParams.get('payment_type');
+        
+        // Mostrar información del pago si está disponible
+        if (paymentId) {
+            const paymentInfo = document.getElementById('payment-info');
+            paymentInfo.innerHTML = `
+                <div class="space-y-1">
+                    <div><strong>ID de pago:</strong> ${paymentId}</div>
+                    ${externalReference ? `<div><strong>Referencia:</strong> ${externalReference}</div>` : ''}
+                    ${paymentType ? `<div><strong>Método:</strong> ${paymentType}</div>` : ''}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

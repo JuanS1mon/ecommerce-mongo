@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - Ecommerce Store</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <script src="/static/ecomerce/carrito.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--ecommerce-gray);
+            color: var(--ecommerce-text);
+            line-height: 1.6;
+        }
+        .cart-item {
+            background: var(--ecommerce-light);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .cart-item:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+        }
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <img src="/static/img/logo.png" alt="Logo" class="h-10 w-10">
+                    <h1 class="text-2xl font-bold text-gray-900">Carrito de Compras</h1>
+                </div>
+                <nav class="flex space-x-6">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors">Inicio</a>
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors">Tienda</a>
+                    <a href="/ecomerce/carrito" class="text-blue-600 font-semibold">Carrito</a>
+                    <a href="/ecomerce/login" class="text-gray-600 hover:text-blue-600 transition-colors">Login</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Tu Carrito de Compras</h2>
+        </div>
+
+        <!-- Cart Items -->
+        <div id="cart-items" class="space-y-4 mb-8">
+            <!-- Cart items will be loaded here by JavaScript -->
+        </div>
+
+        <!-- Empty cart message -->
+        <div id="empty-cart" class="text-center py-12 bg-white rounded-lg shadow" style="display: none;">
+            <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Tu carrito está vacío</h3>
+            <p class="text-gray-600 mb-6">¡Agrega algunos productos para comenzar!</p>
+            <a href="/ecomerce/productos/tienda" class="btn-primary">Ir a la Tienda</a>
+        </div>
+
+        <!-- Cart Summary -->
+        <div id="cart-summary" class="bg-white p-6 rounded-lg shadow-lg hidden">
+            <h3 class="text-xl font-semibold mb-4">Resumen del Pedido</h3>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Envío:</span>
+                    <span id="shipping">$0.00</span>
+                </div>
+                <div class="flex justify-between font-semibold text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span id="total">$0.00</span>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <a href="/ecomerce/checkout" class="btn-primary flex-1 text-center">Proceder al Pago</a>
+                <a href="/ecomerce/productos/tienda" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors">Continuar Comprando</a>
+            </div>
+        </div>
+
+        <!-- Additional elements for cart.js compatibility (hidden) -->
+        <div id="cart-footer" style="display: none;">
+            <span id="cart-total">$0</span>
+        </div>
+        <div id="cart-count" style="display: none;">0</div>
+
+        <!-- Additional elements for cart.js compatibility (hidden) -->
+        <div id="cart-footer" style="display: none;">
+            <span id="cart-total">$0</span>
+        </div>
+        <div id="cart-count" style="display: none;">0</div>
+
+        <!-- Loading indicator -->
+        <div id="loading" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p class="mt-2 text-gray-600">Cargando carrito...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p>&copy; 2025 Tienda Online. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize the cart page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Cart page loaded');
+            // The carrito.js will handle the cart loading and management
+        });
+    </script>
+</body>
+</html>

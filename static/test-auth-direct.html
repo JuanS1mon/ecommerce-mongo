@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Autenticación Directa</title>
+    <script src="/static/tailwind.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #00bfff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0099cc;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1 class="text-2xl font-bold mb-6">Prueba de Autenticación Directa</h1>
+
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Estado de Autenticación</h2>
+        <button class="btn" onclick="checkAuth()">Verificar Token</button>
+        <div id="auth-result" class="result hidden"></div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Login de Prueba</h2>
+        <p class="mb-4">Credenciales de prueba: admin@example.com / admin123</p>
+        <button class="btn" onclick="testLogin()">Hacer Login</button>
+        <div id="login-result" class="result hidden"></div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Perfil de Usuario</h2>
+        <button class="btn" onclick="getProfile()">Obtener Perfil</button>
+        <div id="profile-result" class="result hidden"></div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Logout</h2>
+        <button class="btn" onclick="testLogout()">Cerrar Sesión</button>
+        <div id="logout-result" class="result hidden"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, content, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = content;
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.classList.remove('hidden');
+        }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('auth-result', 'No hay token almacenado', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/ecomerce/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showResult('auth-result', 'Token válido');
+                } else {
+                    showResult('auth-result', 'Token inválido o expirado', false);
+                }
+            } catch (error) {
+                showResult('auth-result', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch('/ecomerce/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    showResult('login-result', `Login exitoso. Token: ${data.access_token.substring(0, 50)}...`);
+                } else {
+                    showResult('login-result', `Error: ${data.detail}`, false);
+                }
+            } catch (error) {
+                showResult('login-result', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function getProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('profile-result', 'No hay token. Haz login primero.', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/ecomerce/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('profile-result', JSON.stringify(data, null, 2));
+                } else {
+                    showResult('profile-result', `Error: ${data.detail}`, false);
+                }
+            } catch (error) {
+                showResult('profile-result', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function testLogout() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('logout-result', 'No hay token para cerrar sesión.', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/ecomerce/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                localStorage.removeItem('token');
+                showResult('logout-result', 'Sesión cerrada exitosamente');
+            } catch (error) {
+                showResult('logout-result', `Error: ${error.message}`, false);
+            }
+        }
+
+        // Check auth on page load
+        checkAuth();
+    </script>
+</body>
+</html>

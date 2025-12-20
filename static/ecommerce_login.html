@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-store-title="Iniciar Sesión">Iniciar Sesión - Ecommerce Store</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--ecommerce-text);
+            line-height: 1.6;
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: var(--ecommerce-light);
+            border-radius: 20px;
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 8px 16px rgba(0, 0, 0, 0.06),
+                0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        .login-left {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .login-right {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo i {
+            font-size: 2.5rem;
+            color: var(--ecommerce-blue);
+        }
+
+        .brand-logo span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, white 0%, rgba(255,255,255,0.9) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, white 0%, rgba(255,255,255,0.9) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.125rem;
+            color: var(--ecommerce-text-light);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-item i {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .feature-item span {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .login-form {
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ecommerce-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: var(--ecommerce-text-light);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--ecommerce-text);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--ecommerce-blue);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .password-input {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--ecommerce-blue);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--ecommerce-blue);
+        }
+
+        .checkbox-label {
+            font-size: 0.875rem;
+            color: var(--ecommerce-text-light);
+        }
+
+        .forgot-link {
+            font-size: 0.875rem;
+            color: var(--ecommerce-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: #0099cc;
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .register-text {
+            color: var(--ecommerce-text-light);
+            margin-bottom: 1rem;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #f3f4f6;
+            color: var(--ecommerce-text);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-google:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .message-success {
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .message-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .message-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-card {
+                grid-template-columns: 1fr;
+                min-height: 0;
+            }
+
+            .login-left {
+                display: none;
+            }
+
+            .login-right {
+                padding: 2rem;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .form-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1rem;
+            }
+
+            .login-right {
+                padding: 1.5rem;
+            }
+
+            .welcome-title {
+                font-size: 1.75rem;
+            }
+
+            .form-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg">Tienda Online</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-store"></i>
+                        <span>Productos</span>
+                    </a>
+                    <a href="/ecomerce/register" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Registrarse</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Left Panel -->
+            <div class="login-left">
+                <div class="relative z-10">
+                    <div class="brand-logo">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Tienda Online</span>
+                    </div>
+
+                    <h1 class="welcome-title">¡Bienvenido de vuelta!</h1>
+                    <p class="welcome-subtitle">
+                        Accede a tu cuenta para continuar con tus compras y disfrutar de una experiencia personalizada.
+                    </p>
+
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-truck"></i>
+                            <span>Envíos rápidos y seguros</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Compras 100% seguras</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-headset"></i>
+                            <span>Soporte 24/7</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-star"></i>
+                            <span>Productos de calidad</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="login-right">
+                <div class="login-form">
+                    <h2 class="form-title">Iniciar Sesión</h2>
+                    <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
+
+                    <!-- Messages -->
+                    <div id="message" class="message hidden"></div>
+
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope mr-2"></i>Correo electrónico
+                            </label>
+                            <input id="email" name="email" type="email" required
+                                   class="form-input"
+                                   placeholder="tu@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock mr-2"></i>Contraseña
+                            </label>
+                            <div class="password-input">
+                                <input id="password" name="password" type="password" required
+                                       class="form-input"
+                                       placeholder="••••••••">
+                                <button type="button" id="togglePassword" class="password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <div class="checkbox-group">
+                                <input id="remember" name="remember" type="checkbox" class="checkbox-input">
+                                <label for="remember" class="checkbox-label">Recordarme</label>
+                            </div>
+                            <a href="/password-reset" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span id="btnText">Iniciar Sesión</span>
+                        </button>
+                    </form>
+
+                    <!-- Divider - Solo se muestra si Google OAuth está habilitado -->
+                    <div id="googleDivider" class="flex items-center my-6" style="display: none;">
+                        <div class="flex-1 border-t border-gray-300"></div>
+                        <div class="px-4 text-sm text-gray-500 font-medium">O continúa con</div>
+                        <div class="flex-1 border-t border-gray-300"></div>
+                    </div>
+
+                    <!-- Google Login Button - Solo se muestra si Google OAuth está habilitado -->
+                    <a id="googleLoginBtn" href="/auth/google/login" class="btn-google" style="display: none; align-items: center; justify-content: center; width: 100%; padding: 0.875rem 1rem; background: white; border: 2px solid #e5e7eb; border-radius: 12px; text-decoration: none; color: #374151; font-weight: 600; transition: all 0.3s ease; gap: 0.75rem; margin-bottom: 1.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.9895 10.1871C19.9895 9.36767 19.9214 8.76973 19.7742 8.14966H10.1992V11.848H15.8195C15.7062 12.7671 15.0943 14.1512 13.7346 15.0813L13.7155 15.2051L16.7429 17.4969L16.9527 17.5174C18.879 15.7789 19.9895 13.221 19.9895 10.1871Z" fill="#4285F4"/>
+                            <path d="M10.1993 19.9313C12.9527 19.9313 15.2643 19.0454 16.9527 17.5174L13.7346 15.0813C12.8734 15.6682 11.7176 16.0779 10.1993 16.0779C7.50243 16.0779 5.21352 14.3395 4.39759 11.9366L4.27799 11.9466L1.13003 14.3273L1.08887 14.4391C2.76588 17.6945 6.21061 19.9313 10.1993 19.9313Z" fill="#34A853"/>
+                            <path d="M4.39748 11.9366C4.18219 11.3166 4.05759 10.6521 4.05759 9.96565C4.05759 9.27909 4.18219 8.61473 4.38615 7.99466L4.38045 7.8626L1.19304 5.44366L1.08875 5.49214C0.397576 6.84305 0.000976562 8.36008 0.000976562 9.96565C0.000976562 11.5712 0.397576 13.0882 1.08875 14.4391L4.39748 11.9366Z" fill="#FBBC05"/>
+                            <path d="M10.1993 3.85336C12.1142 3.85336 13.406 4.66168 14.1425 5.33717L17.0207 2.59107C15.253 0.985496 12.9527 0 10.1993 0C6.2106 0 2.76588 2.23672 1.08887 5.49214L4.38626 7.99466C5.21352 5.59183 7.50242 3.85336 10.1993 3.85336Z" fill="#EB4335"/>
+                        </svg>
+                        <span>Continuar con Google</span>
+                    </a>
+
+                    <div class="register-link">
+                        <p class="register-text">¿No tienes cuenta aún?</p>
+                        <a href="/ecomerce/register" class="btn-secondary">
+                            <i class="fas fa-user-plus"></i>
+                            Crear cuenta gratuita
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar si Google OAuth está habilitado
+        fetch('/auth/google/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.google_oauth_enabled) {
+                    // Mostrar botón de Google y divisor
+                    document.getElementById('googleLoginBtn').style.display = 'flex';
+                    document.getElementById('googleDivider').style.display = 'flex';
+                }
+            })
+            .catch(error => {
+                console.log('Google OAuth no disponible');
+            });
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.getElementById('password');
+            const icon = this.querySelector('i');
+
+            if (password.type === 'password') {
+                password.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                password.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const originalText = btnText.innerHTML;
+
+            // Loading state
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
+
+            const formData = new FormData();
+            formData.append('email', document.getElementById('email').value.trim());
+            formData.append('password', document.getElementById('password').value);
+
+            console.log('📝 Form data:');
+            console.log('Email:', document.getElementById('email').value.trim());
+            console.log('Password length:', document.getElementById('password').value.length);
+
+            try {
+                console.log('📤 Sending login request...');
+
+                // Send login request (follow redirects automatically)
+                const response = await fetch('/ecomerce/auth/login', {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow'  // Follow redirects automatically
+                });
+
+                console.log('📥 Response received - Status:', response.status);
+                console.log('📋 Response URL:', response.url);
+                console.log('📋 Headers:', Object.fromEntries(response.headers.entries()));
+
+                // Check if we were redirected to the store page
+                if (response.url.includes('/ecomerce/productos/tienda')) {
+                    console.log('✅ SUCCESS: Login successful - redirected to store!');
+                    messageDiv.className = 'message message-success';
+                    messageDiv.innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3 class="font-semibold">¡Bienvenido!</h3>
+                            <p class="text-sm">Te estamos llevando a tu tienda personal...</p>
+                        </div>
+                    `;
+                    messageDiv.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        console.log('🚀 Redirecting to store...');
+                        window.location.href = response.url;
+                    }, 1500);
+                    return;
+                } else {
+                    console.log('❌ ERROR: Not redirected to store');
+                    console.log('Response details:', {
+                        status: response.status,
+                        url: response.url,
+                        redirected: response.redirected,
+                        type: response.type
+                    });
+                    throw new Error('Respuesta inesperada del servidor');
+                }
+
+            } catch (error) {
+                console.log('💥 ERROR:', error.message);
+                messageDiv.className = 'message message-error';
+                messageDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h3 class="font-semibold">Error al iniciar sesión</h3>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                `;
+                messageDiv.classList.remove('hidden');
+
+                // Shake animation
+                messageDiv.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    messageDiv.style.animation = '';
+                }, 500);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.innerHTML = originalText;
+            }
+        });
+
+        // Check for URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+        const error = urlParams.get('error');
+
+        if (message) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = 'message message-info';
+            messageDiv.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <p>${message}</p>
+                </div>
+            `;
+            messageDiv.classList.remove('hidden');
+        }
+
+        if (error) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = 'message message-error';
+            messageDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <p>${error}</p>
+                </div>
+            `;
+            messageDiv.classList.remove('hidden');
+        }
+
+        // Check if user is already logged in
+        // Obtener token desde authManager o storage
+        let token = null;
+        if (window.authManager && typeof window.authManager.getToken === 'function') {
+            token = window.authManager.getToken();
+        }
+        if (!token) {
+            token = getCookie('ecommerce_token') || sessionStorage.getItem('ecommerce_token');
+        }
+        if (token) {
+            // Verify token validity
+            fetch('/ecomerce/auth/verify', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(response => {
+                if (response.status === 200) {
+                    // Valid token - redirect to requested page or default to store
+                    const redirectParam = urlParams.get('redirect');
+                    const redirectUrl = redirectParam || '/ecomerce/productos/tienda';
+                    window.location.href = redirectUrl;
+                } else {
+                    // Invalid token - clean up
+                    sessionStorage.removeItem('ecommerce_token');
+                    document.cookie = 'ecommerce_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                }
+            }).catch(() => {
+                // Verification error - continue normally
+            });
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+    </script>
+</body>
+</html>

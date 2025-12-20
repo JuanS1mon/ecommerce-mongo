@@ -1,0 +1,52 @@
+<!-- Componente de Sidebar del Carrito - Reutilizable -->
+<div class="cart-sidebar fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50" id="cart-sidebar">
+    <div class="flex flex-col h-full">
+        <!-- Header del carrito -->
+        <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h2 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Mi Carrito
+                </h2>
+                <button class="text-white hover:text-blue-200 transition-colors p-2 rounded-lg hover:bg-blue-700 relative" onclick="window.location.href='/ecomerce/perfil'" title="Ver mis favoritos">
+                    <i class="fas fa-heart text-lg"></i>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center hidden" id="wishlist-count">0</span>
+                    <span class="sr-only">Favoritos</span>
+                </button>
+            </div>
+            <button class="text-white hover:text-blue-200 transition-colors" onclick="toggleCart()" title="Cerrar carrito">
+                <i class="fas fa-times text-xl" aria-hidden="true"></i>
+                <span class="sr-only">Cerrar carrito</span>
+            </button>
+        </div>
+
+        <!-- Contenido del carrito -->
+        <div class="flex-1 overflow-y-auto p-4" id="cart-items">
+            <div class="text-center text-gray-500 py-8" id="empty-cart">
+                <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                <p>Tu carrito está vacío</p>
+            </div>
+        </div>
+
+        <!-- Footer del carrito -->
+        <div class="border-t bg-gray-50 p-4" id="cart-footer" style="display: none;">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-lg font-semibold">Total:</span>
+                <span class="text-lg font-bold text-blue-600" id="cart-total">$0</span>
+            </div>
+            <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold" onclick="window.location.href='/ecomerce/checkout'">
+                <i class="fas fa-credit-card mr-2"></i>
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay para cerrar el carrito -->
+<div class="cart-overlay fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="cart-overlay" onclick="toggleCart()"></div>
+
+<!-- Botón flotante del carrito (opcional) -->
+<button class="cart-float-btn fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-30" onclick="toggleCart()" id="cart-float-btn" style="display: none;">
+    <i class="fas fa-shopping-cart text-xl"></i>
+    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center" id="cart-float-count">0</span>
+</button>

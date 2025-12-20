@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargando Panel de Administración...</title>
+    <script src="/static/tailwind.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .loader {
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00bfff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <h2 class="text-xl font-semibold text-gray-700">Cargando Panel de Administración...</h2>
+        <p class="text-gray-500 mt-2">Verificando permisos y cargando datos...</p>
+    </div>
+
+    <script>
+        // Check authentication and redirect to admin panel
+        async function checkAuth() {
+            try {
+                // Obtener token desde authManager o storage
+                let token = null;
+                if (window.authManager && typeof window.authManager.getToken === 'function') {
+                    token = window.authManager.getToken();
+                }
+                if (!token) {
+                    token = sessionStorage.getItem('ecommerce_token') ||
+                           localStorage.getItem('token') ||
+                           localStorage.getItem('access_token');
+                }
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch('/ecomerce/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    if (user.role === 'admin') {
+                        // Redirect to actual admin panel (when implemented)
+                        setTimeout(() => {
+                            window.location.href = '/admin-dashboard.html';
+                        }, 1000);
+                    } else {
+                        alert('No tienes permisos de administrador');
+                        window.location.href = '/';
+                    }
+                } else {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // Check auth on page load
+        checkAuth();
+    </script>
+</body>
+</html>

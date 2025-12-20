@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat E-commerce MCP</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #chat { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
+        #message { width: 80%; padding: 5px; }
+        button { padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <h1>Chat con MCP E-commerce</h1>
+    <div id="chat"></div>
+    <input type="text" id="message" placeholder="Escribe tu mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8000/ws');
+        const chat = document.getElementById('chat');
+
+        ws.onmessage = function(event) {
+            const message = document.createElement('p');
+            message.textContent = 'Respuesta: ' + event.data;
+            chat.appendChild(message);
+        };
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message) {
+                const p = document.createElement('p');
+                p.textContent = 'Tú: ' + message;
+                chat.appendChild(p);
+                ws.send(message);
+                document.getElementById('message').value = '';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Ecommerce Store</title>
+
+    <!-- Tailwind CSS -->
+    <script src="/static/tailwind.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-left: 4px solid #047857;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-left: 4px solid #b91c1c;
+        }
+
+        .quantity-input {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .cart-item {
+            transition: all 0.2s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="/ecomerce/productos/tienda" class="text-blue-600 hover:text-blue-800 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Continuar comprando
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-900">Checkout</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Resumen del pedido -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-shopping-bag mr-2 text-blue-600"></i>
+                    Resumen del pedido
+                </h2>
+
+                <!-- Loading state -->
+                <div id="loading-state" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                    <p class="text-gray-600">Cargando tu carrito...</p>
+                </div>
+
+                <!-- Carrito vacío -->
+                <div id="empty-cart" class="hidden text-center py-12">
+                    <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Tu carrito está vacío</h3>
+                    <p class="text-gray-500 mb-6">Agrega algunos productos antes de continuar</p>
+                    <a href="/ecomerce/productos/tienda" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Ir a la tienda
+                    </a>
+                </div>
+
+                <!-- Items del carrito -->
+                <div id="cart-items" class="space-y-4">
+                    <!-- Los items se cargarán dinámicamente -->
+                </div>
+
+                <!-- Totales -->
+                <div id="cart-summary" class="hidden border-t pt-4 mt-6">
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Subtotal:</span>
+                            <span id="cart-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-semibold text-gray-900">
+                            <span>Total:</span>
+                            <span id="cart-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos de envío -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-truck mr-2 text-blue-600"></i>
+                    Datos de envío
+                </h2>
+
+                <!-- Loading state -->
+                <div id="shipping-loading" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-blue-600 text-2xl mb-2"></i>
+                    <p class="text-gray-600 text-sm">Cargando tus datos...</p>
+                </div>
+
+                <!-- Formulario de datos de envío -->
+                <form id="shipping-form" class="hidden space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Nombre -->
+                        <div>
+                            <label for="shipping-nombre" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nombre <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="shipping-nombre" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Tu nombre">
+                        </div>
+
+                        <!-- Apellido -->
+                        <div>
+                            <label for="shipping-apellido" class="block text-sm font-medium text-gray-700 mb-1">
+                                Apellido <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="shipping-apellido" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Tu apellido">
+                        </div>
+                    </div>
+
+                    <!-- Dirección -->
+                    <div>
+                        <label for="shipping-direccion" class="block text-sm font-medium text-gray-700 mb-1">
+                            Dirección de envío <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="shipping-direccion" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Calle, número, piso, depto.">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Ciudad -->
+                        <div>
+                            <label for="shipping-ciudad" class="block text-sm font-medium text-gray-700 mb-1">
+                                Ciudad <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="shipping-ciudad" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Tu ciudad">
+                        </div>
+
+                        <!-- Provincia -->
+                        <div>
+                            <label for="shipping-provincia" class="block text-sm font-medium text-gray-700 mb-1">
+                                Provincia
+                            </label>
+                            <input type="text" id="shipping-provincia"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Provincia">
+                        </div>
+
+                        <!-- Código Postal -->
+                        <div>
+                            <label for="shipping-codigo-postal" class="block text-sm font-medium text-gray-700 mb-1">
+                                Código Postal
+                            </label>
+                            <input type="text" id="shipping-codigo-postal"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="CP">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Teléfono -->
+                        <div>
+                            <label for="shipping-telefono" class="block text-sm font-medium text-gray-700 mb-1">
+                                Teléfono <span class="text-red-500">*</span>
+                            </label>
+                            <input type="tel" id="shipping-telefono" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="11 1234-5678">
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label for="shipping-email" class="block text-sm font-medium text-gray-700 mb-1">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" id="shipping-email" required readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
+                                   placeholder="tu@email.com">
+                        </div>
+                    </div>
+
+                    <!-- Notas adicionales -->
+                    <div>
+                        <label for="shipping-notas" class="block text-sm font-medium text-gray-700 mb-1">
+                            Notas de entrega (opcional)
+                        </label>
+                        <textarea id="shipping-notas" rows="2"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="Ej: Timbre no funciona, tocar puerta"></textarea>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Verifica que tus datos sean correctos antes de continuar. El pedido será enviado a esta dirección.
+                    </div>
+                </form>
+            </div>
+
+            <!-- Información de pago -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-credit-card mr-2 text-blue-600"></i>
+                    Información de pago
+                </h2>
+
+                <!-- Método de pago -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        Selecciona tu método de pago
+                    </label>
+
+                    <div class="space-y-3">
+                        <!-- Pago en efectivo -->
+                        <div class="payment-method-option border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:bg-green-50 transition-colors cursor-pointer"
+                             data-method="efectivo">
+                            <div class="flex items-center">
+                                <input type="radio" name="payment-method" value="efectivo" class="mr-3 text-green-600 focus:ring-green-500">
+                                <i class="fas fa-money-bill-wave text-2xl text-green-600 mr-3"></i>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-gray-900">Pago en efectivo</div>
+                                    <div class="text-sm text-gray-600">Paga al recibir el pedido en tu domicilio</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MercadoPago -->
+                        <div class="payment-method-option border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                             data-method="mercadopago">
+                            <div class="flex items-center">
+                                <input type="radio" name="payment-method" value="mercadopago" class="mr-3 text-blue-600 focus:ring-blue-500">
+                                <i class="fab fa-mercadopago text-2xl text-blue-600 mr-3"></i>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-gray-900">MercadoPago</div>
+                                    <div class="text-sm text-gray-600">Paga online de forma segura con tarjeta, efectivo o transferencia</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Contenedor para el Wallet Brick justo debajo de la opción -->
+                            <div id="mercadopago-brick-inline" class="hidden mt-4 pt-4 border-t border-blue-200">
+                                <div id="walletBrick_container"></div>
+                                <p class="text-xs text-gray-500 text-center mt-2">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Pago seguro procesado por MercadoPago
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Solicitar presupuesto -->
+                        <div class="payment-method-option border border-gray-200 rounded-lg p-4 hover:border-purple-500 hover:bg-purple-50 transition-colors cursor-pointer"
+                             data-method="presupuesto">
+                            <div class="flex items-center">
+                                <input type="radio" name="payment-method" value="presupuesto" class="mr-3 text-purple-600 focus:ring-purple-500">
+                                <i class="fas fa-file-invoice-dollar text-2xl text-purple-600 mr-3"></i>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-gray-900">Solicitar presupuesto</div>
+                                    <div class="text-sm text-gray-600">Te enviaremos una cotización detallada por email</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div id="payment-info" class="mb-6 p-4 bg-blue-50 rounded-lg hidden">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-semibold text-blue-900 mb-1">Información importante</h4>
+                            <p id="payment-info-text" class="text-sm text-blue-800"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de confirmar pedido (solo para efectivo y presupuesto) -->
+                <button id="confirm-order-btn"
+                        class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled>
+                    <i class="fas fa-check mr-2"></i>
+                    Confirmar pedido
+                </button>
+
+                <!-- Términos y condiciones -->
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-600">
+                        Al confirmar el pedido aceptas nuestros
+                        <a href="/politica_privacidad" class="text-blue-600 hover:underline">términos y condiciones</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
+
+    <!-- Scripts -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+        // ============================================================================
+        // CONFIGURACIÓN Y UTILIDADES
+        // ============================================================================
+
+        const API_BASE = '/ecomerce';
+
+        // Estado del checkout
+        let cartItems = [];
+        let selectedPaymentMethod = null;
+
+        // MercadoPago
+        let MERCADOPAGO_PUBLIC_KEY = null; // Se cargará dinámicamente
+        let mp = null;
+        let currentPreferenceId = null;
+        let bricksBuilder = null;
+        let currentWalletBrick = null; // 🔧 Guardar instancia del brick actual para destruirla
+
+        // ============================================================================
+        // DETECCIÓN TEMPRANA DE BLOQUEOS DE TRACKING PREVENTION
+        // ============================================================================
+
+        // Verificar inmediatamente si hay bloqueos de tracking prevention
+        let trackingPreventionDetected = false;
+        let mercadoPagoBlocked = false;
+
+        function detectTrackingPrevention() {
+            try {
+                // Intentar acceder al localStorage (MercadoPago lo necesita)
+                const testKey = 'mp_test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+
+                // Intentar acceder al sessionStorage
+                sessionStorage.setItem(testKey, 'test');
+                sessionStorage.removeItem(testKey);
+
+                console.log('✅ Storage access OK - No tracking prevention detected');
+                return false;
+            } catch (error) {
+                console.warn('⚠️ Storage access blocked - Tracking prevention detected:', error);
+                trackingPreventionDetected = true;
+
+                // Si detectamos bloqueo de storage, marcar como potencialmente bloqueado pero NO mostrar error automático
+                mercadoPagoBlocked = true;
+
+                // NO mostrar error automáticamente - el usuario puede intentar de todos modos
+                // setTimeout(() => showMercadoPagoBlockError(), 500);
+
+                return true;
+            }
+        }
+
+        function detectMercadoPagoBlock() {
+            return new Promise((resolve) => {
+                // Verificar si el script de MercadoPago se cargó
+                if (typeof MercadoPago === 'undefined') {
+                    // Dar tiempo para que se cargue
+                    setTimeout(() => {
+                        if (typeof MercadoPago === 'undefined') {
+                            console.warn('⚠️ MercadoPago SDK not loaded - possible blocking');
+                            mercadoPagoBlocked = true;
+                            resolve(true);
+                        } else {
+                            console.log('✅ MercadoPago SDK loaded successfully');
+                            resolve(false);
+                        }
+                    }, 2000);
+                } else {
+                    console.log('✅ MercadoPago SDK available');
+                    resolve(false);
+                }
+            });
+        }
+
+        // Ejecutar detección temprana
+        detectTrackingPrevention();
+
+        // Verificación adicional inmediata para MercadoPago
+        if (typeof MercadoPago === 'undefined') {
+            // El SDK no se cargó aún, pero podría estar bloqueado
+            setTimeout(() => {
+                if (typeof MercadoPago === 'undefined' && !mercadoPagoBlocked) {
+                    console.log('🔍 MercadoPago SDK still not loaded - checking for blocks...');
+                    // Verificar si hay algún indicador de bloqueo
+                    if (trackingPreventionDetected) {
+                        mercadoPagoBlocked = true;
+                        // NO mostrar error automáticamente
+                        // showMercadoPagoBlockError();
+                    }
+                }
+            }, 1000);
+        }
+
+        // Interceptar errores de carga de recursos y mensajes de consola
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+
+        console.warn = function(...args) {
+            // Silenciar mensajes específicos de MercadoPago sobre tracking prevention
+            const message = args.join(' ');
+            if (message.includes('Tracking Prevention blocked access to storage') &&
+                (message.includes('mercadopago.com') || message.includes('http2.mlstatic.com'))) {
+                // No mostrar estos mensajes, pero marcar como bloqueado
+                if (!mercadoPagoBlocked) {
+                    mercadoPagoBlocked = true;
+                    trackingPreventionDetected = true;
+                    console.log('🔒 MercadoPago bloqueado detectado silenciosamente');
+                }
+                return;
+            }
+            // Para otros mensajes, usar el console.warn original
+            originalConsoleWarn.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            // Silenciar errores específicos de MercadoPago sobre tracking prevention
+            const message = args.join(' ');
+            if (message.includes('Tracking Prevention blocked access to storage') &&
+                (message.includes('mercadopago.com') || message.includes('http2.mlstatic.com'))) {
+                // No mostrar estos mensajes, pero marcar como bloqueado
+                if (!mercadoPagoBlocked) {
+                    mercadoPagoBlocked = true;
+                    trackingPreventionDetected = true;
+                    console.log('🔒 MercadoPago bloqueado detectado silenciosamente');
+                }
+                return;
+            }
+            // Para otros errores, usar el console.error original
+            originalConsoleError.apply(console, args);
+        };
+
+        // Interceptar errores de carga de recursos
+        window.addEventListener('error', function(event) {
+            const target = event.target;
+            if (target && target.tagName === 'SCRIPT') {
+                const src = target.src || '';
+                if (src.includes('mercadopago.com') || src.includes('http2.mlstatic.com')) {
+                    console.log('🚫 MercadoPago script blocked by browser:', src);
+                    mercadoPagoBlocked = true;
+                    trackingPreventionDetected = true;
+                    // NO mostrar error automáticamente - permitir que el usuario intente
+                    // if (!document.querySelector('.bg-red-50.border.border-red-200')) {
+                    //     setTimeout(() => showMercadoPagoBlockError(), 100);
+                    // }
+                }
+            }
+        });
+
+        // ============================================================================
+        // UTILIDADES
+        // ============================================================================
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type} slide-in fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            // Estilos específicos
+            if (type === 'success') {
+                toast.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                toast.style.color = 'white';
+            } else {
+                toast.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                toast.style.color = 'white';
+            }
+
+            document.getElementById('toast-container').appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getToken() {
+            // Obtener token desde authManager o storage
+            if (window.authManager && typeof window.authManager.getToken === 'function') {
+                const token = window.authManager.getToken();
+                if (token) return token;
+            }
+            return sessionStorage.getItem('ecommerce_token') || getCookie('ecommerce_token');
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function getCurrentUserId() {
+            const storedUserId = sessionStorage.getItem('ecommerce_user_id');
+            if (storedUserId) {
+                return parseInt(storedUserId);
+            }
+
+            const token = getToken();
+            if (!token) return null;
+
+            try {
+                const response = await fetch('/ecomerce/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    if (userData.id) {
+                        sessionStorage.setItem('ecommerce_user_id', userData.id.toString());
+                        return userData.id;
+                    }
+                }
+            } catch (error) {
+                console.error('Error obteniendo usuario:', error);
+            }
+            return null;
+        }
+
+        function formatPrice(price) {
+            const value = Number(price) || 0;
+            return new Intl.NumberFormat('es-ES', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        // ============================================================================
+        // FUNCIONES DE ERROR DE MERCADOPAGO
+        // ============================================================================
+
+        function showMercadoPagoBlockError() {
+            // Mostrar advertencia pero NO deshabilitar la opción de MercadoPago
+            const mpOption = document.querySelector('[data-method="mercadopago"]');
+            if (mpOption) {
+                // Agregar indicador visual de advertencia pero mantener funcional
+                const warningIcon = mpOption.querySelector('.warning-icon');
+                if (!warningIcon) {
+                    const iconContainer = mpOption.querySelector('.flex.items-center');
+                    if (iconContainer) {
+                        const warningDiv = document.createElement('div');
+                        warningDiv.className = 'warning-icon ml-2';
+                        warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500 text-sm" title="Posible bloqueo por navegador - intenta de todos modos"></i>';
+                        iconContainer.appendChild(warningDiv);
+                    }
+                }
+                // Mantener la opción habilitada
+                mpOption.style.opacity = '1';
+                mpOption.style.pointerEvents = 'auto';
+                mpOption.style.cursor = 'pointer';
+                mpOption.title = 'MercadoPago - Si no funciona, revisa la configuración de privacidad de tu navegador';
+            }
+
+            // Mostrar mensaje de advertencia (no error)
+            const paymentMethods = document.querySelector('.bg-white.rounded-lg.shadow-sm.p-6');
+            if (paymentMethods) {
+                // Verificar si ya existe una advertencia
+                const existingWarning = paymentMethods.querySelector('.mercado-pago-warning');
+                if (existingWarning) return; // Ya se mostró la advertencia
+
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'mercado-pago-warning mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4';
+                warningDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-yellow-800 mb-2">
+                                Posible problema con MercadoPago
+                            </h3>
+                            <p class="text-sm text-yellow-700 mb-3">
+                                Tu navegador puede estar bloqueando MercadoPago por configuraciones de privacidad.
+                                Puedes intentar el pago de todos modos, o usar efectivo/presupuesto.
+                            </p>
+                            <div class="bg-yellow-100 rounded p-3">
+                                <p class="text-xs font-medium text-yellow-800 mb-2">Si MercadoPago no funciona:</p>
+                                <div class="space-y-1 text-xs text-yellow-700">
+                                    <p><strong>Chrome/Edge:</strong> Configuración del sitio → Cookies → Permitir cookies de terceros</p>
+                                    <p><strong>Firefox:</strong> Configuración → Privacidad → Cookies de terceros → Siempre</p>
+                                    <p><strong>Safari:</strong> Preferencias → Privacidad → Desactivar "Prevenir seguimiento entre sitios"</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex space-x-2">
+                                <button onclick="selectPaymentMethod('efectivo')" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-money-bill-wave mr-1"></i>Usar efectivo
+                                </button>
+                                <button onclick="selectPaymentMethod('presupuesto')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700 transition-colors">
+                                    <i class="fas fa-file-invoice-dollar mr-1"></i>Solicitar presupuesto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Insertar al inicio de la sección de métodos de pago
+                const paymentMethodsSection = paymentMethods.querySelector('h2').parentNode;
+                paymentMethodsSection.insertBefore(warningDiv, paymentMethodsSection.querySelector('h2').nextSibling);
+            }
+
+            showToast('Advertencia: MercadoPago puede estar bloqueado por tu navegador - intenta de todos modos o usa efectivo/presupuesto', 'error');
+        }
+
+        // ============================================================================
+        // CARRITO Y PRODUCTOS
+        // ============================================================================
+
+        async function loadCart() {
+            try {
+                const token = getToken();
+                if (!token) {
+                    window.location.href = '/ecomerce/login';
+                    return;
+                }
+
+                const userId = await getCurrentUserId();
+                if (!userId) {
+                    window.location.href = '/ecomerce/login';
+                    return;
+                }
+
+                // Obtener carrito activo
+                const cartResponse = await fetch(`${API_BASE}/carritos/activo`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (cartResponse.ok) {
+                    const currentCart = await cartResponse.json();
+
+                    // Obtener items del carrito
+                    const itemsResponse = await fetch(`${API_BASE}/carrito_items/carrito/${currentCart.id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (itemsResponse.ok) {
+                        cartItems = await itemsResponse.json();
+                        await loadProductDetails();
+                        renderCart();
+                    } else {
+                        throw new Error('Error al cargar los items del carrito');
+                    }
+                } else if (cartResponse.status === 404) {
+                    // Carrito vacío
+                    renderEmptyCart();
+                } else {
+                    throw new Error('Error al cargar el carrito');
+                }
+            } catch (error) {
+                console.error('Error cargando carrito:', error);
+                showToast('Error al cargar el carrito', 'error');
+                renderEmptyCart();
+            } finally {
+                document.getElementById('loading-state').classList.add('hidden');
+            }
+        }
+
+        async function loadProductDetails() {
+            if (!cartItems || cartItems.length === 0) return;
+
+            const productPromises = cartItems.map(async (item) => {
+                try {
+                    const response = await fetch(`${API_BASE}/productos/publico/${item.id_producto}`);
+                    if (response.ok) {
+                        const product = await response.json();
+                        item.product_name = product.nombre || `Producto ${item.id_producto}`;
+                        item.product_image = product.imagen_url || '/static/img/logo.png';
+                        item.product_codigo = product.codigo || '';
+                        item.product_descripcion = product.descripcion || '';
+
+                        // Información de variantes
+                        item.variant_info = null;
+                        if (item.variant_data && typeof item.variant_data === 'object') {
+                            item.variant_info = item.variant_data;
+                        } else if (product.variants && product.variants.length > 0) {
+                            const defaultVariant = product.variants.find(v => v.stock > 0) || product.variants[0];
+                            if (defaultVariant) {
+                                item.variant_info = {
+                                    color: defaultVariant.color,
+                                    tipo: defaultVariant.tipo,
+                                    precio_adicional: defaultVariant.precio_adicional || 0
+                                };
+                            }
+                        }
+                    } else {
+                        item.product_name = `Producto ${item.id_producto}`;
+                        item.product_image = '/static/img/logo.png';
+                        item.product_codigo = '';
+                        item.product_descripcion = '';
+                        item.variant_info = null;
+                    }
+                } catch (error) {
+                    console.warn(`Error cargando producto ${item.id_producto}:`, error);
+                    item.product_name = `Producto ${item.id_producto}`;
+                    item.product_image = '/static/img/logo.png';
+                    item.product_codigo = '';
+                    item.product_descripcion = '';
+                    item.variant_info = null;
+                }
+            });
+
+            await Promise.all(productPromises);
+        }
+
+        function renderCart() {
+            if (!cartItems || cartItems.length === 0) {
+                renderEmptyCart();
+                return;
+            }
+
+            document.getElementById('empty-cart').classList.add('hidden');
+
+            const cartItemsContainer = document.getElementById('cart-items');
+            let total = 0;
+
+            cartItemsContainer.innerHTML = cartItems.map(item => {
+                const itemTotal = item.quantity * item.price;
+                total += itemTotal;
+
+                let variantDisplay = '';
+                if (item.variant_info) {
+                    const variantParts = [];
+                    if (item.variant_info.color) variantParts.push(`Color: ${item.variant_info.color}`);
+                    if (item.variant_info.tipo) variantParts.push(`Tipo: ${item.variant_info.tipo}`);
+                    if (variantParts.length > 0) {
+                        variantDisplay = `<p class="text-sm text-blue-600 font-medium">${variantParts.join(' • ')}</p>`;
+                    }
+                }
+
+                return `
+                    <div class="cart-item flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                        <img src="${item.product_image}" alt="${item.product_name}"
+                             class="w-16 h-16 object-cover rounded-lg" onerror="this.src='/static/img/logo.png'">
+
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900">${item.product_name}</h3>
+                            ${variantDisplay}
+                            <p class="text-sm text-gray-600">${item.product_codigo}</p>
+                            <p class="text-sm text-gray-500 line-clamp-2">${item.product_descripcion || ''}</p>
+                        </div>
+
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500">Cant: ${item.quantity}</p>
+                            <p class="text-lg font-bold text-gray-900">$${formatPrice(itemTotal)}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Actualizar totales
+            document.getElementById('cart-subtotal').textContent = `$${formatPrice(total)}`;
+            document.getElementById('cart-total').textContent = `$${formatPrice(total)}`;
+            document.getElementById('cart-summary').classList.remove('hidden');
+        }
+
+        function renderEmptyCart() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('empty-cart').classList.remove('hidden');
+            document.getElementById('cart-summary').classList.add('hidden');
+        }
+
+        // ============================================================================
+        // MERCADOPAGO
+        // ============================================================================
+
+        function showMercadoPagoError(message) {
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800 mb-2">
+                                Problema con MercadoPago
+                            </h3>
+                            <p class="text-sm text-red-700 mb-3">
+                                ${message}
+                            </p>
+                            <div class="text-xs text-red-600">
+                                <p class="font-medium mb-1">Soluciones para habilitar MercadoPago:</p>
+                                <div class="space-y-2">
+                                    <div>
+                                        <p class="font-medium">En Chrome/Edge:</p>
+                                        <ul class="list-disc list-inside ml-2 space-y-1">
+                                            <li>Haz clic en el ícono de candado en la barra de direcciones</li>
+                                            <li>Selecciona "Configuración del sitio"</li>
+                                            <li>Desactiva "Bloquear cookies de terceros" o "Prevención de seguimiento"</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">En Firefox:</p>
+                                        <ul class="list-disc list-inside ml-2 space-y-1">
+                                            <li>Ve a Configuración > Privacidad y seguridad</li>
+                                            <li>En "Protección contra rastreo", selecciona "Personalizada"</li>
+                                            <li>Desactiva "Cookies de rastreo entre sitios"</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">En Safari:</p>
+                                        <ul class="list-disc list-inside ml-2 space-y-1">
+                                            <li>Preferencias > Privacidad</li>
+                                            <li>Desactiva "Prevenir seguimiento entre sitios"</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mt-3 pt-2 border-t border-red-200">
+                                        <p class="font-medium text-red-800">O selecciona otro método de pago disponible:</p>
+                                        <div class="flex space-x-2 mt-2">
+                                            <button onclick="selectPaymentMethod('efectivo')" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors">
+                                                <i class="fas fa-money-bill-wave mr-1"></i>Pago en efectivo
+                                            </button>
+                                            <button onclick="selectPaymentMethod('presupuesto')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700 transition-colors">
+                                                <i class="fas fa-file-invoice-dollar mr-1"></i>Solicitar presupuesto
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showToast('Error con MercadoPago - revisa las instrucciones arriba', 'error');
+        }
+
+        /**
+         * Inicializa el SDK de MercadoPago con la Public Key
+         * Según documentación oficial: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/web-integration/add-frontend-sdk
+         */
+        function initializeMercadoPago() {
+            // Si detectamos bloqueo, mostrar advertencia pero intentar inicializar de todos modos
+            if (mercadoPagoBlocked || trackingPreventionDetected) {
+                console.warn('MercadoPago blocking detected - showing warning but attempting initialization');
+                showMercadoPagoBlockError();
+                // Continuar intentando en lugar de retornar
+            }
+
+            // Verificar que la public key esté cargada
+            if (!MERCADOPAGO_PUBLIC_KEY) {
+                console.error('❌ MERCADOPAGO_PUBLIC_KEY no está disponible');
+                return false;
+            }
+
+            // Check if MercadoPago SDK loaded
+            if (typeof MercadoPago === 'undefined') {
+                console.warn('⚠️ SDK de MercadoPago no se cargó - posible bloqueo de tracking prevention');
+
+                // Mostrar advertencia pero NO bloquear completamente
+                showMercadoPagoBlockError();
+                // Continuar intentando inicializar cuando sea posible
+                return false;
+            }
+
+            // SDK is available, initialize immediately
+            try {
+                // Inicializar el SDK con la Public Key
+                mp = new MercadoPago(MERCADOPAGO_PUBLIC_KEY);
+                
+                // Inicializar Bricks Builder
+                bricksBuilder = mp.bricks();
+                
+                console.log('✅ MercadoPago SDK inicializado exitosamente');
+                console.log('📦 Bricks Builder listo');
+                return true;
+            } catch (error) {
+                console.error('❌ Error inicializando MercadoPago:', error);
+                showMercadoPagoBlockError();
+                return false;
+            }
+        }
+
+        async function checkMercadoPagoConnectivity() {
+            // NO saltar la verificación por bloqueo detectado - permitir intentar
+            // if (mercadoPagoBlocked || trackingPreventionDetected) {
+            //     console.warn('Skipping connectivity check - blocking already detected');
+            //     return false;
+            // }
+
+            if (!MERCADOPAGO_PUBLIC_KEY) {
+                console.warn('MERCADOPAGO_PUBLIC_KEY no está configurada');
+                return false;
+            }
+
+            return new Promise((resolve) => {
+                // Intentar hacer una solicitud simple a MercadoPago para verificar conectividad
+                const testUrl = 'https://api.mercadopago.com/v1/payment_methods/search?public_key=' + MERCADOPAGO_PUBLIC_KEY + '&limit=1';
+
+                fetch(testUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('MercadoPago connectivity test passed');
+                        resolve(true);
+                    } else {
+                        console.warn('MercadoPago connectivity test failed with status:', response.status);
+                        resolve(false);
+                    }
+                })
+                .catch(error => {
+                    console.warn('MercadoPago connectivity test failed:', error);
+                    // NO marcar automáticamente como bloqueado - permitir que el usuario intente
+                    // if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    //     console.error('Tracking prevention detected - MercadoPago resources blocked');
+                    //     mercadoPagoBlocked = true;
+                    //     resolve(false);
+                    // } else {
+                    //     resolve(false);
+                    // }
+                    resolve(false);
+                });
+
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    console.warn('MercadoPago connectivity test timed out');
+                    resolve(false);
+                }, 5000);
+            });
+        }
+
+        /**
+         * Renderiza el Wallet Brick de MercadoPago con la preferencia de pago
+         * Según documentación: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/web-integration/add-frontend-sdk
+         * @param {string} preferenceId - ID de la preferencia de pago creada en el backend
+         */
+        async function renderMercadoPagoBrick(preferenceId) {
+            console.log('🔧 Renderizando Wallet Brick con preferenceId:', preferenceId);
+
+            // Si hay bloqueos detectados, mostrar advertencia pero permitir intentar
+            if (mercadoPagoBlocked || trackingPreventionDetected) {
+                console.warn('⚠️ MercadoPago blocking detected - showing warning but allowing attempt');
+                showMercadoPagoBlockError();
+            }
+
+            if (!preferenceId) {
+                console.error('❌ Preference ID no proporcionado');
+                showToast('Error: No se pudo obtener la preferencia de pago', 'error');
+                return;
+            }
+
+            if (!bricksBuilder) {
+                console.error('❌ Bricks Builder no inicializado');
+                
+                // Intentar reinicializar si es posible
+                if (mp) {
+                    try {
+                        bricksBuilder = mp.bricks();
+                    } catch (error) {
+                        console.error('❌ No se pudo reinicializar Bricks Builder:', error);
+                        showToast('Error: MercadoPago no está inicializado correctamente', 'error');
+                        return;
+                    }
+                } else {
+                    showToast('Error: MercadoPago no está disponible', 'error');
+                    return;
+                }
+            }
+
+            // 🔧 IMPORTANTE: Destruir el brick existente antes de crear uno nuevo
+            if (currentWalletBrick) {
+                try {
+                    console.log('🗑️ Destruyendo Wallet Brick existente...');
+                    await currentWalletBrick.unmount();
+                    currentWalletBrick = null;
+                    console.log('✅ Wallet Brick anterior destruido');
+                } catch (error) {
+                    console.warn('⚠️ Error destruyendo brick anterior:', error);
+                    // Continuar de todos modos
+                }
+            }
+
+            // Limpiar contenedor anterior
+            const container = document.getElementById('walletBrick_container');
+            container.innerHTML = '';
+
+            // Mostrar indicador de carga
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-4">
+                    <i class="fas fa-spinner fa-spin text-blue-600 mr-2"></i>
+                    <span class="text-gray-600">Cargando botón de pago...</span>
+                </div>
+            `;
+
+            try {
+                console.log('📦 Creando Wallet Brick...');
+                console.log('   - Container ID: walletBrick_container');
+                console.log('   - Preference ID:', preferenceId);
+                console.log('   - Bricks Builder:', !!bricksBuilder);
+                
+                // Crear el Wallet Brick según la documentación oficial
+                currentWalletBrick = await bricksBuilder.create("wallet", "walletBrick_container", {
+                    initialization: {
+                        preferenceId: preferenceId,
+                        redirectMode: 'modal', // 🎯 IMPORTANTE: Abrir en modal en lugar de redirigir
+                    },
+                    customization: {
+                        texts: {
+                            action: 'pay',
+                            valueProp: 'security_safety'
+                        }
+                    },
+                    callbacks: {
+                        onReady: () => {
+                            console.log('✅ Wallet Brick renderizado exitosamente');
+                            console.log('💳 El usuario puede proceder con el pago');
+                            console.log('🪟 Configurado para abrir en modal/popup');
+                            
+                            // IMPORTANTE: Limpiar el spinner de carga
+                            // Buscar y remover el div de loading si aún existe
+                            const loadingDiv = container.querySelector('.flex.items-center.justify-center');
+                            if (loadingDiv) {
+                                loadingDiv.remove();
+                                console.log('🧹 Spinner de carga removido');
+                            }
+                        },
+                        onSubmit: () => {
+                            console.log('🚀 Usuario completó el pago - procesando...');
+                            // Mostrar mensaje de procesamiento
+                            showToast('Procesando tu pago... Te redirigiremos pronto.', 'info');
+                        },
+                        onError: (error) => {
+                            console.error('❌ Error en Wallet Brick:', error);
+                            container.innerHTML = `
+                                <div class="text-red-600 text-center py-4">
+                                    <i class="fas fa-exclamation-triangle mb-2"></i>
+                                    <p>Error al cargar el botón de pago</p>
+                                    <p class="text-sm mt-2">Error: ${error?.message || 'Desconocido'}</p>
+                                    <button onclick="createMercadoPagoPreference()" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                        <i class="fas fa-sync mr-2"></i>Reintentar
+                                    </button>
+                                </div>
+                            `;
+                            showMercadoPagoBlockError();
+                        }
+                    }
+                });
+
+                console.log('✅ Wallet Brick creado exitosamente:', currentWalletBrick);
+                console.log('⏳ Esperando que el brick se renderice...');
+
+            } catch (error) {
+                console.error('❌ Error renderizando Wallet Brick:', error);
+                container.innerHTML = `
+                    <div class="text-red-600 text-center py-4">
+                        <i class="fas fa-exclamation-triangle mb-2"></i>
+                        <p>No se pudo cargar MercadoPago</p>
+                        <p class="text-sm mt-2">${error.message || 'Error desconocido'}</p>
+                        <button onclick="window.location.reload()" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-sync mr-2"></i>Refrescar página
+                        </button>
+                    </div>
+                `;
+                showMercadoPagoBlockError();
+            }
+        }
+
+        function initializePaymentMethods() {
+            const paymentOptions = document.querySelectorAll('.payment-method-option');
+
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', async () => {
+                    // NO verificar si MercadoPago está deshabilitado - permitir selección siempre
+                    
+                    // 🔧 Destruir brick existente si el usuario cambia de método de pago
+                    if (currentWalletBrick) {
+                        try {
+                            console.log('🗑️ Usuario cambió de método de pago - destruyendo Wallet Brick...');
+                            await currentWalletBrick.unmount();
+                            currentWalletBrick = null;
+                            console.log('✅ Wallet Brick destruido');
+                        } catch (error) {
+                            console.warn('⚠️ Error destruyendo brick al cambiar método:', error);
+                        }
+                    }
+                    
+                    // Remover selección previa
+                    paymentOptions.forEach(opt => {
+                        opt.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
+                        opt.querySelector('input[type="radio"]').checked = false;
+                        
+                        // Ocultar el brick de MercadoPago si estaba visible
+                        const brickInline = opt.querySelector('#mercadopago-brick-inline');
+                        if (brickInline) {
+                            brickInline.classList.add('hidden');
+                        }
+                    });
+
+                    // Seleccionar esta opción
+                    const method = option.dataset.method;
+                    
+                    // Aplicar colores según el método
+                    if (method === 'efectivo') {
+                        option.classList.add('border-green-500', 'bg-green-50');
+                    } else if (method === 'mercadopago') {
+                        option.classList.add('border-blue-500', 'bg-blue-50');
+                    } else if (method === 'presupuesto') {
+                        option.classList.add('border-purple-500', 'bg-purple-50');
+                    }
+                    
+                    option.querySelector('input[type="radio"]').checked = true;
+
+                    selectedPaymentMethod = method;
+                    updatePaymentInfo();
+                    updateConfirmButton();
+                    
+                    // Si se selecciona MercadoPago, crear preferencia y mostrar el brick inmediatamente
+                    if (method === 'mercadopago') {
+                        await createMercadoPagoPreference();
+                    }
+                });
+            });
+        }
+
+        function updatePaymentInfo() {
+            const infoDiv = document.getElementById('payment-info');
+            const infoText = document.getElementById('payment-info-text');
+            const confirmBtn = document.getElementById('confirm-order-btn');
+
+            if (!selectedPaymentMethod) {
+                infoDiv.classList.add('hidden');
+                confirmBtn.classList.remove('hidden');
+                return;
+            }
+
+            infoDiv.classList.remove('hidden');
+
+            switch (selectedPaymentMethod) {
+                case 'efectivo':
+                    infoText.textContent = 'El pago se realizará al momento de la entrega. Asegúrate de tener el efectivo exacto disponible.';
+                    confirmBtn.classList.remove('hidden');
+                    break;
+                case 'mercadopago':
+                    infoText.innerHTML = '<strong>Importante:</strong> Haz clic en el botón de MercadoPago arriba para completar tu pago de forma segura.';
+                    // Ocultar el botón de confirmar para MercadoPago
+                    confirmBtn.classList.add('hidden');
+                    break;
+                case 'presupuesto':
+                    infoText.textContent = 'Recibirás una cotización detallada por email con todas las opciones de pago disponibles.';
+                    confirmBtn.classList.remove('hidden');
+                    break;
+            }
+        }
+
+        function updateConfirmButton() {
+            const confirmBtn = document.getElementById('confirm-order-btn');
+            const hasItems = cartItems && cartItems.length > 0;
+            const hasPaymentMethod = selectedPaymentMethod !== null;
+
+            confirmBtn.disabled = !hasItems || !hasPaymentMethod;
+
+            if (hasItems && hasPaymentMethod) {
+                confirmBtn.innerHTML = `<i class="fas fa-check mr-2"></i>Confirmar pedido`;
+            } else if (!hasItems) {
+                confirmBtn.innerHTML = `<i class="fas fa-shopping-cart mr-2"></i>Carrito vacío`;
+            } else {
+                confirmBtn.innerHTML = `<i class="fas fa-credit-card mr-2"></i>Selecciona método de pago`;
+            }
+        }
+
+        // Función auxiliar para seleccionar método de pago desde los botones de error
+        function selectPaymentMethod(method) {
+            const option = document.querySelector(`[data-method="${method}"]`);
+            if (option) {
+                // Simular clic en la opción
+                option.click();
+                // Scroll to payment methods section
+                option.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // ============================================================================
+        // DATOS DE ENVÍO
+        // ============================================================================
+
+        async function loadShippingData() {
+            try {
+                const token = getToken();
+                if (!token) {
+                    console.error('No hay token de autenticación');
+                    return;
+                }
+
+                // Cargar datos del usuario autenticado
+                const response = await fetch('/ecomerce/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('✅ Datos del usuario cargados:', userData);
+
+                    // Rellenar el formulario con los datos del usuario
+                    document.getElementById('shipping-nombre').value = userData.nombre || '';
+                    document.getElementById('shipping-apellido').value = userData.apellido || '';
+                    document.getElementById('shipping-direccion').value = userData.direccion || '';
+                    document.getElementById('shipping-ciudad').value = userData.ciudad || '';
+                    document.getElementById('shipping-provincia').value = userData.provincia || '';
+                    document.getElementById('shipping-codigo-postal').value = userData.codigo_postal || '';
+                    document.getElementById('shipping-telefono').value = userData.telefono || '';
+                    document.getElementById('shipping-email').value = userData.email || '';
+
+                    // Mostrar formulario y ocultar loading
+                    document.getElementById('shipping-loading').classList.add('hidden');
+                    document.getElementById('shipping-form').classList.remove('hidden');
+                } else {
+                    throw new Error('Error al cargar datos del usuario');
+                }
+            } catch (error) {
+                console.error('Error cargando datos de envío:', error);
+                document.getElementById('shipping-loading').innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-circle text-red-500 text-2xl mb-2"></i>
+                        <p class="text-red-600 text-sm">Error al cargar tus datos</p>
+                        <button onclick="loadShippingData()" class="mt-3 text-blue-600 hover:text-blue-700 text-sm">
+                            <i class="fas fa-sync mr-1"></i>Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function validateShippingData() {
+            const form = document.getElementById('shipping-form');
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            let isValid = true;
+            let errors = [];
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('border-red-500');
+                    errors.push(field.previousElementSibling.textContent.replace('*', '').trim());
+                } else {
+                    field.classList.remove('border-red-500');
+                }
+            });
+
+            // Validar formato de email
+            const email = document.getElementById('shipping-email').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                isValid = false;
+                document.getElementById('shipping-email').classList.add('border-red-500');
+                errors.push('Email con formato inválido');
+            }
+
+            // Validar teléfono (al menos 8 dígitos)
+            const telefono = document.getElementById('shipping-telefono').value;
+            const telefonoDigits = telefono.replace(/\D/g, '');
+            if (telefono && telefonoDigits.length < 8) {
+                isValid = false;
+                document.getElementById('shipping-telefono').classList.add('border-red-500');
+                errors.push('Teléfono debe tener al menos 8 dígitos');
+            }
+
+            if (!isValid) {
+                showToast(`Completa los campos requeridos: ${errors.join(', ')}`, 'error');
+            }
+
+            return isValid;
+        }
+
+        function getShippingData() {
+            return {
+                nombre: document.getElementById('shipping-nombre').value.trim(),
+                apellido: document.getElementById('shipping-apellido').value.trim(),
+                direccion: document.getElementById('shipping-direccion').value.trim(),
+                ciudad: document.getElementById('shipping-ciudad').value.trim(),
+                provincia: document.getElementById('shipping-provincia').value.trim(),
+                codigo_postal: document.getElementById('shipping-codigo-postal').value.trim(),
+                telefono: document.getElementById('shipping-telefono').value.trim(),
+                email: document.getElementById('shipping-email').value.trim(),
+                notas: document.getElementById('shipping-notas').value.trim()
+            };
+        }
+
+        // ============================================================================
+        // INICIALIZACIÓN
+        // ============================================================================
+
+        async function loadMercadoPagoConfig() {
+            try {
+                const response = await fetch('/ecomerce/checkout/config/mercadopago');
+                if (response.ok) {
+                    const config = await response.json();
+                    MERCADOPAGO_PUBLIC_KEY = config.public_key;
+                    console.log('Configuración de MercadoPago cargada:', config.is_configured ? 'Disponible' : 'No disponible');
+                    return config.is_configured;
+                } else {
+                    console.warn('Error al cargar configuración de MercadoPago');
+                    return false;
+                }
+            } catch (error) {
+                console.warn('Error al cargar configuración de MercadoPago:', error);
+                return false;
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async () => {
+            // PRIMERO cargar el carrito y datos de envío en paralelo
+            await Promise.all([
+                loadCart(),
+                loadShippingData()
+            ]);
+
+            // LUEGO cargar configuración de MercadoPago
+            const mpConfigured = await loadMercadoPagoConfig();
+
+            // Inicializar MercadoPago si está configurado
+            if (mpConfigured) {
+                console.log('🔧 Configuración de MercadoPago OK, inicializando...');
+                const initialized = initializeMercadoPago();
+                
+                if (initialized) {
+                    console.log('✅ MercadoPago inicializado correctamente en DOMContentLoaded');
+                    console.log('   - SDK disponible:', typeof MercadoPago !== 'undefined');
+                    console.log('   - Instancia mp:', !!mp);
+                    console.log('   - Bricks Builder:', !!bricksBuilder);
+                } else {
+                    console.error('❌ Falló la inicialización de MercadoPago en DOMContentLoaded');
+                }
+            } else {
+                console.warn('⚠️ MercadoPago no está configurado en el servidor');
+                // Deshabilitar opción de MercadoPago
+                const mpOption = document.querySelector('[data-method="mercadopago"]');
+                if (mpOption) {
+                    mpOption.innerHTML = `
+                        <div class="flex items-center">
+                            <input type="radio" name="payment-method" value="mercadopago" class="mr-3 text-gray-400" disabled>
+                            <i class="fab fa-mercadopago text-2xl text-gray-400 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-400 line-through">MercadoPago</div>
+                                <div class="text-sm text-gray-400">No configurado en el servidor</div>
+                            </div>
+                        </div>
+                    `;
+                    mpOption.style.opacity = '0.6';
+                    mpOption.style.pointerEvents = 'none';
+                    mpOption.style.cursor = 'not-allowed';
+                    mpOption.title = 'MercadoPago no configurado en el servidor';
+                }
+            }
+
+            // NO verificar bloqueos automáticamente - permitir que el usuario intente usar MercadoPago
+            // setTimeout(async () => {
+            //     const isMpBlocked = await detectMercadoPagoBlock();
+            //     if (isMpBlocked || trackingPreventionDetected) {
+            //         showMercadoPagoBlockError();
+            //     }
+            // }, 3000);
+
+            // Inicializar métodos de pago y actualizar botones
+            initializePaymentMethods();
+            updateConfirmButton();
+        });
+
+        // ============================================================================
+        // CHECKOUT
+        // ============================================================================
+
+        /**
+         * Crea la preferencia de MercadoPago y muestra el Wallet Brick
+         * Se llama automáticamente cuando el usuario selecciona MercadoPago
+         */
+        async function createMercadoPagoPreference() {
+            console.log('🔄 Creando preferencia de MercadoPago...');
+
+            if (!cartItems || cartItems.length === 0) {
+                showToast('Tu carrito está vacío', 'error');
+                return;
+            }
+
+            // Validar datos de envío antes de crear preferencia
+            if (!validateShippingData()) {
+                showToast('Por favor completa tus datos de envío antes de continuar', 'error');
+                document.getElementById('shipping-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            const brickContainer = document.getElementById('mercadopago-brick-inline');
+            const walletContainer = document.getElementById('walletBrick_container');
+
+            // Verificar que MercadoPago esté disponible e intentar inicializar si no está listo
+            if (!mp || !bricksBuilder) {
+                console.warn('⚠️ MercadoPago no está inicializado, intentando inicializar...');
+                
+                // Mostrar loading mientras se intenta inicializar
+                brickContainer.classList.remove('hidden');
+                walletContainer.innerHTML = `
+                    <div class="flex items-center justify-center p-6">
+                        <i class="fas fa-spinner fa-spin text-blue-600 text-2xl mr-3"></i>
+                        <span class="text-gray-600">Inicializando MercadoPago...</span>
+                    </div>
+                `;
+
+                // Intentar inicializar MercadoPago
+                const initialized = initializeMercadoPago();
+                
+                if (!initialized || !mp || !bricksBuilder) {
+                    console.error('❌ No se pudo inicializar MercadoPago');
+                    walletContainer.innerHTML = `
+                        <div class="text-center p-6 bg-red-50 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl mb-2"></i>
+                            <p class="text-red-800 font-semibold mb-2">MercadoPago no está disponible</p>
+                            <p class="text-red-600 text-sm mb-4">
+                                El SDK de MercadoPago no se pudo cargar. Esto puede deberse a:
+                                <br>• Configuración de privacidad del navegador
+                                <br>• Extensiones bloqueadoras
+                                <br>• Configuración faltante en el servidor
+                            </p>
+                            <button onclick="window.location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mb-2">
+                                <i class="fas fa-sync mr-2"></i>Refrescar página
+                            </button>
+                            <br>
+                            <button onclick="selectPaymentMethod('efectivo')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-money-bill-wave mr-2"></i>Usar pago en efectivo
+                            </button>
+                        </div>
+                    `;
+                    showToast('MercadoPago no está disponible. Intenta refrescar o usa otro método de pago.', 'error');
+                    return;
+                }
+                
+                console.log('✅ MercadoPago inicializado exitosamente');
+            }
+
+            try {
+                // Mostrar contenedor con loading
+                brickContainer.classList.remove('hidden');
+                walletContainer.innerHTML = `
+                    <div class="flex items-center justify-center p-6">
+                        <i class="fas fa-spinner fa-spin text-blue-600 text-2xl mr-3"></i>
+                        <span class="text-gray-600">Preparando pago con MercadoPago...</span>
+                    </div>
+                `;
+
+                const token = getToken();
+
+                // Obtener datos de envío
+                const shippingData = getShippingData();
+
+                // Llamar al endpoint de checkout para crear la preferencia
+                const response = await fetch(`${API_BASE}/checkout/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        payment_method: 'mercadopago',
+                        shipping_data: shippingData
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al crear preferencia de pago');
+                }
+
+                const result = await response.json();
+
+                if (!result.preference_id) {
+                    throw new Error('No se recibió el ID de preferencia');
+                }
+
+                console.log('✅ Preferencia creada:', result.preference_id);
+                currentPreferenceId = result.preference_id;
+
+                // Renderizar el Wallet Brick
+                await renderMercadoPagoBrick(result.preference_id);
+
+                console.log('✅ Botón de pago de MercadoPago listo');
+                showToast('Haz clic en el botón de MercadoPago para completar tu pago', 'success');
+
+            } catch (error) {
+                console.error('❌ Error creando preferencia:', error);
+                walletContainer.innerHTML = `
+                    <div class="text-center p-6 bg-red-50 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl mb-2"></i>
+                        <p class="text-red-800 font-semibold mb-2">Error al cargar MercadoPago</p>
+                        <p class="text-red-600 text-sm mb-4">${error.message}</p>
+                        <button onclick="createMercadoPagoPreference()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-sync mr-2"></i>Intentar de nuevo
+                        </button>
+                    </div>
+                `;
+                showToast(error.message || 'Error al preparar el pago', 'error');
+            }
+        }
+
+        /**
+         * Confirma el pedido para métodos de pago efectivo y presupuesto
+         * MercadoPago se maneja automáticamente cuando se selecciona la opción
+         */
+        async function confirmOrder() {
+            if (!selectedPaymentMethod) {
+                showToast('Por favor selecciona un método de pago', 'error');
+                return;
+            }
+
+            // MercadoPago ya se maneja automáticamente, esta función es solo para efectivo y presupuesto
+            if (selectedPaymentMethod === 'mercadopago') {
+                showToast('Para MercadoPago, haz clic en el botón de pago azul arriba', 'info');
+                return;
+            }
+
+            if (!cartItems || cartItems.length === 0) {
+                showToast('Tu carrito está vacío', 'error');
+                return;
+            }
+
+            // Validar datos de envío
+            if (!validateShippingData()) {
+                // Scroll al formulario de envío
+                document.getElementById('shipping-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            try {
+                const token = getToken();
+                const confirmBtn = document.getElementById('confirm-order-btn');
+
+                // Deshabilitar botón y mostrar loading
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando pedido...';
+
+                // Obtener datos de envío
+                const shippingData = getShippingData();
+
+                // Llamar al endpoint de checkout (solo para efectivo y presupuesto)
+                const response = await fetch(`${API_BASE}/checkout/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        payment_method: selectedPaymentMethod,
+                        shipping_data: shippingData
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Para efectivo y presupuesto
+                    showToast(result.mensaje || 'Pedido procesado exitosamente', 'success');
+
+                    // Limpiar carrito y redirigir
+                    setTimeout(() => {
+                        window.location.href = '/ecomerce/productos/tienda';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al procesar el pedido');
+                }
+
+            } catch (error) {
+                console.error('Error en checkout:', error);
+                showToast(error.message || 'Error al procesar el pedido', 'error');
+
+                // Restaurar botón
+                const confirmBtn = document.getElementById('confirm-order-btn');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = `<i class="fas fa-check mr-2"></i>Confirmar pedido`;
+            }
+        }
+
+        // ============================================================================
+        // DIAGNÓSTICO (disponible en consola del navegador)
+        // ============================================================================
+
+        // Función global para diagnóstico de MercadoPago
+        window.diagnoseMercadoPago = function() {
+            console.log('╔══════════════════════════════════════════════════════════╗');
+            console.log('║           DIAGNÓSTICO MERCADOPAGO                        ║');
+            console.log('╚══════════════════════════════════════════════════════════╝');
+            console.log('');
+            console.log('📊 Estado del Sistema:');
+            console.log('  - Tracking Prevention:', trackingPreventionDetected ? '⚠️ DETECTADO' : '✅ OK');
+            console.log('  - MercadoPago Bloqueado:', mercadoPagoBlocked ? '❌ SÍ' : '✅ NO');
+            console.log('');
+            console.log('🔧 SDK de MercadoPago:');
+            console.log('  - SDK Cargado:', typeof MercadoPago !== 'undefined' ? '✅ SÍ' : '❌ NO');
+            console.log('  - Instancia mp:', mp ? '✅ CREADA' : '❌ NO CREADA');
+            console.log('  - Bricks Builder:', bricksBuilder ? '✅ LISTO' : '❌ NO INICIALIZADO');
+            console.log('');
+            console.log('🔑 Configuración:');
+            console.log('  - Public Key:', MERCADOPAGO_PUBLIC_KEY ? `✅ ${MERCADOPAGO_PUBLIC_KEY.substring(0, 15)}...` : '❌ NO CONFIGURADA');
+            console.log('  - Preference ID Actual:', currentPreferenceId || 'Ninguna');
+            console.log('');
+            console.log('🛒 Carrito:');
+            console.log('  - Items:', cartItems ? cartItems.length : 0);
+            console.log('  - Método Seleccionado:', selectedPaymentMethod || 'Ninguno');
+            console.log('');
+            console.log('💡 Sugerencias:');
+            if (!mp || !bricksBuilder) {
+                console.log('  ⚠️ Ejecuta: initializeMercadoPago() para intentar inicializar');
+            }
+            if (mercadoPagoBlocked) {
+                console.log('  ⚠️ Desactiva extensiones bloqueadoras o ajusta privacidad del navegador');
+            }
+            console.log('');
+            console.log('═══════════════════════════════════════════════════════════');
+
+            // Test storage access
+            try {
+                const testKey = 'mp_diag_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                console.log('✅ LocalStorage: OK');
+            } catch (e) {
+                console.log('❌ LocalStorage: BLOCKED -', e.message);
+            }
+
+            try {
+                const testKey = 'mp_diag_' + Date.now();
+                sessionStorage.setItem(testKey, 'test');
+                sessionStorage.removeItem(testKey);
+                console.log('✅ SessionStorage: OK');
+            } catch (e) {
+                console.log('❌ SessionStorage: BLOCKED -', e.message);
+            }
+
+            console.log('=== FIN DIAGNÓSTICO ===');
+            return {
+                trackingPreventionDetected,
+                mercadoPagoBlocked,
+                sdkAvailable: typeof MercadoPago !== 'undefined',
+                instanceCreated: !!mp,
+                publicKeyConfigured: !!MERCADOPAGO_PUBLIC_KEY
+            };
+        };
+
+        // Event listener para el botón de confirmar
+        document.getElementById('confirm-order-btn').addEventListener('click', confirmOrder);
+    </script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Producto - Prueba</title>
+    <script src="/static/tailwind.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #00bfff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0099cc;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .variant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .variant-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .variant-item:hover {
+            border-color: #00bfff;
+            background: #f0f8ff;
+        }
+        .variant-item.selected {
+            border-color: #00bfff;
+            background: #e6f7ff;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-2xl font-bold mb-6">Prueba de Detalle de Producto</h1>
+
+    <div class="product-card">
+        <h2 class="text-xl font-semibold mb-4">Buscar Producto</h2>
+        <div class="flex gap-4 mb-4">
+            <input type="number" id="product-id" placeholder="ID del producto" class="border p-2 rounded flex-1" value="1">
+            <button class="btn" onclick="loadProduct()">Cargar Producto</button>
+        </div>
+        <div id="load-result" class="result hidden"></div>
+    </div>
+
+    <div class="product-card" id="product-info" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">Información del Producto</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-semibold text-lg" id="product-name"></h3>
+                <p class="text-gray-600 mb-2" id="product-description"></p>
+                <p class="text-2xl font-bold text-green-600" id="product-price"></p>
+                <p class="text-sm text-gray-500" id="product-category"></p>
+            </div>
+            <div>
+                <img id="product-image" src="" alt="Producto" class="w-full h-48 object-cover rounded" style="display: none;">
+                <div id="no-image" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center text-gray-500">
+                    Sin imagen disponible
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="product-card" id="variants-section" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">Variantes Disponibles</h2>
+        <div id="variants-container" class="variant-grid">
+            <!-- Variants will be loaded here -->
+        </div>
+        <div id="variants-result" class="result hidden"></div>
+    </div>
+
+    <div class="product-card" id="cart-section" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">Agregar al Carrito</h2>
+        <div class="flex items-center gap-4 mb-4">
+            <label>Cantidad:</label>
+            <input type="number" id="quantity" value="1" min="1" class="border p-2 rounded w-20">
+        </div>
+        <div class="flex gap-2">
+            <button class="btn" onclick="addToCart()">Agregar al Carrito</button>
+            <button class="btn btn-danger" onclick="clearSelection()">Limpiar Selección</button>
+        </div>
+        <div id="cart-result" class="result hidden"></div>
+    </div>
+
+    <div class="product-card" id="reviews-section" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">Reseñas del Producto</h2>
+        <div id="reviews-container">
+            <!-- Reviews will be loaded here -->
+        </div>
+        <div id="reviews-result" class="result hidden"></div>
+    </div>
+
+    <div class="product-card">
+        <h2 class="text-xl font-semibold mb-4">Debug Info</h2>
+        <div id="debug-info" class="result info">
+            Información de debug aparecerá aquí...
+        </div>
+    </div>
+
+    <script>
+        let currentProduct = null;
+        let selectedVariant = null;
+
+        // Show result
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = content;
+            element.className = `result ${type}`;
+            element.classList.remove('hidden');
+        }
+
+        // Load product details
+        async function loadProduct() {
+            const productId = document.getElementById('product-id').value;
+
+            if (!productId) {
+                showResult('load-result', '❌ Por favor ingresa un ID de producto', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/ecomerce/api/productos/${productId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentProduct = data;
+                    displayProduct(data);
+                    loadVariants(productId);
+                    loadReviews(productId);
+                    showResult('load-result', `✅ Producto cargado exitosamente`, 'success');
+                } else {
+                    showResult('load-result', `❌ Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showResult('load-result', `❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        // Display product information
+        function displayProduct(product) {
+            document.getElementById('product-name').textContent = product.nombre || 'Sin nombre';
+            document.getElementById('product-description').textContent = product.descripcion || 'Sin descripción';
+            document.getElementById('product-price').textContent = `$${product.precio || 0}`;
+            document.getElementById('product-category').textContent = `Categoría: ${product.categoria || 'Sin categoría'}`;
+
+            const imageElement = document.getElementById('product-image');
+            const noImageElement = document.getElementById('no-image');
+
+            if (product.imagen_url) {
+                imageElement.src = product.imagen_url;
+                imageElement.style.display = 'block';
+                noImageElement.style.display = 'none';
+            } else {
+                imageElement.style.display = 'none';
+                noImageElement.style.display = 'flex';
+            }
+
+            document.getElementById('product-info').style.display = 'block';
+            document.getElementById('cart-section').style.display = 'block';
+        }
+
+        // Load product variants
+        async function loadVariants(productId) {
+            try {
+                const response = await fetch(`/ecomerce/api/productos/${productId}/variantes`);
+                const data = await response.json();
+
+                if (response.ok && data.length > 0) {
+                    displayVariants(data);
+                    document.getElementById('variants-section').style.display = 'block';
+                    showResult('variants-result', `✅ ${data.length} variantes encontradas`, 'success');
+                } else {
+                    document.getElementById('variants-section').style.display = 'none';
+                    showResult('variants-result', 'ℹ️ No hay variantes disponibles', 'info');
+                }
+            } catch (error) {
+                showResult('variants-result', `❌ Error cargando variantes: ${error.message}`, 'error');
+            }
+        }
+
+        // Display variants
+        function displayVariants(variants) {
+            const container = document.getElementById('variants-container');
+            container.innerHTML = '';
+
+            variants.forEach(variant => {
+                const variantDiv = document.createElement('div');
+                variantDiv.className = 'variant-item';
+                variantDiv.onclick = () => selectVariant(variant);
+
+                variantDiv.innerHTML = `
+                    <div class="font-semibold">${variant.nombre || 'Variante'}</div>
+                    <div class="text-sm text-gray-600">${variant.descripcion || ''}</div>
+                    <div class="text-green-600 font-semibold">$${variant.precio || 0}</div>
+                    <div class="text-sm text-gray-500">Stock: ${variant.stock || 0}</div>
+                `;
+
+                container.appendChild(variantDiv);
+            });
+        }
+
+        // Select variant
+        function selectVariant(variant) {
+            selectedVariant = variant;
+
+            // Remove previous selection
+            document.querySelectorAll('.variant-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Add selection to clicked item
+            event.target.closest('.variant-item').classList.add('selected');
+
+            showResult('variants-result', `✅ Variante seleccionada: ${variant.nombre}`, 'success');
+        }
+
+        // Load product reviews
+        async function loadReviews(productId) {
+            try {
+                const response = await fetch(`/ecomerce/api/productos/${productId}/resenas`);
+                const data = await response.json();
+
+                if (response.ok && data.length > 0) {
+                    displayReviews(data);
+                    document.getElementById('reviews-section').style.display = 'block';
+                    showResult('reviews-result', `✅ ${data.length} reseñas encontradas`, 'success');
+                } else {
+                    document.getElementById('reviews-section').style.display = 'none';
+                    showResult('reviews-result', 'ℹ️ No hay reseñas disponibles', 'info');
+                }
+            } catch (error) {
+                showResult('reviews-result', `❌ Error cargando reseñas: ${error.message}`, 'error');
+            }
+        }
+
+        // Display reviews
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = '';
+
+            reviews.forEach(review => {
+                const reviewDiv = document.createElement('div');
+                reviewDiv.className = 'border-b border-gray-200 py-4';
+
+                const stars = '★'.repeat(review.calificacion || 0) + '☆'.repeat(5 - (review.calificacion || 0));
+
+                reviewDiv.innerHTML = `
+                    <div class="flex items-center mb-2">
+                        <span class="text-yellow-500 mr-2">${stars}</span>
+                        <span class="font-semibold">${review.usuario || 'Usuario anónimo'}</span>
+                        <span class="text-gray-500 text-sm ml-2">${new Date(review.fecha_creacion || Date.now()).toLocaleDateString()}</span>
+                    </div>
+                    <p class="text-gray-700">${review.comentario || 'Sin comentario'}</p>
+                `;
+
+                container.appendChild(reviewDiv);
+            });
+        }
+
+        // Add to cart
+        async function addToCart() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!currentProduct) {
+                showResult('cart-result', '❌ No hay producto seleccionado', 'error');
+                return;
+            }
+
+            if (quantity < 1) {
+                showResult('cart-result', '❌ La cantidad debe ser mayor a 0', 'error');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('cart-result', '❌ Debes iniciar sesión para agregar al carrito', 'error');
+                return;
+            }
+
+            try {
+                const cartData = {
+                    producto_id: currentProduct.id,
+                    cantidad: quantity
+                };
+
+                if (selectedVariant) {
+                    cartData.variante_id = selectedVariant.id;
+                }
+
+                const response = await fetch('/ecomerce/api/carrito/agregar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(cartData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('cart-result', `✅ Producto agregado al carrito exitosamente`, 'success');
+                } else {
+                    showResult('cart-result', `❌ Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showResult('cart-result', `❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear selection
+        function clearSelection() {
+            selectedVariant = null;
+            document.querySelectorAll('.variant-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            showResult('cart-result', '✅ Selección limpiada', 'info');
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugDiv = document.getElementById('debug-info');
+            const token = localStorage.getItem('token');
+
+            debugDiv.textContent = `
+Producto actual: ${currentProduct ? currentProduct.nombre : 'Ninguno'}
+Variante seleccionada: ${selectedVariant ? selectedVariant.nombre : 'Ninguna'}
+Token presente: ${!!token}
+URL: ${window.location.href}
+Timestamp: ${new Date().toISOString()}
+            `.trim();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebugInfo();
+        });
+
+        // Update debug info periodically
+        setInterval(updateDebugInfo, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envíos y Devoluciones - Tienda Online</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--ecommerce-gray);
+            color: var(--ecommerce-text);
+            line-height: 1.6;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+        }
+        .info-card {
+            background: var(--ecommerce-light);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg">Tienda Online</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-store"></i>
+                        <span>Productos</span>
+                    </a>
+                    <!-- Usuario no autenticado -->
+                    <div id="auth-buttons" class="flex items-center space-x-2">
+                        <a href="/ecomerce/login" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                        <a href="/ecomerce/register" class="bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Registrarse</span>
+                        </a>
+                    </div>
+                    <!-- Usuario autenticado -->
+                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                        <div class="relative">
+                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="user-greeting">Hola, Usuario</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                                <div class="py-1">
+                                    <a href="/ecomerce/usuarios/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>
+                                        Salir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative" id="cart-button" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="ml-1 hidden md:inline">Carrito</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold mb-4">Envíos y Devoluciones</h1>
+            <p class="text-xl text-blue-100">
+                Información completa sobre nuestros servicios de envío y política de devoluciones.
+            </p>
+        </div>
+    </section>
+
+    <!-- Shipping Information -->
+    <section class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Información de Envíos</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Ofrecemos envío rápido y seguro a todo el país con diferentes opciones según tus necesidades.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <div class="info-card text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-truck text-3xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Envío Estándar</h3>
+                    <p class="text-gray-600 mb-4">Entrega en 3-7 días hábiles</p>
+                    <div class="text-2xl font-bold text-blue-600">$5.99</div>
+                    <div class="text-sm text-gray-500">Gratis en compras > $50</div>
+                </div>
+
+                <div class="info-card text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shipping-fast text-3xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Envío Express</h3>
+                    <p class="text-gray-600 mb-4">Entrega en 1-2 días hábiles</p>
+                    <div class="text-2xl font-bold text-green-600">$12.99</div>
+                    <div class="text-sm text-gray-500">Disponible en áreas metropolitanas</div>
+                </div>
+
+                <div class="info-card text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-box text-3xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Recogida en Tienda</h3>
+                    <p class="text-gray-600 mb-4">Disponible en 24-48 horas</p>
+                    <div class="text-2xl font-bold text-purple-600">Gratis</div>
+                    <div class="text-sm text-gray-500">Sin costo adicional</div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Información Importante sobre Envíos</h3>
+                <ul class="space-y-3 text-gray-600">
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                        <span>Los tiempos de entrega comienzan a contar desde la confirmación del pago.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                        <span>Te enviaremos un email con el número de seguimiento una vez que tu pedido sea enviado.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                        <span>Para entregas express, es necesario que haya alguien disponible para recibir el paquete.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                        <span>Los envíos internacionales pueden tener costos adicionales y tiempos de entrega más largos.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Returns Information -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Política de Devoluciones</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Tu satisfacción es nuestra prioridad. Aceptamos devoluciones bajo las siguientes condiciones.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="info-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">¿Cuándo puedes devolver un producto?</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Dentro de los 30 días posteriores a la recepción del producto.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>El producto debe estar en su empaque original y sin usar.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Debe incluir todos los accesorios, manuales y etiquetas originales.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Productos defectuosos o dañados durante el envío son aceptados sin restricciones.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">¿Qué productos NO se pueden devolver?</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Productos personalizados o hechos a medida.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Software descargable o licencias digitales.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Productos perecederos o de consumo inmediato.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Artículos de higiene personal abiertos.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-card mt-8">
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Proceso de Devolución</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="text-blue-600 font-bold">1</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Contacta con nosotros</h4>
+                        <p class="text-gray-600 text-sm">Envía un email a info@tiendaonline.com con tu número de pedido y motivo de devolución.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="text-blue-600 font-bold">2</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Prepara el envío</h4>
+                        <p class="text-gray-600 text-sm">Te enviaremos una etiqueta de envío prepago para devolver el producto.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="text-blue-600 font-bold">3</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Reembolso</h4>
+                        <p class="text-gray-600 text-sm">Una vez recibido y verificado el producto, procesaremos el reembolso en 3-5 días hábiles.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">¿Tienes preguntas sobre envíos o devoluciones?</h2>
+            <p class="text-gray-600 mb-8">Nuestro equipo está aquí para ayudarte con cualquier duda sobre tu pedido.</p>
+            <a href="/static/servicio_al_cliente.html" class="btn-primary">
+                <i class="fas fa-envelope"></i>
+                Contactar Soporte
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <img src="/static/img/logo.png" alt="Logo" class="h-8 w-auto mr-2" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="text-xl font-bold">Tienda Online</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Tu tienda online de confianza con los mejores productos y precios.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/ecomerce/productos/tienda" class="text-gray-400 hover:text-white transition-colors">Tienda</a></li>
+                        <li><a href="/ecomerce/login" class="text-gray-400 hover:text-white transition-colors">Iniciar Sesión</a></li>
+                        <li><a href="/ecomerce/register" class="text-gray-400 hover:text-white transition-colors">Registrarse</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Servicio al Cliente</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/static/servicio_al_cliente.html" class="text-gray-400 hover:text-white transition-colors">Servicio al Cliente</a></li>
+                        <li><a href="/static/centro_de_ayuda.html" class="text-gray-400 hover:text-white transition-colors">Centro de Ayuda</a></li>
+                        <li><a href="/static/envios_devoluciones.html" class="text-gray-400 hover:text-white transition-colors">Envíos y Devoluciones</a></li>
+                        <li><a href="/static/politica_privacidad.html" class="text-gray-400 hover:text-white transition-colors">Política de Privacidad</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span class="text-gray-400">info@tiendaonline.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <span class="text-gray-400">+1 (555) 123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span class="text-gray-400">Tu Ciudad, País</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    2025 Tienda Online. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Funciones de autenticación y carrito (igual que en index.html)
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function checkEcommerceAuth() {
+            const token = localStorage.getItem('ecommerce_token') || getCookie('ecommerce_token');
+            if (!token) {
+                showUnauthenticatedUI();
+                return;
+            }
+            try {
+                const response = await fetch('/ecomerce/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.valid && data.user) {
+                        showAuthenticatedUI(data.user);
+                    } else {
+                        showUnauthenticatedUI();
+                    }
+                } else {
+                    showUnauthenticatedUI();
+                }
+            } catch (error) {
+                console.error('Error verificando autenticación:', error);
+                showUnauthenticatedUI();
+            }
+        }
+
+        function showUnauthenticatedUI() {
+            document.getElementById('auth-buttons').classList.remove('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+        }
+
+        function showAuthenticatedUI(user) {
+            document.getElementById('auth-buttons').classList.add('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('user-greeting').textContent = `Hola, ${user.nombre}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('ecommerce_token');
+            localStorage.removeItem('ecommerce_user_id');
+            document.cookie = 'ecommerce_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            if (window.cart) {
+                window.cart.userId = null;
+                window.cart.cartItems = [];
+                window.cart.renderEmptyCart();
+            }
+            showUnauthenticatedUI();
+            showToast('Sesión cerrada exitosamente', 'success');
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function toggleCart() {
+            if (window.cart && typeof window.cart.toggle === 'function') {
+                window.cart.toggle();
+            } else {
+                const sidebar = document.getElementById('cart-sidebar');
+                const overlay = document.getElementById('cart-overlay');
+                if (sidebar && overlay) {
+                    if (sidebar.classList.contains('translate-x-full')) {
+                        sidebar.classList.remove('translate-x-full');
+                        overlay.classList.remove('hidden');
+                    } else {
+                        sidebar.classList.add('translate-x-full');
+                        overlay.classList.add('hidden');
+                    }
+                }
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' :
+                                   type === 'error' ? 'fa-exclamation-circle' :
+                                   'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get('token');
+            if (tokenFromUrl) {
+                localStorage.setItem('ecommerce_token', tokenFromUrl);
+                document.cookie = `ecommerce_token=${tokenFromUrl}; path=/; max-age=86400`;
+                const url = new URL(window.location);
+                url.searchParams.delete('token');
+                window.history.replaceState({}, document.title, url.pathname + url.hash);
+            }
+            checkEcommerceAuth();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleUserDropdown();
+                });
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.getElementById('user-dropdown');
+            const userButton = document.getElementById('user-dropdown-btn');
+            if (userButton && !userButton.contains(event.target) && userDropdown && !userDropdown.contains(event.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <script defer src="/static/ecomerce/carrito.js"></script>
+    <script defer src="/static/ecomerce/cart_button.js"></script>
+</body>
+</html>

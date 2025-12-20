@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Ecommerce Store</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+        }
+        .input-field {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0.75rem;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--ecommerce-blue);
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="text-center mb-8">
+            <img src="/static/img/logo.png" alt="Logo" class="h-12 w-12 mx-auto mb-4">
+            <h1 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h1>
+            <p class="text-gray-600">Accede a tu cuenta</p>
+        </div>
+
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" id="email" class="input-field" placeholder="tu@email.com" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="/registerpage" class="text-blue-600 hover:text-blue-800">¿No tienes cuenta? Regístrate</a>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="/password-reset" class="text-gray-600 hover:text-gray-800 text-sm">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <div id="message" class="mt-4 text-center hidden"></div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('/ecomerce/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageDiv.className = 'mt-4 text-center text-green-600';
+                    messageDiv.textContent = 'Login exitoso. Redirigiendo...';
+                    localStorage.setItem('token', data.access_token);
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    messageDiv.className = 'mt-4 text-center text-red-600';
+                    messageDiv.textContent = data.detail || 'Error en el login';
+                }
+            } catch (error) {
+                messageDiv.className = 'mt-4 text-center text-red-600';
+                messageDiv.textContent = 'Error de conexión';
+            }
+
+            messageDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

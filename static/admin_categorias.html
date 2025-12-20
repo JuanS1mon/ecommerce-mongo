@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Categorías - Ecommerce Store</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+            --ecommerce-success: #10b981;
+            --ecommerce-error: #ef4444;
+            --ecommerce-warning: #f59e0b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--ecommerce-gray);
+            color: var(--ecommerce-text);
+            line-height: 1.6;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            color: white;
+        }
+        .admin-card {
+            background: var(--ecommerce-light);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s ease;
+        }
+        .admin-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .categoria-imagen {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .btn-primary {
+            background: var(--ecommerce-blue);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #0099cc;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: var(--ecommerce-text-light);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #555;
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: var(--ecommerce-error);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--ecommerce-blue);
+            box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header p-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-tags text-2xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Administración de Categorías</h1>
+                        <p class="text-blue-100">Gestiona las categorías de productos de tu tienda</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/admin" class="text-blue-100 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver al Admin
+                    </a>
+                    <button onclick="location.reload()" class="text-blue-100 hover:text-white transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-6">
+        <!-- Alertas -->
+        <div id="alertSuccess" class="alert alert-success">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="alertSuccessText"></span>
+        </div>
+        <div id="alertError" class="alert alert-error">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span id="alertErrorText"></span>
+        </div>
+
+        <!-- Acciones principales -->
+        <div class="admin-card p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold mb-2">Categorías</h2>
+                    <p class="text-gray-600">Total: <span id="totalCategorias">0</span> categorías</p>
+                </div>
+                <button onclick="abrirModalCrear()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Crear Categoría
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de categorías -->
+        <div class="admin-card p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left py-3 px-4 font-semibold">Imagen</th>
+                            <th class="text-left py-3 px-4 font-semibold">Nombre</th>
+                            <th class="text-left py-3 px-4 font-semibold">Descripción</th>
+                            <th class="text-left py-3 px-4 font-semibold">Estado</th>
+                            <th class="text-left py-3 px-4 font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriasTableBody">
+                        <!-- Las categorías se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+                <p class="mt-2 text-gray-600">Cargando categorías...</p>
+            </div>
+
+            <!-- No hay categorías -->
+            <div id="noCategorias" class="text-center py-8 hidden">
+                <i class="fas fa-tags text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No hay categorías</h3>
+                <p class="text-gray-500 mb-4">Comienza creando tu primera categoría</p>
+                <button onclick="abrirModalCrear()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Crear primera categoría
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Crear/Editar Categoría -->
+    <div id="modalCategoria" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="modalTitle" class="text-xl font-semibold">Crear Categoría</h3>
+                <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="categoriaForm" enctype="multipart/form-data">
+                <input type="hidden" id="categoriaId" name="categoriaId">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Nombre *</label>
+                    <input type="text" id="nombre" name="nombre" class="form-input" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" rows="3" class="form-input"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Imagen</label>
+                    <input type="file" id="imagen" name="imagen" accept="image/*" class="form-input">
+                    <p class="text-sm text-gray-500 mt-1">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB</p>
+                    <div id="imagenPreview" class="mt-2 hidden">
+                        <img id="previewImg" class="categoria-imagen border">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Categoría Padre</label>
+                    <select id="id_padre" name="id_padre" class="form-input">
+                        <option value="0">Ninguna (Categoría principal)</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="active" name="active" class="mr-2">
+                        <span class="text-sm font-medium">Categoría activa</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="cerrarModal()" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let categorias = [];
+        let editingCategoria = null;
+
+        // Cargar categorías al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarCategorias();
+            setupCategoriaButtonListeners();
+        });
+
+        // Configurar event listeners para botones de categorías
+        function setupCategoriaButtonListeners() {
+            document.addEventListener('click', function(event) {
+                const button = event.target.closest('.categoria-btn');
+                if (!button) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const action = button.getAttribute('data-action');
+                const categoriaId = button.getAttribute('data-categoria-id');
+
+                if (action === 'edit') {
+                    editarCategoria(categoriaId);
+                } else if (action === 'delete') {
+                    const categoriaNombre = button.getAttribute('data-categoria-nombre');
+                    eliminarCategoria(categoriaId, categoriaNombre);
+                }
+            });
+        }
+
+        // Cargar categorías desde la API
+        async function cargarCategorias() {
+            try {
+                showLoading(true);
+                const response = await fetch('/admin/categorias/');
+                const data = await response.json();
+
+                if (response.ok) {
+                    categorias = data.categorias || [];
+                    mostrarCategorias();
+                    actualizarContador();
+                } else {
+                    mostrarError('Error al cargar categorías: ' + (data.detail || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al cargar categorías');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Mostrar categorías en la tabla
+        function mostrarCategorias() {
+            const tbody = document.getElementById('categoriasTableBody');
+            tbody.innerHTML = '';
+
+            if (categorias.length === 0) {
+                document.getElementById('noCategorias').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('noCategorias').classList.add('hidden');
+
+            categorias.forEach(categoria => {
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+
+                row.innerHTML = `
+                    <td class="py-3 px-4">
+                        ${categoria.imagen_url ?
+                            `<img src="${categoria.imagen_url}" alt="${categoria.nombre}" class="categoria-imagen">` :
+                            '<div class="categoria-imagen bg-gray-200 flex items-center justify-center"><i class="fas fa-image text-gray-400"></i></div>'
+                        }
+                    </td>
+                    <td class="py-3 px-4 font-medium">${categoria.nombre}</td>
+                    <td class="py-3 px-4 text-gray-600">${categoria.descripcion || '-'}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs ${categoria.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${categoria.active ? 'Activa' : 'Inactiva'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex space-x-2">
+                            <button class="categoria-btn text-blue-600 hover:text-blue-800" data-action="edit" data-categoria-id="${categoria.id}" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="categoria-btn text-red-600 hover:text-red-800" data-action="delete" data-categoria-id="${categoria.id}" data-categoria-nombre="${categoria.nombre}" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Actualizar contador de categorías
+        function actualizarContador() {
+            document.getElementById('totalCategorias').textContent = categorias.length;
+        }
+
+        // Abrir modal para crear categoría
+        function abrirModalCrear() {
+            editingCategoria = null;
+            document.getElementById('modalTitle').textContent = 'Crear Categoría';
+            document.getElementById('categoriaForm').reset();
+            document.getElementById('categoriaId').value = '';
+            document.getElementById('imagenPreview').classList.add('hidden');
+            document.getElementById('modalCategoria').style.display = 'block';
+            cargarCategoriasPadre();
+        }
+
+        // Abrir modal para editar categoría
+        function editarCategoria(id) {
+            const categoria = categorias.find(c => c.id === id);
+            if (!categoria) return;
+
+            editingCategoria = categoria;
+            document.getElementById('modalTitle').textContent = 'Editar Categoría';
+            document.getElementById('categoriaId').value = categoria.id;
+            document.getElementById('nombre').value = categoria.nombre;
+            document.getElementById('descripcion').value = categoria.descripcion || '';
+            document.getElementById('id_padre').value = categoria.id_padre;
+            document.getElementById('active').checked = categoria.active;
+
+            // Mostrar imagen actual si existe
+            if (categoria.imagen_url) {
+                document.getElementById('previewImg').src = categoria.imagen_url;
+                document.getElementById('imagenPreview').classList.remove('hidden');
+            } else {
+                document.getElementById('imagenPreview').classList.add('hidden');
+            }
+
+            document.getElementById('modalCategoria').style.display = 'block';
+            cargarCategoriasPadre();
+        }
+
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('modalCategoria').style.display = 'none';
+            document.getElementById('categoriaForm').reset();
+            editingCategoria = null;
+        }
+
+        // Cargar categorías padre para el select
+        function cargarCategoriasPadre() {
+            const select = document.getElementById('id_padre');
+            // Limpiar opciones existentes excepto la primera
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+
+            // Agregar categorías como opciones padre
+            categorias.forEach(categoria => {
+                if (editingCategoria && categoria.id === editingCategoria.id) return; // No incluir la categoría actual
+
+                const option = document.createElement('option');
+                option.value = categoria.id;
+                option.textContent = categoria.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('categoriaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const categoriaId = formData.get('categoriaId');
+
+            try {
+                let response;
+                if (categoriaId) {
+                    // Actualizar categoría
+                    response = await fetch(`/admin/categorias/${categoriaId}`, {
+                        method: 'PUT',
+                        body: formData
+                    });
+                } else {
+                    // Crear categoría
+                    response = await fetch('/admin/categorias/', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    mostrarExito(data.message);
+                    cerrarModal();
+                    cargarCategorias();
+                } else {
+                    mostrarError(data.detail || data.message || 'Error al guardar la categoría');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al guardar la categoría');
+            }
+        });
+
+        // Eliminar categoría
+        async function eliminarCategoria(id, nombre) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar la categoría "${nombre}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/categorias/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    mostrarExito(data.message);
+                    cargarCategorias();
+                } else {
+                    mostrarError(data.detail || data.message || 'Error al eliminar la categoría');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al eliminar la categoría');
+            }
+        }
+
+        // Vista previa de imagen
+        document.getElementById('imagen').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagenPreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagenPreview').classList.add('hidden');
+            }
+        });
+
+        // Utilidades
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function mostrarExito(mensaje) {
+            document.getElementById('alertSuccessText').textContent = mensaje;
+            document.getElementById('alertSuccess').style.display = 'block';
+            document.getElementById('alertError').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('alertSuccess').style.display = 'none';
+            }, 5000);
+        }
+
+        function mostrarError(mensaje) {
+            document.getElementById('alertErrorText').textContent = mensaje;
+            document.getElementById('alertError').style.display = 'block';
+            document.getElementById('alertSuccess').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('alertError').style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

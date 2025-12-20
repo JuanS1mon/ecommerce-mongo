@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Fallido - Mi Tienda</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-5px);
+            }
+            20%, 40%, 60%, 80% {
+                transform: translateX(5px);
+            }
+        }
+        
+        .shake-icon {
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-red-50 to-pink-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Tarjeta de error -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
+            <!-- Ícono de error -->
+            <div class="mb-6 flex justify-center">
+                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center shake-icon">
+                    <i class="fas fa-times-circle text-red-600 text-5xl"></i>
+                </div>
+            </div>
+            
+            <!-- Título -->
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">
+                No se pudo completar el pago
+            </h1>
+            
+            <!-- Descripción -->
+            <p class="text-gray-600 mb-6 text-lg">
+                Hubo un problema al procesar tu pago. No te preocupes, no se realizó ningún cargo.
+            </p>
+            
+            <!-- Información del error -->
+            <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center justify-center mb-2">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl mr-2"></i>
+                    <span class="text-red-800 font-semibold">Estado: Rechazado</span>
+                </div>
+                <p class="text-sm text-gray-600" id="payment-info">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Tu carrito sigue activo, puedes intentar nuevamente.
+                </p>
+            </div>
+            
+            <!-- Razones comunes -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 text-left">
+                <h3 class="font-semibold text-yellow-800 mb-2">
+                    <i class="fas fa-lightbulb mr-2"></i>Razones comunes:
+                </h3>
+                <ul class="text-sm text-yellow-700 space-y-2">
+                    <li>• Fondos insuficientes en la tarjeta</li>
+                    <li>• Datos de la tarjeta incorrectos</li>
+                    <li>• Límite de compra excedido</li>
+                    <li>• La operación fue cancelada</li>
+                    <li>• Problemas de conectividad</li>
+                </ul>
+            </div>
+            
+            <!-- Qué hacer ahora -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-left">
+                <h3 class="font-semibold text-blue-800 mb-2">
+                    <i class="fas fa-clipboard-list mr-2"></i>¿Qué puedes hacer?
+                </h3>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li>✓ Verifica los datos de tu tarjeta</li>
+                    <li>✓ Intenta con otro método de pago</li>
+                    <li>✓ Contacta a tu banco si el problema persiste</li>
+                    <li>✓ Intenta nuevamente en unos minutos</li>
+                </ul>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="space-y-3">
+                <a href="/ecomerce/checkout" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg">
+                    <i class="fas fa-redo mr-2"></i>Intentar nuevamente
+                </a>
+                <a href="/ecomerce/cart" class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300">
+                    <i class="fas fa-shopping-cart mr-2"></i>Ver mi carrito
+                </a>
+                <a href="/ecomerce" class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-300">
+                    <i class="fas fa-home mr-2"></i>Volver a la tienda
+                </a>
+            </div>
+            
+            <!-- Soporte -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-500">
+                    ¿Necesitas ayuda? 
+                    <a href="/ecomerce/contacto" class="text-blue-600 hover:text-blue-700 font-medium">
+                        Contáctanos
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Mensaje de seguridad -->
+        <div class="mt-4 text-center">
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-shield-alt text-red-600 mr-1"></i>
+                No se realizó ningún cargo a tu cuenta
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('payment_id');
+        const status = urlParams.get('status');
+        const statusDetail = urlParams.get('status_detail');
+        const externalReference = urlParams.get('external_reference');
+        
+        // Mostrar información del error si está disponible
+        if (paymentId || statusDetail) {
+            const paymentInfo = document.getElementById('payment-info');
+            let detailMessage = 'Tu carrito sigue activo, puedes intentar nuevamente.';
+            
+            // Mensajes personalizados según el status_detail
+            const detailMessages = {
+                'cc_rejected_insufficient_amount': 'Fondos insuficientes en la tarjeta',
+                'cc_rejected_bad_filled_security_code': 'Código de seguridad incorrecto',
+                'cc_rejected_bad_filled_date': 'Fecha de vencimiento incorrecta',
+                'cc_rejected_bad_filled_other': 'Verifica los datos de tu tarjeta',
+                'cc_rejected_call_for_authorize': 'Debes autorizar el pago con tu banco',
+                'cc_rejected_card_disabled': 'Tarjeta deshabilitada, contacta a tu banco',
+                'cc_rejected_duplicated_payment': 'Pago duplicado detectado',
+                'cc_rejected_max_attempts': 'Superaste el límite de intentos',
+                'cc_rejected_high_risk': 'Transacción rechazada por riesgo'
+            };
+            
+            if (statusDetail && detailMessages[statusDetail]) {
+                detailMessage = detailMessages[statusDetail];
+            }
+            
+            paymentInfo.innerHTML = `
+                <div class="space-y-1">
+                    ${paymentId ? `<div><strong>ID de pago:</strong> ${paymentId}</div>` : ''}
+                    <div class="text-red-700 font-medium mt-2">${detailMessage}</div>
+                    ${externalReference ? `<div class="mt-2 text-xs"><strong>Referencia:</strong> ${externalReference}</div>` : ''}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
