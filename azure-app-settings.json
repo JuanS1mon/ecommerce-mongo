@@ -1,0 +1,82 @@
+[
+  {
+    "name": "MONGO_URL",
+    "value": "mongodb+srv://dbadmin:TU_PASSWORD_AQUI@ecommerce-db.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
+    "slotSetting": false
+  },
+  {
+    "name": "DB_NAME",
+    "value": "db_ecomerce",
+    "slotSetting": false
+  },
+  {
+    "name": "ENVIRONMENT",
+    "value": "production",
+    "slotSetting": false
+  },
+  {
+    "name": "FRONTEND_URL",
+    "value": "https://ecommerce-mongo.azurewebsites.net",
+    "slotSetting": false
+  },
+  {
+    "name": "BACKEND_URL",
+    "value": "https://ecommerce-mongo.azurewebsites.net",
+    "slotSetting": false
+  },
+  {
+    "name": "SECRET_KEY",
+    "value": "GENERA_UNA_CLAVE_SEGURA_AQUI_CON_openssl_rand_-hex_32",
+    "slotSetting": false
+  },
+  {
+    "name": "ALGORITHM",
+    "value": "HS256",
+    "slotSetting": false
+  },
+  {
+    "name": "SMTP_SERVER",
+    "value": "smtp.gmail.com",
+    "slotSetting": false
+  },
+  {
+    "name": "SMTP_PORT",
+    "value": "587",
+    "slotSetting": false
+  },
+  {
+    "name": "SMTP_USERNAME",
+    "value": "TU_EMAIL@gmail.com",
+    "slotSetting": false
+  },
+  {
+    "name": "SMTP_PASSWORD",
+    "value": "TU_PASSWORD_SMTP",
+    "slotSetting": false
+  },
+  {
+    "name": "GOOGLE_CLIENT_ID",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "GOOGLE_CLIENT_SECRET",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+    "value": "true",
+    "slotSetting": false
+  },
+  {
+    "name": "ENABLE_ORYX_BUILD",
+    "value": "true",
+    "slotSetting": false
+  },
+  {
+    "name": "POST_BUILD_COMMAND",
+    "value": "",
+    "slotSetting": false
+  }
+]
