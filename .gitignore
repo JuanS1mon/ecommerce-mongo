@@ -344,11 +344,9 @@ empty_server.py
 diagnostico_*.py
 simple_server.py
 
-# Docker files
+# Docker files - Allow Dockerfile for production
 docker-compose*.yml
-Dockerfile*
 docker-entrypoint*.sh
-.dockerignore
 
 # Archivos generados por herramientas de desarrollo
 *_test_generator.py
