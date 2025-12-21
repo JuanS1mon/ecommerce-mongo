@@ -28,6 +28,7 @@ ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     FRONTEND_URL,
+    "https://ecommerce-mongo.azurewebsites.net",  # Azure App Service
 ]
 
 # Static directory
