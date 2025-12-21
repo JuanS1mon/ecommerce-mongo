@@ -312,12 +312,14 @@ class Cart {
         // Mostrar items del carrito y ocultar mensaje de vacío
         if (this.elements.emptyCart) {
             this.elements.emptyCart.style.display = 'none';
+            this.elements.emptyCart.classList.add('hidden');
         }
         if (this.elements.cartItems) {
             this.elements.cartItems.style.display = 'block';
         }
         if (this.elements.cartFooter) {
             this.elements.cartFooter.style.display = 'block';
+            this.elements.cartFooter.classList.remove('hidden');
         }
 
         let total = 0;
@@ -466,7 +468,7 @@ class Cart {
                 if (currentQtyElement) {
                     const currentQty = parseInt(currentQtyElement.textContent) || 0;
                     console.log(`🔼 Aumentando cantidad de ${currentQty} a ${currentQty + 1}`);
-                    updateQuantity(itemId, currentQty + 1);
+                    this.updateQuantity(itemId, currentQty + 1);
                 }
                 break;
 
@@ -475,13 +477,13 @@ class Cart {
                 if (decreaseQtyElement) {
                     const currentQty = parseInt(decreaseQtyElement.textContent) || 0;
                     console.log(`🔽 Disminuyendo cantidad de ${currentQty} a ${currentQty - 1}`);
-                    updateQuantity(itemId, currentQty - 1);
+                    this.updateQuantity(itemId, currentQty - 1);
                 }
                 break;
 
             case 'remove':
                 console.log(`🗑️ Eliminando item ${itemId}`);
-                removeItem(itemId);
+                this.removeItem(itemId);
                 break;
 
             default:
@@ -515,6 +517,7 @@ class Cart {
         // Ocultar footer del sidebar si existe
         if (this.elements.cartFooter) {
             this.elements.cartFooter.style.display = 'none';
+            this.elements.cartFooter.classList.add('hidden');
         }
         
         // Ocultar cart-summary de la página completa si existe
@@ -1042,13 +1045,20 @@ class Cart {
 
                         // Cargar información de variantes si existe
                         item.variant_info = null;
-                        console.log('🔍 Procesando variant_data:', item.variant_data);
+                        console.log('🔍 Procesando item:', {
+                            itemId: item.id,
+                            productId: productId,
+                            variant_data: item.variant_data,
+                            variant_data_type: typeof item.variant_data
+                        });
+                        
                         if (item.variant_data && typeof item.variant_data === 'object') {
                             console.log('✅ Asignando variant_info desde variant_data:', item.variant_data);
                             item.variant_info = item.variant_data;
                         } else if (product.variants && product.variants.length > 0) {
                             // Si no hay variant_data pero el producto tiene variantes,
                             // intentar encontrar la variante por defecto o la primera disponible
+                            console.log('⚠️ No hay variant_data, usando variante por defecto del producto');
                             const defaultVariant = product.variants.find(v => v.stock > 0) || product.variants[0];
                             if (defaultVariant) {
                                 item.variant_info = {
@@ -1057,6 +1067,8 @@ class Cart {
                                     precio_adicional: defaultVariant.precio_adicional || 0
                                 };
                             }
+                        } else {
+                            console.log('ℹ️ Producto sin variantes');
                         }
                     } else {
                         // Si falla la carga del producto, usar valores por defecto
@@ -1449,3 +1461,172 @@ window.cartInfo = () => {
 // Hacer la instancia global disponible
 window.cart = cart;
 console.log('🌐 Cart asignado a window.cart:', window.cart);
+
+// Función para renderizar la página del carrito completo
+window.renderCartPage = function() {
+    console.log('📄 Rendering full cart page');
+    console.log('📦 Current cart items:', cart.cartItems);
+    console.log('📊 Cart items count:', cart.cartItems ? cart.cartItems.length : 0);
+    
+    // Usar IDs específicos de la página del carrito
+    const pageCartItems = document.getElementById('cart-items-page') || document.getElementById('cart-items');
+    const emptyCartPage = document.getElementById('empty-cart-page') || document.getElementById('empty-cart');
+    const cartSummary = document.getElementById('cart-summary');
+    const loading = document.getElementById('loading');
+
+    // Ocultar loading
+    if (loading) {
+        loading.style.display = 'none';
+        console.log('✅ Loading hidden');
+    }
+
+    if (!pageCartItems) {
+        console.warn('⚠️ cart-items-page element not found on page');
+        return;
+    }
+
+    if (!cart.cartItems || cart.cartItems.length === 0) {
+        console.log('📭 Cart is empty, showing empty message');
+        // Mostrar mensaje de carrito vacío
+        if (emptyCartPage) {
+            emptyCartPage.style.display = 'block';
+            console.log('✅ Empty cart message shown');
+        }
+        if (pageCartItems) pageCartItems.style.display = 'none';
+        if (cartSummary) cartSummary.classList.add('hidden');
+        return;
+    }
+
+    console.log(`📦 Rendering ${cart.cartItems.length} cart items...`);
+
+    // Ocultar mensaje vacío y mostrar items
+    if (emptyCartPage) {
+        emptyCartPage.style.display = 'none';
+        emptyCartPage.classList.add('hidden');
+    }
+    if (pageCartItems) {
+        pageCartItems.style.display = 'flex';
+        pageCartItems.style.flexDirection = 'column';
+        pageCartItems.classList.remove('hidden');
+        console.log('✅ Cart items container visible');
+    }
+
+    let total = 0;
+    let itemCount = 0;
+
+    // Renderizar items del carrito
+    pageCartItems.innerHTML = cart.cartItems.map(item => {
+        const quantity = item.cantidad || item.quantity || 1;
+        const price = item.precio_unitario || item.price || 0;
+        const itemTotal = quantity * price;
+        total += itemTotal;
+        itemCount += quantity;
+
+        // Información de variante
+        let variantDisplay = '';
+        if (item.variant_info && typeof item.variant_info === 'object') {
+            const variantParts = [];
+            const fieldLabels = {
+                'color': 'Color', 'tipo': 'Tipo', 'talla': 'Talla',
+                'modelo': 'Modelo', 'tamaño': 'Tamaño', 'material': 'Material'
+            };
+            
+            for (const [key, value] of Object.entries(item.variant_info)) {
+                if (value && key !== 'precio_adicional' && key !== 'stock' && key !== 'id') {
+                    const label = fieldLabels[key] || key.charAt(0).toUpperCase() + key.slice(1);
+                    variantParts.push(`${label}: ${value}`);
+                }
+            }
+            
+            if (variantParts.length > 0) {
+                variantDisplay = `<p class="text-sm text-purple-600 font-medium mt-1">🎨 ${variantParts.join(' • ')}</p>`;
+            }
+        }
+
+        const cartImage = item.product_image || '/static/img/logo.png';
+        const productName = item.product_name || `Producto ${item.id_producto || item.product_id}`;
+        const productCode = item.product_codigo || '';
+
+        return `
+            <div class="cart-item" data-item-id="${item.id}" style="display: flex !important; justify-content: space-between; align-items: stretch; padding: 1.5rem; border-radius: 12px; background: white; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); gap: 1.5rem; min-height: 120px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                    <img src="${cartImage}" alt="${productName}" style="width: 96px; height: 96px; object-fit: cover; border-radius: 8px;" onerror="this.src='/static/img/logo.png'">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">${productName}</h3>
+                        ${variantDisplay}
+                        <p style="font-size: 0.875rem; color: #6b7280; margin: 0.5rem 0;">${productCode}</p>
+                        <p style="font-size: 1.125rem; font-weight: 700; color: #667eea; margin: 0.5rem 0;">$${cart.formatPrice(price)}</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <button class="cart-page-btn" data-action="decrease" data-item-id="${item.id}" style="background: #d1d5db; color: #374151; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span style="font-weight: 600; font-size: 1.125rem; width: 48px; text-align: center; color: #111827;">${quantity}</span>
+                        <button class="cart-page-btn" data-action="increase" data-item-id="${item.id}" style="background: #d1d5db; color: #374151; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: right; min-width: 120px;">
+                        <p style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0;">$${cart.formatPrice(itemTotal)}</p>
+                        <button class="cart-page-btn" data-action="remove" data-item-id="${item.id}" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.875rem; padding: 0;">
+                            <i class="fas fa-trash" style="margin-right: 0.25rem;"></i>Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    console.log(`✅ HTML inserted: ${pageCartItems.innerHTML.length} characters`);
+    console.log(`📦 Elements in container: ${pageCartItems.children.length}`);
+
+    // Actualizar resumen
+    if (cartSummary) {
+        cartSummary.classList.remove('hidden');
+        const totalElement = document.getElementById('total');
+        const subtotalElement = document.getElementById('subtotal');
+        if (totalElement) totalElement.textContent = `$${cart.formatPrice(total)}`;
+        if (subtotalElement) subtotalElement.textContent = `$${cart.formatPrice(total)}`;
+    }
+
+    // Configurar event listeners para los botones de la página
+    setupCartPageListeners();
+    
+    console.log(`✅ Cart page rendered: ${itemCount} items, total $${cart.formatPrice(total)}`);
+};
+
+// Event listeners para botones en la página del carrito
+function setupCartPageListeners() {
+    const pageButtons = document.querySelectorAll('.cart-page-btn');
+    pageButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const action = e.currentTarget.dataset.action;
+            const itemId = e.currentTarget.dataset.itemId;
+            
+            console.log(`🎯 Cart page button: ${action} for item ${itemId}`);
+            
+            if (action === 'remove') {
+                await cart.removeItem(itemId);
+            } else if (action === 'increase' || action === 'decrease') {
+                // Encontrar el item actual para obtener su cantidad
+                const currentItem = cart.cartItems.find(item => item.id === itemId);
+                if (currentItem) {
+                    const currentQty = currentItem.cantidad || currentItem.quantity || 1;
+                    const newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
+                    console.log(`📊 Actualizando cantidad: ${currentQty} → ${newQty}`);
+                    await cart.updateQuantity(itemId, newQty);
+                } else {
+                    console.error(`❌ No se encontró el item ${itemId} en el carrito`);
+                }
+            }
+            
+            // Re-renderizar la página
+            window.renderCartPage();
+        });
+    });
+    console.log(`✅ Configured ${pageButtons.length} cart page button listeners`);
+}

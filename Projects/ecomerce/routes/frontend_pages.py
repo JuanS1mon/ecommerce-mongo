@@ -1,11 +1,14 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter(
     prefix="",
     tags=["Frontend"],
     include_in_schema=False
 )
+
+templates = Jinja2Templates(directory="Projects/ecomerce/templates")
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page():
@@ -70,19 +73,9 @@ async def ejemplo_cart_page():
         """, status_code=404)
 
 @router.get("/ecomerce/carrito", response_class=HTMLResponse)
-async def carrito_page():
+async def carrito_page(request: Request):
     """Página completa del carrito de compras"""
-    try:
-        with open("Projects/ecomerce/templates/carrito.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    except FileNotFoundError:
-        return HTMLResponse("""
-        <html><body>
-        <h1>Error</h1>
-        <p>La página del carrito no está disponible</p>
-        <a href="/ecomerce/productos/publicos">Ir a la tienda</a>
-        </body></html>
-        """, status_code=404)
+    return templates.TemplateResponse("carrito.html", {"request": request})
 
 @router.get("/static/servicio_al_cliente.html", response_class=HTMLResponse)
 async def servicio_al_cliente_page():
@@ -144,17 +137,19 @@ async def checkout_page():
         </body></html>
         """, status_code=404)
 
+
+@router.get("/ecomerce/productos/tienda", response_class=HTMLResponse)
+async def productos_tienda_page(request: Request):
+    """Página pública de la tienda renderizada con Jinja2"""
+    return templates.TemplateResponse("productos_tienda.html", {"request": request})
+
 @router.get("/ecomerce/productos/{producto_id}", response_class=HTMLResponse)
-async def producto_detalle_page(producto_id: str):
+async def producto_detalle_page(request: Request, producto_id: str):
     """Página de detalle de producto"""
-    try:
-        with open("Projects/ecomerce/templates/producto_detalle.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    except FileNotFoundError:
-        return HTMLResponse("""
-        <html><body>
-        <h1>Error</h1>
-        <p>La página del producto no está disponible</p>
-        <a href="/ecomerce/productos/tienda">Ir a la tienda</a>
-        </body></html>
-        """, status_code=404)
+    return templates.TemplateResponse(
+        "producto_detalle.html",
+        {
+            "request": request,
+            "producto_id": producto_id,
+        },
+    )

@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalle del Producto - Ecommerce Store</title>
-    <script src="/static/tailwind.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="/static/config.js"></script>
-    <script src="/static/ecomerce/cart_button.js"></script>
-    <style>
+{% extends "base.html" %}
+
+{% block title %}Detalle del Producto - Ecommerce Store{% endblock %}
+
+{% block extra_head %}
+<script src="/static/ecomerce/cart_button.js"></script>
+{% endblock %}
+
+{% block extra_styles %}
         :root {
             --ecommerce-blue: #00bfff;
             --ecommerce-dark: #1a1a1a;
@@ -85,85 +83,51 @@
             -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
         }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
-                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
-                        <span class="font-bold text-lg">Detalle del Producto</span>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-600 hover:text-blue-600 flex items-center space-x-2 transition-colors">
-                        <i class="fas fa-home"></i>
-                        <span>Inicio</span>
-                    </a>
-                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 flex items-center space-x-2 transition-colors">
-                        <i class="fas fa-store"></i>
-                        <span>Productos</span>
-                    </a>
-                    <!-- Usuario no autenticado -->
-                    <div id="auth-buttons" class="flex items-center space-x-2">
-                        <a href="/ecomerce/login" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Iniciar Sesión</span>
-                        </a>
-                        <a href="/ecomerce/register" class="bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Registrarse</span>
-                        </a>
-                    </div>
-                    <!-- Usuario autenticado -->
-                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
-                        <div class="relative">
-                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors">
-                                <i class="fas fa-user-circle"></i>
-                                <span id="user-greeting">Hola, Usuario</span>
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </button>
-                            <!-- Dropdown Menu -->
-                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
-                                <div class="py-1">
-                                    <a href="/ecomerce/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-heart text-red-500 mr-2"></i>
-                                        Mis Favoritos
-                                    </a>
-                                    <a href="/ecomerce/usuarios/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-user mr-2"></i>
-                                        Mi Perfil
-                                    </a>
-                                    <div class="border-t border-gray-200"></div>
-                                    <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-sign-out-alt mr-2"></i>
-                                        Salir
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Botón de Favoritos -->
-                    <a href="/ecomerce/perfil" class="text-gray-600 hover:text-red-500 px-3 py-2 rounded-lg transition-colors relative hidden" id="wishlist-nav-button" title="Mis Favoritos">
-                        <i class="fas fa-heart"></i>
-                        <span class="ml-1 hidden md:inline">Favoritos</span>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden" id="wishlist-count">0</span>
-                    </a>
-                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative" id="cart-button" onclick="toggleCart()">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="ml-1 hidden md:inline">Carrito</span>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-    <!-- Toast Notifications -->
-    <div id="toast-container"></div>
+        /* ANIMACIONES DE VARIANTES */
+        .variant-option {
+            transition: all 0.3s ease;
+        }
+        .variant-option:hover {
+            transform: translateY(-2px);
+        }
+        .variant-select {
+            transition: all 0.3s ease;
+            border-color: var(--ecommerce-text-light);
+        }
+        .variant-select:focus {
+            border-color: var(--ecommerce-blue);
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.1);
+        }
+        .price-update {
+            animation: priceFlip 0.4s ease-in-out;
+        }
+        @keyframes priceFlip {
+            0% {
+                opacity: 0;
+                transform: rotateX(-90deg);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 1;
+                transform: rotateX(0deg);
+            }
+        }
+        .variant-change-highlight {
+            animation: highlight 0.6s ease-in-out;
+        }
+        @keyframes highlight {
+            0% {
+                background-color: rgba(0, 191, 255, 0.2);
+            }
+            100% {
+                background-color: transparent;
+            }
+        }
+{% endblock %}
 
+{% block content %}
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -189,6 +153,17 @@
                     <div class="flex items-center space-x-4">
                         <label class="text-gray-700 font-medium">Cantidad:</label>
                         <input type="number" id="quantity" value="1" min="1" class="quantity-input">
+                    </div>
+
+                    <!-- Variantes del Producto -->
+                    <div id="variants-container" class="hidden bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-layer-group mr-2 text-blue-600"></i>
+                            Opciones disponibles
+                        </h3>
+                        <div id="variants-list" class="space-y-4">
+                            <!-- Las variantes se cargarán aquí -->
+                        </div>
                     </div>
 
                     <div class="flex gap-4">
@@ -236,57 +211,6 @@
             <p class="text-red-600">Error al cargar el producto. Por favor, intenta nuevamente.</p>
         </div>
     </main>
-
-    <!-- Cart Sidebar -->
-    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 cart-sidebar">
-        <div class="flex flex-col h-full">
-            <!-- Cart Header -->
-            <div class="flex items-center justify-between p-6 border-b bg-gray-50">
-                <h2 class="text-xl font-semibold text-gray-900 flex items-center">
-                    <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>
-                    Carrito de Compras
-                </h2>
-                <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Cart Items -->
-            <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
-                <!-- Cart items will be populated here -->
-            </div>
-
-            <!-- Empty Cart Message -->
-            <div id="empty-cart" class="hidden flex-1 flex items-center justify-center p-6">
-                <div class="text-center">
-                    <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
-                    <p class="text-gray-500 text-lg">Tu carrito está vacío</p>
-                    <p class="text-gray-400 text-sm mt-2">Agrega productos para comenzar</p>
-                </div>
-            </div>
-
-            <!-- Cart Footer -->
-            <div id="cart-footer" class="border-t bg-gray-50 p-6">
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center text-lg font-semibold">
-                        <span>Total:</span>
-                        <span id="cart-total" class="text-blue-600">$0.00</span>
-                    </div>
-                    <button onclick="window.location.href='/ecomerce/checkout'" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors font-medium">
-                        <i class="fas fa-credit-card mr-2"></i>
-                        Proceder al Pago
-                    </button>
-                    <a href="/ecomerce/carrito" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-lg transition-colors font-medium text-center block">
-                        <i class="fas fa-eye mr-2"></i>
-                        Ver Carrito Completo
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cart Overlay -->
-    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden cart-overlay" onclick="toggleCart()"></div>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-8 mt-12">
@@ -419,7 +343,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ id_producto: productId })
+                        body: JSON.stringify({ producto_id: productId })
                     });
 
                     if (response.ok) {
@@ -445,25 +369,34 @@
             try {
                 document.getElementById('loading').classList.remove('hidden');
 
-                const response = await fetch(`/ecomerce/api/productos/${productId}`);
-                if (!response.ok) throw new Error('Producto no encontrado');
+                // Intentar obtener el producto desde la API pública
+                const response = await fetch(`/ecomerce/api/productos/publicos?limit=1000`);
+                if (!response.ok) throw new Error('Error al cargar productos');
 
-                const product = await response.json();
+                const products = await response.json();
+                const product = products.find(p => p.id === productId);
+                
+                if (!product) throw new Error('Producto no encontrado');
                 
                 // Guardar el producto en la variable global
                 currentProduct = product;
 
-                // Update product information
+                // Actualizar información del producto
                 document.getElementById('product-name').textContent = product.nombre || 'Sin nombre';
                 document.getElementById('product-description').textContent = product.descripcion || 'Sin descripción';
-                document.getElementById('product-price').textContent = `$${product.precio || 0}`;
-                document.getElementById('product-stock').textContent = `Stock: ${product.stock || 0}`;
+                document.getElementById('product-price').textContent = `$${(product.precio || 0).toLocaleString('es-ES')}`;
+                document.getElementById('product-stock').textContent = `Stock: Disponible`;
                 document.getElementById('product-code').textContent = product.codigo || '-';
-                document.getElementById('product-category').textContent = product.categoria || '-';
+                document.getElementById('product-category').textContent = product.id_categoria || '-';
                 document.getElementById('product-active').textContent = product.active ? 'Activo' : 'Inactivo';
 
                 if (product.imagen_url) {
                     document.getElementById('product-image').src = product.imagen_url;
+                }
+
+                // Cargar y mostrar variantes
+                if (product.variantes && product.variantes.length > 0) {
+                    loadProductVariants(product.variantes);
                 }
 
             } catch (error) {
@@ -472,6 +405,121 @@
             } finally {
                 document.getElementById('loading').classList.add('hidden');
             }
+        }
+
+        function loadProductVariants(variantes) {
+            if (!variantes || variantes.length === 0) {
+                document.getElementById('variants-container').classList.add('hidden');
+                return;
+            }
+
+            const container = document.getElementById('variants-container');
+            const variantsList = document.getElementById('variants-list');
+            
+            // Obtener campos únicos de las variantes (excluyendo algunos campos)
+            const excludedFields = ['precio_adicional', 'stock', 'imagen_url', 'active', 'product_id', '_id', 'id'];
+            const variantFields = new Set();
+            
+            variantes.forEach(variant => {
+                Object.keys(variant).forEach(key => {
+                    if (!excludedFields.includes(key) && variant[key] !== null && variant[key] !== undefined && variant[key] !== '') {
+                        variantFields.add(key);
+                    }
+                });
+            });
+
+            if (variantFields.size === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            // Crear selectores para cada campo de variante
+            const sortedFields = Array.from(variantFields).sort((a, b) => {
+                const order = ['color', 'tipo'];
+                const aIndex = order.indexOf(a);
+                const bIndex = order.indexOf(b);
+                if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                if (aIndex !== -1) return -1;
+                if (bIndex !== -1) return 1;
+                return a.localeCompare(b);
+            });
+
+            variantsList.innerHTML = sortedFields.map(field => {
+                const options = [...new Set(variantes.map(v => v[field]).filter(val => val !== null && val !== undefined && val !== ''))];
+                const fieldLabel = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+                
+                return `
+                    <div class="variant-option">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ${fieldLabel}:
+                        </label>
+                        <select class="variant-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" data-field="${field}">
+                            <option value="">Selecciona una opción</option>
+                            ${options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }).join('');
+
+            // Agregar event listeners a los selectores con animaciones
+            document.querySelectorAll('.variant-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    updateVariantPrice();
+                    
+                    // Animar el select que cambió
+                    const variantOption = this.closest('.variant-option');
+                    if (variantOption) {
+                        variantOption.classList.remove('variant-change-highlight');
+                        void variantOption.offsetWidth;
+                        variantOption.classList.add('variant-change-highlight');
+                    }
+                });
+            });
+
+            container.classList.remove('hidden');
+        }
+
+        function updateVariantPrice() {
+            const selectedVariant = getSelectedVariant();
+            if (selectedVariant) {
+                const priceElement = document.getElementById('product-price');
+                const newPrice = currentProduct.precio + (selectedVariant.precio_adicional || 0);
+                
+                // Agregar animación al cambiar precio
+                priceElement.classList.remove('price-update');
+                void priceElement.offsetWidth; // Trigger reflow para reiniciar animación
+                priceElement.classList.add('price-update');
+                
+                // Cambiar el texto después de un pequeño delay
+                setTimeout(() => {
+                    priceElement.textContent = `$${newPrice.toLocaleString('es-ES')}`;
+                }, 200);
+            }
+        }
+
+        function getSelectedVariant() {
+            if (!currentProduct || !currentProduct.variantes) return null;
+
+            const selects = document.querySelectorAll('.variant-select');
+            const selectedValues = {};
+            let allSelected = true;
+
+            selects.forEach(select => {
+                const field = select.getAttribute('data-field');
+                const value = select.value;
+                if (value) {
+                    selectedValues[field] = value;
+                } else {
+                    allSelected = false;
+                }
+            });
+
+            if (!allSelected) return null;
+
+            // Buscar la variante que coincida con todos los valores seleccionados
+            return currentProduct.variantes.find(variant => {
+                return Object.entries(selectedValues).every(([key, value]) => variant[key] === value);
+            });
         }
 
         async function loadProductReviews(productId) {
@@ -514,25 +562,99 @@
             }
             
             const quantity = parseInt(document.getElementById('quantity').value) || 1;
-            const price = currentProduct.precio || 0;
             const productIdToAdd = currentProduct.id || currentProduct._id || productId;
+            
+            // Verificar si el producto tiene variantes
+            const hasVariants = currentProduct.variantes && currentProduct.variantes.length > 0;
+            const selects = document.querySelectorAll('.variant-select');
+            
+            console.log('🔍 Verificando variantes:', {
+                hasVariants,
+                variantsCount: currentProduct.variantes?.length || 0,
+                selectsCount: selects.length
+            });
+            
+            // VALIDACIÓN: Si tiene variantes, debe seleccionar todas
+            if (hasVariants && selects.length > 0) {
+                let allSelected = true;
+                const missingFields = [];
+                
+                selects.forEach(select => {
+                    if (!select.value) {
+                        allSelected = false;
+                        const field = select.getAttribute('data-field');
+                        const label = field.charAt(0).toUpperCase() + field.slice(1);
+                        missingFields.push(label);
+                    }
+                });
+                
+                if (!allSelected) {
+                    alert(`⚠️ Por favor selecciona: ${missingFields.join(', ')}\n\nEste producto tiene variantes y debes seleccionar todas las opciones antes de agregarlo al carrito.`);
+                    // Resaltar los selectores vacíos
+                    selects.forEach(select => {
+                        if (!select.value) {
+                            select.style.borderColor = '#ef4444';
+                            select.style.borderWidth = '2px';
+                            setTimeout(() => {
+                                select.style.borderColor = '';
+                                select.style.borderWidth = '';
+                            }, 3000);
+                        }
+                    });
+                    return;
+                }
+            }
+            
+            // Obtener la variante seleccionada
+            const selectedVariant = getSelectedVariant();
+            let variantData = null;
+            let price = currentProduct.precio || 0;
+            
+            // Si hay variante seleccionada, incluir sus datos
+            if (selectedVariant) {
+                variantData = {};
+                // Copiar todos los campos de la variante excepto precio_adicional y campos internos
+                Object.keys(selectedVariant).forEach(key => {
+                    if (key !== 'precio_adicional' && key !== '_id' && key !== 'id' && key !== 'stock' && key !== 'imagen_url' && key !== 'active' && key !== 'product_id') {
+                        variantData[key] = selectedVariant[key];
+                    }
+                });
+                // Ajustar el precio con el adicional de la variante
+                price = price + (selectedVariant.precio_adicional || 0);
+                
+                console.log('✅ Variante seleccionada:', {
+                    selectedVariant,
+                    variantData,
+                    precioBase: currentProduct.precio,
+                    precioAdicional: selectedVariant.precio_adicional,
+                    precioFinal: price
+                });
+            } else if (hasVariants) {
+                console.log('ℹ️ Producto tiene variantes pero ninguna seleccionada');
+            } else {
+                console.log('ℹ️ Producto sin variantes');
+            }
             
             console.log('🛒 Agregando producto al carrito desde detalle:', {
                 productId: productIdToAdd,
                 quantity,
                 price,
-                productName: currentProduct.nombre
+                productName: currentProduct.nombre,
+                variantData: variantData,
+                hasVariants: hasVariants
             });
             
-            // Usar la función global addToCart del carrito.js
-            if (window.addToCart) {
+            // Usar la función global addToCart del carrito.js con variantes
+            if (window.cart && window.cart.addProduct) {
                 try {
-                    const success = await window.addToCart(productIdToAdd, quantity, price);
+                    const success = await window.cart.addProduct(productIdToAdd, quantity, price, variantData);
                     if (success) {
-                        console.log('✅ Producto agregado exitosamente al carrito');
+                        const variantInfo = variantData ? ` con ${Object.entries(variantData).map(([k,v]) => `${k}: ${v}`).join(', ')}` : ' sin variante';
+                        console.log(`✅ Producto agregado exitosamente al carrito${variantInfo}`);
                         // Opcionalmente, mostrar un toast de éxito
                         if (window.showToast) {
-                            window.showToast('Producto agregado al carrito', 'success');
+                            const variantText = variantData ? ` (${Object.values(variantData).join(', ')})` : '';
+                            window.showToast(`Producto agregado al carrito${variantText}`, 'success');
                         }
                     } else {
                         console.error('❌ Error al agregar producto al carrito');
@@ -543,15 +665,15 @@
                     alert('Error al agregar el producto al carrito');
                 }
             } else {
-                console.error('❌ Función addToCart no disponible');
+                console.error('❌ Sistema de carrito no disponible');
                 alert('Error: Sistema de carrito no disponible');
             }
         });
     </script>
 
-    <!-- Scripts de autenticación y carrito -->
-    <script src="/static/ecomerce/auth.js"></script>
-    <script src="/static/ecomerce/carrito.js"></script>
-    <script src="/static/ecomerce/wishlist_counter.js"></script>
-</body>
-</html>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/ecomerce/carrito.js"></script>
+<script src="/static/ecomerce/wishlist_counter.js"></script>
+{% endblock %}

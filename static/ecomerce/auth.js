@@ -128,9 +128,15 @@ class AuthManager {
     showUnauthenticatedUI() {
         const authButtons = document.getElementById('auth-buttons');
         const userInfo = document.getElementById('user-info');
+        const cartButton = document.getElementById('cart-button');
+        const wishlistButton = document.getElementById('wishlist-nav-button');
 
         if (authButtons) authButtons.classList.remove('hidden');
         if (userInfo) userInfo.classList.add('hidden');
+        
+        // Ocultar carrito si usuario no está autenticado
+        if (cartButton) cartButton.classList.add('hidden');
+        if (wishlistButton) wishlistButton.classList.add('hidden');
     }
 
     /**
@@ -140,9 +146,16 @@ class AuthManager {
         const authButtons = document.getElementById('auth-buttons');
         const userInfo = document.getElementById('user-info');
         const userGreeting = document.getElementById('user-greeting');
+        const cartButton = document.getElementById('cart-button');
+        const wishlistButton = document.getElementById('wishlist-nav-button');
 
         if (authButtons) authButtons.classList.add('hidden');
         if (userInfo) userInfo.classList.remove('hidden');
+        
+        // Mostrar carrito y favoritos si usuario está autenticado
+        if (cartButton) cartButton.classList.remove('hidden');
+        if (wishlistButton) wishlistButton.classList.remove('hidden');
+        
         if (userGreeting) {
             const displayName = user.nombre || user.name || 'Usuario';
             userGreeting.textContent = `Hola, ${displayName}`;

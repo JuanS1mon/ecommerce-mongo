@@ -34,8 +34,11 @@ ORIGINS = [
 STATIC_DIR = "static"
 
 # Database URLs
-#DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sql_app.db")
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017/ecommerce")
+# MongoDB/Cosmos DB
+# Para Azure Cosmos DB, obtén la cadena de conexión desde Azure Portal > Connection String
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+MONGODB_URL = os.getenv("MONGODB_URL", MONGO_URL)  # Para compatibilidad
+DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
 
 # JWT Secret
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")

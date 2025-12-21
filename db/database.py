@@ -29,8 +29,10 @@ from beanie import init_beanie
 import importlib
 
 # Variables de entorno para MongoDB
+# Para Azure Cosmos DB, usa la cadena de conexión del Portal
+# Formato: mongodb+srv://<username>:<password>@<cluster>.mongo.cosmos.azure.com:10255/?ssl=true&retryWrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@<cluster>@
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-DB_NAME = "db_ecomerce"
+DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
 
 # Configuración de MongoDB con Beanie
 client = AsyncIOMotorClient(MONGO_URL)

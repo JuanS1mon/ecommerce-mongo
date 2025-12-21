@@ -682,24 +682,37 @@
 
                 if (cartResponse.ok) {
                     const currentCart = await cartResponse.json();
-
-                    // Obtener items del carrito
-                    const itemsResponse = await fetch(`${API_BASE}/carrito_items/carrito/${currentCart.id}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (itemsResponse.ok) {
-                        cartItems = await itemsResponse.json();
-                        await loadProductDetails();
-                        renderCart();
+                    
+                    // Usar items directamente de la respuesta del carrito si están disponibles
+                    if (currentCart.items && Array.isArray(currentCart.items) && currentCart.items.length > 0) {
+                        // Los items están directamente en el carrito
+                        cartItems = currentCart.items.map(item => ({
+                            id_producto: item.product_id || item.id_producto,
+                            quantity: item.cantidad || item.quantity || 1,
+                            price: item.precio_unitario || item.price || 0,
+                            variant_data: item.variant_data || item.variantes || null
+                        }));
                     } else {
-                        throw new Error('Error al cargar los items del carrito');
+                        // Intenta obtener items del endpoint específico si existen
+                        const itemsResponse = await fetch(`${API_BASE}/carrito_items/carrito/${currentCart.id}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (itemsResponse.ok) {
+                            cartItems = await itemsResponse.json();
+                        } else {
+                            cartItems = [];
+                        }
                     }
+
+                    await loadProductDetails();
+                    renderCart();
                 } else if (cartResponse.status === 404) {
                     // Carrito vacío
+                    cartItems = [];
                     renderEmptyCart();
                 } else {
                     throw new Error('Error al cargar el carrito');
@@ -707,6 +720,7 @@
             } catch (error) {
                 console.error('Error cargando carrito:', error);
                 showToast('Error al cargar el carrito', 'error');
+                cartItems = [];
                 renderEmptyCart();
             } finally {
                 document.getElementById('loading-state').classList.add('hidden');
@@ -718,38 +732,61 @@
 
             const productPromises = cartItems.map(async (item) => {
                 try {
-                    const response = await fetch(`${API_BASE}/productos/publico/${item.id_producto}`);
-                    if (response.ok) {
-                        const product = await response.json();
-                        item.product_name = product.nombre || `Producto ${item.id_producto}`;
-                        item.product_image = product.imagen_url || '/static/img/logo.png';
-                        item.product_codigo = product.codigo || '';
-                        item.product_descripcion = product.descripcion || '';
-
-                        // Información de variantes
+                    // Normalizar el ID del producto
+                    const productId = item.id_producto || item.product_id;
+                    if (!productId) {
+                        item.product_name = 'Producto sin ID';
+                        item.product_image = '/static/img/logo.png';
+                        item.product_codigo = '';
+                        item.product_descripcion = '';
                         item.variant_info = null;
-                        if (item.variant_data && typeof item.variant_data === 'object') {
-                            item.variant_info = item.variant_data;
-                        } else if (product.variants && product.variants.length > 0) {
-                            const defaultVariant = product.variants.find(v => v.stock > 0) || product.variants[0];
-                            if (defaultVariant) {
-                                item.variant_info = {
-                                    color: defaultVariant.color,
-                                    tipo: defaultVariant.tipo,
-                                    precio_adicional: defaultVariant.precio_adicional || 0
-                                };
+                        return;
+                    }
+
+                    // Intentar obtener detalles del producto
+                    const response = await fetch(`${API_BASE}/productos/publicos?limit=1000`);
+                    if (response.ok) {
+                        const productos = await response.json();
+                        const product = productos.find(p => p.id === productId);
+                        
+                        if (product) {
+                            item.product_name = product.nombre || `Producto ${productId}`;
+                            item.product_image = product.imagen_url || '/static/img/logo.png';
+                            item.product_codigo = product.codigo || '';
+                            item.product_descripcion = product.descripcion || '';
+
+                            // Información de variantes
+                            item.variant_info = null;
+                            if (item.variant_data && typeof item.variant_data === 'object') {
+                                item.variant_info = item.variant_data;
+                            } else if (product.variantes && product.variantes.length > 0) {
+                                const defaultVariant = product.variantes.find(v => v.stock > 0) || product.variantes[0];
+                                if (defaultVariant) {
+                                    item.variant_info = {
+                                        color: defaultVariant.color,
+                                        tipo: defaultVariant.tipo,
+                                        precio_adicional: defaultVariant.precio_adicional || 0
+                                    };
+                                }
                             }
+                        } else {
+                            item.product_name = `Producto ${productId}`;
+                            item.product_image = '/static/img/logo.png';
+                            item.product_codigo = '';
+                            item.product_descripcion = '';
+                            item.variant_info = null;
                         }
                     } else {
-                        item.product_name = `Producto ${item.id_producto}`;
+                        item.product_name = `Producto ${productId}`;
                         item.product_image = '/static/img/logo.png';
                         item.product_codigo = '';
                         item.product_descripcion = '';
                         item.variant_info = null;
                     }
                 } catch (error) {
-                    console.warn(`Error cargando producto ${item.id_producto}:`, error);
-                    item.product_name = `Producto ${item.id_producto}`;
+                    console.warn(`Error cargando producto:`, error);
+                    const productId = item.id_producto || item.product_id || 'desconocido';
+                    item.product_name = `Producto ${productId}`;
                     item.product_image = '/static/img/logo.png';
                     item.product_codigo = '';
                     item.product_descripcion = '';

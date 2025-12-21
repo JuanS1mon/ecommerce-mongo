@@ -42,6 +42,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi import Request, Depends
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.templating import Jinja2Templates
 from fastapi import Query, HTTPException
 from typing import Optional
 
@@ -297,6 +298,17 @@ for route in checkout_router.routes:
     logger.info(f"  CHECKOUT ROUTE: {route.methods} {route.path}")
 app.include_router(checkout_router, prefix="/ecomerce", tags=["checkout"])
 
+# Importar y registrar el router de SEO
+try:
+    from Projects.ecomerce.routes.seo import router as seo_router
+    logger.info(f"Registrando seo_router con {len(seo_router.routes)} rutas")
+    app.include_router(seo_router)
+    logger.info("SEO router registrado: sitemap.xml, robots.txt, etc.")
+except Exception as e:
+    logger.error(f"Error registrando seo_router: {e}")
+    import traceback
+    traceback.print_exc()
+
 app.include_router(resenas_router, prefix="/ecomerce/api", tags=["resenas"])
 app.include_router(lista_deseos_router, prefix="/ecomerce/api/lista-deseos", tags=["lista-deseos"])
 app.include_router(cupones_router, prefix="/ecomerce/api/cupones", tags=["cupones"])
@@ -310,32 +322,20 @@ from Projects.ecomerce.routes.frontend_pages import router as frontend_pages_rou
 # =============================
 
 # Ruta para productos de tienda (sin /api para compatibilidad) - REGISTRADA ANTES QUE frontend_pages_router
+templates_main = Jinja2Templates(directory="Projects/ecomerce/templates")
+
 @app.get("/ecomerce/productos/tienda")
-async def get_productos_tienda():
-    """
-    Página HTML que muestra los productos para la tienda
-    """
-    try:
-        from pathlib import Path
-        # Buscar solo en la carpeta templates del proyecto ecommerce
-        html_path = Path("Projects/ecomerce/templates/productos_tienda.html")
-        if not html_path.exists():
-            raise FileNotFoundError(f"No se encontró la página HTML: {html_path}")
-        with open(html_path, 'r', encoding='utf-8') as file:
-            html_content = file.read()
-        response = HTMLResponse(content=html_content)
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-        return response
-    except Exception as e:
-        print(f"Error al obtener la pagina HTML de tienda: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=500,
-            detail="Error al obtener la pagina HTML de tienda"
-        )
+async def get_productos_tienda(request: Request):
+    """Renderiza la tienda con Jinja2 (usa base.html)"""
+    return templates_main.TemplateResponse(
+        "productos_tienda.html",
+        {"request": request},
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 logger.info(f"Registrando frontend_pages_router con {len(frontend_pages_router.routes)} rutas")
 for route in frontend_pages_router.routes:
@@ -419,13 +419,17 @@ logger.info("Router google_oauth deshabilitado temporalmente (falta modulo authl
 
 # Ruta raíz - Carga la página principal
 @app.get("/")
-async def root():
-    """Carga la página principal del sitio"""
-    try:
-        with open("static/index.html", "r", encoding="utf-8") as file:
-            return HTMLResponse(content=file.read(), status_code=200)
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Página principal no encontrada</h1>", status_code=404)
+async def root(request: Request):
+    """Renderiza la página principal con plantilla base y navbar de tienda"""
+    return templates_main.TemplateResponse(
+        "index.html",
+        {"request": request},
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 # ENDPOINT DE PRUEBA PARA PROFILE
 

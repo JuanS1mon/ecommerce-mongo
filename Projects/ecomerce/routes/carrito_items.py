@@ -34,6 +34,7 @@ class AddToCartRequest(BaseModel):
     product_id: int
     quantity: int = 1
     price: float = 0.0
+    variant_data: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(from_attributes=True)
 
 class UpdateCartItemRequest(BaseModel):
@@ -394,7 +395,7 @@ async def get_carrito_items_beanie(
                 "product_name": f"Producto {item.get('product_id', 'N/A')}",
                 "product_image": "/static/img/logo.png",
                 "product_codigo": f"P{item.get('product_id', '000')}",
-                "variant_data": None,
+                "variant_data": item.get("variant_data"),  # Incluir variant_data del item
                 "created_at": item.get("added_at"),
                 "updated_at": None
             })
@@ -428,7 +429,8 @@ async def add_to_cart_simple_beanie(
             user_id=str(user['id']),
             product_id=cart_request.product_id,
             quantity=cart_request.quantity,
-            price=cart_request.price
+            price=cart_request.price,
+            variant_data=cart_request.variant_data
         )
 
         return {

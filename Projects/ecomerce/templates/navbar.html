@@ -1,0 +1,81 @@
+<!-- NAVBAR COMPONENT - Incluir en todas las páginas ecommerce -->
+<nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-2">
+            <div class="flex items-center space-x-4">
+                <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
+                    <img alt="Logo" class="h-10 sm:h-11 md:h-12 w-auto transition-all duration-300" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                    <span class="font-bold text-lg hidden sm:inline">Tienda Online</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
+                    <i class="fas fa-home"></i>
+                    <span class="hidden sm:inline text-sm">Inicio</span>
+                </a>
+                <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
+                    <i class="fas fa-store"></i>
+                    <span class="hidden sm:inline text-sm">Tienda</span>
+                </a>
+                
+                <!-- Usuario no autenticado -->
+                <div id="auth-buttons" class="flex items-center space-x-2">
+                    <a href="/ecomerce/login" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-1 text-sm">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span class="hidden sm:inline">Iniciar Sesión</span>
+                    </a>
+                    <a href="/ecomerce/register" class="bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-1 text-sm">
+                        <i class="fas fa-user-plus"></i>
+                        <span class="hidden sm:inline">Registrarse</span>
+                    </a>
+                </div>
+                
+                <!-- Usuario autenticado -->
+                <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                    <div class="relative">
+                        <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors text-sm">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-greeting" class="hidden sm:inline">Hola</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                            <div class="py-1">
+                                <a href="/ecomerce/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-heart text-red-500 mr-2"></i>
+                                    Mis Favoritos
+                                </a>
+                                <a href="/ecomerce/usuarios/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Mi Perfil
+                                </a>
+                                <div class="border-t border-gray-200"></div>
+                                <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>
+                                    Salir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botón de Favoritos -->
+                <a href="/ecomerce/perfil" class="text-gray-600 hover:text-red-500 px-3 py-2 rounded-lg transition-colors relative hidden" id="wishlist-nav-button" title="Mis Favoritos">
+                    <i class="fas fa-heart"></i>
+                    <span class="ml-1 hidden md:inline text-sm">Favoritos</span>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden" id="wishlist-count">0</span>
+                </a>
+                
+                <!-- Botón de Carrito (solo visible si está autenticado) -->
+                <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative hidden" id="cart-button" onclick="toggleCart()" title="Ver carrito">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="ml-1 hidden md:inline text-sm">Carrito</span>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Toast Notifications -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>

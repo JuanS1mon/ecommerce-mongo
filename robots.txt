@@ -1,0 +1,38 @@
+# Robots.txt - Configuración para bots de búsqueda
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/admin
+Disallow: /private
+Disallow: /*?*
+Allow: /ecomerce/productos/tienda
+Allow: /ecomerce/api/productos/publicos
+Allow: /ecomerce/api/categorias/publicas
+Allow: /*.js
+Allow: /*.css
+
+# Google Bot
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /api/admin
+Crawl-delay: 0
+
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Crawl-delay: 1
+
+# Yahoo Bot
+User-agent: Slurp
+Allow: /
+Disallow: /admin
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://tu-sitio.com/sitemap.xml
+Sitemap: https://tu-sitio.com/sitemap-productos.xml
+
+# Rate limit
+Request-rate: 1/s
