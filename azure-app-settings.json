@@ -1,7 +1,7 @@
 [
   {
     "name": "MONGO_URL",
-    "value": "mongodb+srv://dbadmin:TU_PASSWORD_AQUI@ecommerce-db.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
+    "value": "mongodb+srv://dbadmin:Pantone123@ecommerce-db.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
     "slotSetting": false
   },
   {
@@ -26,12 +26,7 @@
   },
   {
     "name": "SECRET_KEY",
-    "value": "GENERA_UNA_CLAVE_SEGURA_AQUI_CON_openssl_rand_-hex_32",
-    "slotSetting": false
-  },
-  {
-    "name": "ALGORITHM",
-    "value": "HS256",
+    "value": "ed53d0e9d819395d703d9f6236cab23338c5bf8d82b64cfd8d62e13d18bcf179",
     "slotSetting": false
   },
   {
