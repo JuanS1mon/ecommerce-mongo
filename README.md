@@ -46,7 +46,12 @@ Una aplicación FastAPI completa para un sistema de ecommerce con autenticación
    ```bash
    pip install -r requirements.txt
    ```
+   O usando el `Makefile`:
+   ```bash
+   make install
+   ```
 
+   (Se normalizó `requirements.txt` para evitar duplicados y dependencias redundantes.)
 5. **Configura las variables de entorno:**
    Crea un archivo `.env` en la raíz del proyecto con:
    ```env
@@ -163,6 +168,24 @@ Environment variables required for payments/email:
 ### Ejecutar en modo desarrollo con recarga automática:
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Ejecutar en desarrollo con Docker (Mongo + app) ✅
+1. Copia `.env.example` a `.env` y ajusta valores.
+2. Levanta servicios:
+```bash
+docker compose -f docker-compose.dev.yml up --build -d
+```
+3. Accede a la app en http://localhost:8001
+4. Para detener:
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+### Ejecutar tests con Mongo corriendo
+Asegúrate de que Mongo esté en `mongodb://localhost:27017` o que `MONGO_URL` apunte al contenedor. Luego ejecuta:
+```bash
+pytest
 ```
 
 ### Ejecutar pruebas:

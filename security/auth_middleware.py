@@ -21,9 +21,9 @@ Uso:
 
 import logging
 from typing import Dict, Any, Optional
-from fastapi import Request, Depends, HTTPException, status
+from fastapi import Request, HTTPException, status
 from fastapi.responses import RedirectResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 
 from Projects.ecomerce.models.usuarios import EcomerceUsuarios
 from security.jwt_auth import verify_token, JWTAuthError
@@ -334,79 +334,80 @@ def require_role_for_template(required_role: str):
     return check_role
 
 # Para compatibilidad con el sistema anterior, mantener estas funciones simples
+
+async def get_authenticated_user(request: Request) -> EcomerceUsuarios:
     """
-    Función simple que solo devuelve el usuario autenticado (sin datos de dashboard)
-    Útil para APIs que solo necesitan el usuario
+    Función simple que devuelve el usuario autenticado (sin datos de dashboard).
+    Útil para APIs que solo necesitan el usuario.
     """
     logger.debug(f"get_authenticated_user called for path: {request.url.path}")
-    
     token = extract_token_from_request(request)
     logger.debug(f"Token extracted: {'YES' if token else 'NO'}")
-    
+
     if not token:
         logger.warning("No token found in request")
         raise HTTPException(status_code=401, detail="Token requerido")
-    
+
     try:
-        user = get_user_from_token(token, db)
-        logger.debug(f"User authenticated: {user.usuario}")
+        user = await get_user_from_token(token)
+        logger.debug(f"User authenticated: {getattr(user, 'usuario', getattr(user, 'email', 'unknown'))}")
         return user
-    except Exception as e:
-        logger.error(f"Error authenticating user: {str(e)}")
+    except AuthenticationError as e:
+        logger.error(f"Error authenticating user: {e}")
         raise HTTPException(status_code=401, detail="Token inválido")
+
+
+async def require_auth_for_template(request: Request) -> Dict[str, Any]:
+    """
+    Dependency que requiere autenticación para servir plantillas HTML.
+    Si no hay autenticación válida, devuelve una Redirección a la página de login.
+    """
+    token = extract_token_from_request(request)
+    if not token:
+        return RedirectResponse(LOGIN_PAGE_URL)
+
+    try:
+        user = await get_user_from_token(token)
+    except AuthenticationError:
+        return RedirectResponse(LOGIN_PAGE_URL)
+
+    dashboard = await get_dashboard_data(user)
+    return dashboard
+
 
 def require_role_api(roles: list):
     """
     Dependency factory para endpoints de API que requieren roles específicos.
     Compatible con autenticación por cookies, headers y query params.
-    
-    Args:
-        roles: Lista de roles permitidos (ej: ["admin", "manager"])
-        
-    Returns:
-        Function que verifica el rol del usuario
     """
-        try:
-            # Obtener usuario autenticado usando el sistema de cookies/headers/query
-            user = await get_authenticated_user(request, db)
-              # Verificar si el usuario tiene al menos uno de los roles requeridos
-            user_roles = []
-            if hasattr(user, 'roles') and user.roles:
-                # Los roles pueden ser strings o objetos, manejar ambos casos
-                if isinstance(user.roles, list):
-                    user_roles = []
-                    for role in user.roles:
-                        if isinstance(role, str):
-                            user_roles.append(role.lower())
-                        elif hasattr(role, 'nombre'):
-                            user_roles.append(role.nombre.lower())
-                        else:
-                            user_roles.append(str(role).lower())
-                else:
-                    user_roles = [str(user.roles).lower()]
-            
-            # Verificar rol
-            has_required_role = any(role.lower() in user_roles for role in roles)
-            
-            if not has_required_role:
-                logger.warning(
-                    f"Usuario {user.usuario} intentó acceder sin roles {roles}. "
-                    f"Roles actuales: {user_roles}"
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Se requiere uno de estos roles: {roles}"
-                )
-            
-            return user
-            
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Error en verificación de rol: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Error de autenticación"
+    async def check_role(request: Request):
+        # Obtener usuario autenticado usando el sistema de cookies/headers/query
+        user = await get_authenticated_user(request)
+
+        # Verificar roles del usuario
+        user_roles = []
+        if hasattr(user, 'roles') and user.roles:
+            if isinstance(user.roles, list):
+                for role in user.roles:
+                    if isinstance(role, str):
+                        user_roles.append(role.lower())
+                    elif hasattr(role, 'nombre'):
+                        user_roles.append(role.nombre.lower())
+                    else:
+                        user_roles.append(str(role).lower())
+            else:
+                user_roles = [str(user.roles).lower()]
+
+        has_required_role = any(role.lower() in user_roles for role in roles)
+        if not has_required_role:
+            logger.warning(
+                f"Usuario {getattr(user,'usuario',getattr(user,'email','unknown'))} intentó acceder sin roles {roles}. Roles actuales: {user_roles}"
             )
-    
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Se requiere uno de estos roles: {roles}"
+            )
+
+        return user
+
     return check_role

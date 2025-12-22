@@ -1,4 +1,5 @@
 from db.database import Base
+from sqlalchemy import Column, Integer, String
 
 class EcomerceCarrito_items(Base):
     __tablename__ = 'ecomerce_carrito_items'

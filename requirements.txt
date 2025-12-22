@@ -1,3 +1,4 @@
+# Requisitos normalizados (únicos y ordenados)
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
 gunicorn==21.2.0
@@ -6,6 +7,7 @@ beanie==1.26.0
 motor==3.5.0
 python-multipart==0.0.9
 python-jose[cryptography]==3.3.0
+authlib==1.2.0
 passlib[bcrypt]==1.7.4
 python-dotenv==1.0.0
 sqlalchemy==2.0.30
@@ -17,17 +19,9 @@ typing-extensions==4.12.0
 pymongo==4.6.0
 email-validator==2.1.0
 httpx==0.28.1
+requests==2.31.0
+beautifulsoup4==4.12.2
 mercadopago==2.3.0
 jinja2==3.1.6
 twilio==9.1.0
 pytest==8.2.0
-alembic==1.13.1
-azure-search-documents==11.4.0
-azure-identity==1.15.0
-bcrypt==4.1.2
-typing-extensions==4.12.0
-pymongo==4.6.0
-email-validator==2.1.0
-httpx==0.28.1
-mercadopago==2.3.0
-jinja2==3.1.6

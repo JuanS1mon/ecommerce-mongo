@@ -3,12 +3,10 @@ Router de autenticación con Google OAuth2
 Maneja las rutas de login con Google y callback
 """
 import logging
-from typing import Optional
 from datetime import timedelta, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, JSONResponse
-from starlette.config import Config
 from authlib.integrations.starlette_client import OAuthError
 
 from security.google_auth import (
@@ -21,7 +19,7 @@ from security.ecommerce_auth import (
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
-from config import GOOGLE_CLIENT_ID, FRONTEND_URL, BACKEND_URL
+from config import GOOGLE_CLIENT_ID
 
 # Configure logger
 logger = logging.getLogger(__name__)

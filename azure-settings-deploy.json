@@ -1,0 +1,58 @@
+[
+  {
+    "name": "MONGO_URL",
+    "value": "mongodb+srv://dbadmin:Pantone123@ecommerce-db.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+  },
+  {
+    "name": "DB_NAME",
+    "value": "db_ecomerce"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "value": "production"
+  },
+  {
+    "name": "FRONTEND_URL",
+    "value": "https://ecommerce-mongo-h3gxh7cjfzgme2g9.westus2-01.azurewebsites.net"
+  },
+  {
+    "name": "BACKEND_URL",
+    "value": "https://ecommerce-mongo-h3gxh7cjfzgme2g9.westus2-01.azurewebsites.net"
+  },
+  {
+    "name": "SECRET_KEY",
+    "value": "ed53d0e9d819395d703d9f6236cab23338c5bf8d82b64cfd8d62e13d18bcf179"
+  },
+  {
+    "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+    "value": "true"
+  },
+  {
+    "name": "ENABLE_ORYX_BUILD",
+    "value": "true"
+  },
+  {
+    "name": "PORT",
+    "value": "8000"
+  },
+  {
+    "name": "MERCADOPAGO_ACCESS_TOKEN",
+    "value": ""
+  },
+  {
+    "name": "MERCADOPAGO_PUBLIC_KEY",
+    "value": ""
+  },
+  {
+    "name": "ADMIN_EMAIL",
+    "value": ""
+  },
+  {
+    "name": "SMTP_USERNAME",
+    "value": ""
+  },
+  {
+    "name": "SMTP_PASSWORD",
+    "value": ""
+  }
+]

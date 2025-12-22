@@ -1,0 +1,67 @@
+name: Deploy to Azure Web App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests (fast)
+        run: |
+          python -m pytest -q tests -m "not selenium and not playwright"
+
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'ecommerce-mongo'
+          package: '.'
+
+      - name: Configure App Settings from Secrets
+        env:
+          AZURE_RESOURCE_GROUP: testing
+          AZURE_WEBAPP_NAME: ecommerce-mongo
+        run: |
+          # Apply important app settings from GitHub secrets (ensure secrets exist in repo settings)
+          az webapp config appsettings set --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_WEBAPP_NAME --settings \
+            ENVIRONMENT=production \
+            DB_NAME=${{ secrets.DB_NAME }} \
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+            BACKEND_URL=${{ secrets.BACKEND_URL }} \
+            SECRET_KEY=${{ secrets.SECRET_KEY }} \
+            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }} \
+            MONGO_URL=${{ secrets.MONGO_URL }} \
+            MERCADOPAGO_ACCESS_TOKEN=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }} \
+            MERCADOPAGO_PUBLIC_KEY=${{ secrets.MERCADOPAGO_PUBLIC_KEY }} \
+            SMTP_USERNAME=${{ secrets.SMTP_USERNAME }} \
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+
+          # Ensure Always On and startup command
+          az webapp config set --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_WEBAPP_NAME --always-on true
+          az webapp config set --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_WEBAPP_NAME --startup-file "gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app --timeout 120 --log-level info"
+          echo "App settings and startup command configured"
+
+# NOTES:
+# - Store credentials in repository secrets as AZURE_CREDENTIALS (service principal JSON for azure/login action).
+# - For secrets like MONGO_URL, SMTP credentials, MERCADOPAGO tokens: set them in Azure Portal or add them to the action using secrets and `az webapp config appsettings set` securely.

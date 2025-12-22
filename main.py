@@ -7,7 +7,6 @@
 # =============================
 # PRE-IMPORTACIÓN CRÍTICA: Cargar typing_extensions correcto
 # =============================
-import pre_import  # DEBE ser el primer import para evitar conflictos
 
 print("[OK] pre_import cargado correctamente")
 
@@ -22,7 +21,6 @@ print("[OK] PYTHONPATH ajustado")
 # =============================
 # CONFIGURACIÓN Y ENTORNO
 # =============================
-from config import FRONTEND_URL, ORIGINS, STATIC_DIR, ENVIRONMENT
 from logging_config_new import setup_logging
 
 print("[OK] Configuración y logging importados")
@@ -37,25 +35,18 @@ print("[OK] Logging configurado")
 # =============================
 import sys
 import os
-from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi import Request, Depends
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi import Request
+from fastapi.responses import FileResponse, Response
 from fastapi.templating import Jinja2Templates
-from fastapi import Query, HTTPException
-from typing import Optional
 
 print("[OK] Importaciones básicas de FastAPI completadas")
 
 # =============================
 # IMPORTACIONES DE MIDDLEWARES Y HANDLERS
 # =============================
-from middleware.custom import (
-    RequestLoggingMiddleware, FrontendRedirectMiddleware, CustomErrorMiddleware, UserTemplateMiddleware, DebugMiddleware
-)
 from exception_handlers import register_exception_handlers
-from middleware.jwt_middleware import JWTMiddleware
 
 print("[OK] Middlewares y handlers importados")
 
@@ -63,9 +54,8 @@ print("[OK] Middlewares y handlers importados")
 # IMPORTACIONES DE DB Y ROUTERS
 # =============================
 from db.database import init_database  # Only import Beanie init
-from init_app import create_all_tables, ensure_directories
+from init_app import ensure_directories
 # from routers import usuarios as aut_usuario
-from Projects.ecomerce.routes import auth as auth_router
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
 from Projects.ecomerce.routes.frontend_pages import router as frontend_pages_router
@@ -73,9 +63,8 @@ from Projects.ecomerce.routes.static_pages import router as static_pages_router
 from Projects.ecomerce.routes.resenas import router as resenas_router
 from Projects.ecomerce.routes.lista_deseos import router as lista_deseos_router
 from Projects.ecomerce.routes.cupones import router as cupones_router
-from Services.mail.mail import router as mail_router, MAIL_CONFIG_OK
+from Services.mail.mail import MAIL_CONFIG_OK
 # from routers.mapas import router as mapas_router
-from logging_config_new import LOG_CONFIG
 
 print("OK Importaciones de DB y routers básicos completadas")
 
@@ -404,13 +393,15 @@ app.include_router(ecommerce_auth_router)
 logger.info("ecommerce_auth_router registrado")
 
 # Importar y registrar el router de autenticación con Google
-from Projects.ecomerce.routes.google_oauth import router as google_oauth_router
-logger.info(f"Registrando google_oauth_router con {len(google_oauth_router.routes)} rutas")
-for route in google_oauth_router.routes:
-    logger.info(f"  GOOGLE OAUTH ROUTE: {route.methods} {route.path}")
-app.include_router(google_oauth_router)
-logger.info("google_oauth_router registrado")
-logger.info("Router google_oauth deshabilitado temporalmente (falta modulo authlib)")
+try:
+    from Projects.ecomerce.routes.google_oauth import router as google_oauth_router
+    logger.info(f"Registrando google_oauth_router con {len(google_oauth_router.routes)} rutas")
+    for route in google_oauth_router.routes:
+        logger.info(f"  GOOGLE OAUTH ROUTE: {route.methods} {route.path}")
+    app.include_router(google_oauth_router)
+    logger.info("google_oauth_router registrado")
+except Exception as e:
+    logger.error(f"Router google_oauth deshabilitado temporalmente (falta modulo authlib o configuración): {e}")
 
 
 # =============================

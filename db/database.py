@@ -15,7 +15,6 @@
 # =============================================================================
 
 import os
-import sys
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
@@ -26,7 +25,6 @@ load_dotenv()
 # =============================
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
-import importlib
 
 # Variables de entorno para MongoDB
 # Para Azure Cosmos DB, usa la cadena de conexión del Portal
@@ -241,6 +239,17 @@ def get_database():
 # =============================
 # FUNCIONES DE COMPATIBILIDAD
 # =============================
+
+# Compat: exportar `Base` para modelos legacy de SQLAlchemy
+try:
+    from sqlalchemy.ext.declarative import declarative_base
+    Base = declarative_base()
+except Exception:
+    # Si SQLAlchemy no está disponible, exportar un objeto dummy para evitar ImportError
+    class _DummyBase:
+        pass
+    Base = _DummyBase()
+
 
 def get_db():
     """

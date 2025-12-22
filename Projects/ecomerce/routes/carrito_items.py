@@ -1,32 +1,66 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Request
 from fastapi.responses import HTMLResponse
-from typing import List
+from typing import List, Optional, Dict, Any
 from pathlib import Path
 from db.database import get_db
-from security.auth_middleware import require_auth_for_template, get_authenticated_user
 from security.ecommerce_auth import get_current_ecommerce_user
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 # from db.schemas.config.Usuarios import UserDB
 import logging
 import traceback
 
 # Imports locales del servicio
-from ..schemas.carrito_items import Carrito_itemsCreate, Carrito_itemsUpdate, Carrito_itemsRead, Carrito_itemsSimpleCreate
-from ..models.carrito_items import EcomerceCarrito_items
-from ..Controllers.carrito_items import (
-    create_carrito_items,
-    get_carrito_items,
-    gets_carrito_items,
-    update_carrito_items,
-    delete_carrito_items
-)
+try:
+    from ..schemas.carrito_items import Carrito_itemsCreate, Carrito_itemsUpdate, Carrito_itemsRead, Carrito_itemsSimpleCreate
+except Exception:
+    from Projects.ecomerce.schemas.carrito_items import Carrito_itemsCreate, Carrito_itemsUpdate, Carrito_itemsRead, Carrito_itemsSimpleCreate
+try:
+    from ..models.carrito_items import EcomerceCarrito_items
+except Exception:
+    from Projects.ecomerce.models.carrito_items import EcomerceCarrito_items
+
+try:
+    from ..Controllers.carrito_items import (
+        create_carrito_items,
+        get_carrito_items,
+        gets_carrito_items,
+        update_carrito_items,
+        delete_carrito_items
+    )
+except Exception:
+    # El módulo Controllers.carrito_items no está disponible en contextos de test aislados.
+    # Definir stubs mínimos para que la importación del módulo funcione.
+    def create_carrito_items(*args, **kwargs):
+        raise NotImplementedError("Controllers.carrito_items no disponible en el entorno de test")
+
+    def get_carrito_items(*args, **kwargs):
+        raise NotImplementedError("Controllers.carrito_items no disponible en el entorno de test")
+
+    def gets_carrito_items(*args, **kwargs):
+        raise NotImplementedError("Controllers.carrito_items no disponible en el entorno de test")
+
+    def update_carrito_items(*args, **kwargs):
+        raise NotImplementedError("Controllers.carrito_items no disponible en el entorno de test")
+
+    def delete_carrito_items(*args, **kwargs):
+        raise NotImplementedError("Controllers.carrito_items no disponible en el entorno de test")
 # Importaciones Beanie se hacen de manera lazy para evitar conflictos de inicialización
-from ..Controllers.carritos_beanie import (
-    get_cart_items,
-    update_cart_item,
-    delete_cart_item,
-    add_simple_item_to_cart
-)
+try:
+    from ..Controllers.carritos_beanie import (
+        get_cart_items,
+        update_cart_item,
+        delete_cart_item,
+        add_simple_item_to_cart
+    )
+except Exception:
+    from Projects.ecomerce.Controllers.carritos_beanie import (
+        get_cart_items,
+        update_cart_item,
+        delete_cart_item,
+        add_simple_item_to_cart
+    )
 from pydantic import BaseModel, ConfigDict
 
 # Modelos Pydantic para validación de carrito_items Beanie
