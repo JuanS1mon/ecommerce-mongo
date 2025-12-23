@@ -56,21 +56,30 @@ print("[OK] Middlewares y handlers importados")
 from db.database import init_database  # Only import Beanie init
 import importlib
 
+# Ensure logging is available as early as possible
+import logging
+logger = logging.getLogger("main")
+
 # Intento robusto de import para entornos donde el módulo puede no estar en sys.path
 try:
     from init_app import ensure_directories
 except Exception as e:
-    logger.error(f"No se pudo importar 'init_app' directamente: {e}")
+    # Use print as a fallback if logging isn't configured yet
+    print(f"No se pudo importar 'init_app' directamente: {e}")
     # Listar archivos del directorio de la app para depuración en logs
     project_root = os.path.abspath(os.path.dirname(__file__))
-    logger.error(f"Contenido del directorio de la app: {os.listdir(project_root)}")
+    try:
+        logger.error(f"Contenido del directorio de la app: {os.listdir(project_root)}")
+    except Exception:
+        print(f"Contenido del directorio de la app: {os.listdir(project_root)}")
+
     # Intentar cargar por importlib (fallback)
     try:
         init_mod = importlib.import_module('init_app')
         ensure_directories = init_mod.ensure_directories
         logger.info("Import 'init_app' realizado mediante importlib fallback")
     except Exception as e2:
-        logger.error(f"Fallback falló importando 'init_app': {e2}")
+        logger.warning(f"Fallback falló importando 'init_app': {e2}")
         # As a last resort, attempt to load module from file path in the app directory
         try:
             import importlib.util
@@ -84,11 +93,13 @@ except Exception as e:
                 ensure_directories = init_mod.ensure_directories
                 logger.info("Import 'init_app' realizado mediante spec_from_file_location fallback")
             else:
-                logger.error(f"Archivo 'init_app.py' no existe en {project_root}")
-                raise
+                logger.warning(f"Archivo 'init_app.py' no existe en {project_root}")
+                # Do not raise here to keep the app resilient; set a no-op
+                ensure_directories = lambda: None
         except Exception as e3:
             logger.error(f"All fallbacks failed importing 'init_app': {e3}")
-            raise
+            # Do not raise to avoid crashing the worker; use no-op
+            ensure_directories = lambda: None
 # from routers import usuarios as aut_usuario
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
