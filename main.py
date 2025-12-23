@@ -71,7 +71,24 @@ except Exception as e:
         logger.info("Import 'init_app' realizado mediante importlib fallback")
     except Exception as e2:
         logger.error(f"Fallback falló importando 'init_app': {e2}")
-        raise
+        # As a last resort, attempt to load module from file path in the app directory
+        try:
+            import importlib.util
+            project_root = os.path.abspath(os.path.dirname(__file__))
+            candidate = os.path.join(project_root, 'init_app.py')
+            logger.info(f"Intentando cargar 'init_app' desde ruta: {candidate}")
+            if os.path.exists(candidate):
+                spec = importlib.util.spec_from_file_location('init_app', candidate)
+                init_mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(init_mod)
+                ensure_directories = init_mod.ensure_directories
+                logger.info("Import 'init_app' realizado mediante spec_from_file_location fallback")
+            else:
+                logger.error(f"Archivo 'init_app.py' no existe en {project_root}")
+                raise
+        except Exception as e3:
+            logger.error(f"All fallbacks failed importing 'init_app': {e3}")
+            raise
 # from routers import usuarios as aut_usuario
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
