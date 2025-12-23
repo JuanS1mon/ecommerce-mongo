@@ -332,8 +332,9 @@ populate_db.py
 recreate_*.py
 fix_*.py
 investigate_*.py
-init_app.py
-pre_import.py
+# Allow init_app and pre_import to be deployed
+# init_app.py
+# pre_import.py
 
 # Archivos de servidor de prueba/debug
 server_debug*.py
