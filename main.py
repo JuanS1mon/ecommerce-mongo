@@ -54,7 +54,24 @@ print("[OK] Middlewares y handlers importados")
 # IMPORTACIONES DE DB Y ROUTERS
 # =============================
 from db.database import init_database  # Only import Beanie init
-from init_app import ensure_directories
+import importlib
+
+# Intento robusto de import para entornos donde el módulo puede no estar en sys.path
+try:
+    from init_app import ensure_directories
+except Exception as e:
+    logger.error(f"No se pudo importar 'init_app' directamente: {e}")
+    # Listar archivos del directorio de la app para depuración en logs
+    project_root = os.path.abspath(os.path.dirname(__file__))
+    logger.error(f"Contenido del directorio de la app: {os.listdir(project_root)}")
+    # Intentar cargar por importlib (fallback)
+    try:
+        init_mod = importlib.import_module('init_app')
+        ensure_directories = init_mod.ensure_directories
+        logger.info("Import 'init_app' realizado mediante importlib fallback")
+    except Exception as e2:
+        logger.error(f"Fallback falló importando 'init_app': {e2}")
+        raise
 # from routers import usuarios as aut_usuario
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
