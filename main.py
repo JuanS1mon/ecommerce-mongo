@@ -60,46 +60,38 @@ import importlib
 import logging
 logger = logging.getLogger("main")
 
-# Intento robusto de import para entornos donde el módulo puede no estar en sys.path
-try:
-    from init_app import ensure_directories
-except Exception as e:
-    # Use print as a fallback if logging isn't configured yet
-    print(f"No se pudo importar 'init_app' directamente: {e}")
-    # Listar archivos del directorio de la app para depuración en logs
-    project_root = os.path.abspath(os.path.dirname(__file__))
-    try:
-        logger.error(f"Contenido del directorio de la app: {os.listdir(project_root)}")
-    except Exception:
-        print(f"Contenido del directorio de la app: {os.listdir(project_root)}")
+# Robustly load init_app without triggering a top-level ImportError that can crash Gunicorn
+project_root = os.path.abspath(os.path.dirname(__file__))
+init_candidate_path = os.path.join(project_root, 'init_app.py')
+ensure_directories = None
 
-    # Intentar cargar por importlib (fallback)
+# 1) Try loading from file location first (most deterministic)
+try:
+    import importlib.util
+    if os.path.exists(init_candidate_path):
+        spec = importlib.util.spec_from_file_location('init_app', init_candidate_path)
+        init_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(init_mod)
+        ensure_directories = init_mod.ensure_directories
+        logger.info("Imported 'init_app' from file path using spec_from_file_location")
+    else:
+        logger.info(f"init_app.py not found at {init_candidate_path}; will try importlib.import_module next")
+except Exception as e:
+    logger.warning(f"Failed loading 'init_app' from file path: {e}")
+
+# 2) If not found, try the standard import mechanism
+if ensure_directories is None:
     try:
         init_mod = importlib.import_module('init_app')
         ensure_directories = init_mod.ensure_directories
-        logger.info("Import 'init_app' realizado mediante importlib fallback")
-    except Exception as e2:
-        logger.warning(f"Fallback falló importando 'init_app': {e2}")
-        # As a last resort, attempt to load module from file path in the app directory
-        try:
-            import importlib.util
-            project_root = os.path.abspath(os.path.dirname(__file__))
-            candidate = os.path.join(project_root, 'init_app.py')
-            logger.info(f"Intentando cargar 'init_app' desde ruta: {candidate}")
-            if os.path.exists(candidate):
-                spec = importlib.util.spec_from_file_location('init_app', candidate)
-                init_mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(init_mod)
-                ensure_directories = init_mod.ensure_directories
-                logger.info("Import 'init_app' realizado mediante spec_from_file_location fallback")
-            else:
-                logger.warning(f"Archivo 'init_app.py' no existe en {project_root}")
-                # Do not raise here to keep the app resilient; set a no-op
-                ensure_directories = lambda: None
-        except Exception as e3:
-            logger.error(f"All fallbacks failed importing 'init_app': {e3}")
-            # Do not raise to avoid crashing the worker; use no-op
-            ensure_directories = lambda: None
+        logger.info("Imported 'init_app' via importlib.import_module")
+    except Exception as e:
+        logger.warning(f"importlib.import_module('init_app') failed: {e}")
+
+# 3) Final fallback: no-op to keep the app running
+if ensure_directories is None:
+    logger.warning("Could not import 'init_app'; using no-op ensure_directories to keep the app running")
+    ensure_directories = lambda: None
 # from routers import usuarios as aut_usuario
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
