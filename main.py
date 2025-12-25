@@ -7,8 +7,30 @@
 # =============================
 # PRE-IMPORTACIÓN CRÍTICA: Cargar typing_extensions correcto
 # =============================
-
-print("[OK] pre_import cargado correctamente")
+import sys, os
+try:
+    import pre_import  # DEBE ser el primer import para evitar conflictos
+    print("[OK] pre_import cargado correctamente")
+except Exception as e:
+    import traceback
+    print(f"[ERROR] No se pudo importar 'pre_import': {e}")
+    traceback.print_exc()
+# Startup diagnostics to help App Service preflight debugging
+try:
+    import pkgutil
+    print(f"[INFO] sys.executable={sys.executable}")
+    print(f"[INFO] cwd={os.getcwd()}")
+    print(f"[INFO] __file__={__file__}")
+    print(f"[INFO] sys.path={sys.path}")
+    try:
+        root = os.path.abspath(os.path.dirname(__file__))
+        print('[INFO] site root listing (first 200 entries):')
+        print(os.listdir(root)[:200])
+    except Exception as e:
+        print(f"[WARN] Could not list site root: {e}")
+    print('[INFO] modules in site root: ' + ', '.join([m.name for m in pkgutil.iter_modules(path=[os.path.abspath(os.path.dirname(__file__))])][:200]))
+except Exception as e:
+    print(f"[WARN] Startup diagnostics failed: {e}")
 
 # =============================
 # AJUSTAR PYTHONPATH
