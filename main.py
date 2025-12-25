@@ -117,13 +117,42 @@ if ensure_directories is None:
 # from routers import usuarios as aut_usuario
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
-from Projects.ecomerce.routes.frontend_pages import router as frontend_pages_router
-from Projects.ecomerce.routes.static_pages import router as static_pages_router
-from Projects.ecomerce.routes.resenas import router as resenas_router
-from Projects.ecomerce.routes.lista_deseos import router as lista_deseos_router
-from Projects.ecomerce.routes.cupones import router as cupones_router
-from Services.mail.mail import MAIL_CONFIG_OK
-# from routers.mapas import router as mapas_router
+# Defensive imports for routes: avoid import-time crashes during App Service preflight
+try:
+    from Projects.ecomerce.routes.frontend_pages import router as frontend_pages_router
+except Exception as e:
+    frontend_pages_router = None
+    logger.error(f"Failed to import frontend_pages_router: {e}")
+
+try:
+    from Projects.ecomerce.routes.static_pages import router as static_pages_router
+except Exception as e:
+    static_pages_router = None
+    logger.error(f"Failed to import static_pages_router: {e}")
+
+try:
+    from Projects.ecomerce.routes.resenas import router as resenas_router
+except Exception as e:
+    resenas_router = None
+    logger.error(f"Failed to import resenas_router: {e}")
+
+try:
+    from Projects.ecomerce.routes.lista_deseos import router as lista_deseos_router
+except Exception as e:
+    lista_deseos_router = None
+    logger.error(f"Failed to import lista_deseos_router: {e}")
+
+try:
+    from Projects.ecomerce.routes.cupones import router as cupones_router
+except Exception as e:
+    cupones_router = None
+    logger.error(f"Failed to import cupones_router: {e}")
+
+try:
+    from Services.mail.mail import MAIL_CONFIG_OK
+except Exception as e:
+    MAIL_CONFIG_OK = False
+    logger.error(f"Failed to import MAIL_CONFIG_OK from Services.mail.mail: {e}")
 
 print("OK Importaciones de DB y routers básicos completadas")
 
@@ -357,9 +386,21 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
-app.include_router(resenas_router, prefix="/ecomerce/api", tags=["resenas"])
-app.include_router(lista_deseos_router, prefix="/ecomerce/api/lista-deseos", tags=["lista-deseos"])
-app.include_router(cupones_router, prefix="/ecomerce/api/cupones", tags=["cupones"])
+if resenas_router:
+    app.include_router(resenas_router, prefix="/ecomerce/api", tags=["resenas"])
+else:
+    logger.warning("resenas_router no disponible; se omite su registro")
+
+if lista_deseos_router:
+    app.include_router(lista_deseos_router, prefix="/ecomerce/api/lista-deseos", tags=["lista-deseos"])
+else:
+    logger.warning("lista_deseos_router no disponible; se omite su registro")
+
+if cupones_router:
+    app.include_router(cupones_router, prefix="/ecomerce/api/cupones", tags=["cupones"])
+else:
+    logger.warning("cupones_router no disponible; se omite su registro")
+
 logger.info("carrito_router registrado")
 
 # Importar y registrar el router de páginas frontend
@@ -370,11 +411,18 @@ from Projects.ecomerce.routes.frontend_pages import router as frontend_pages_rou
 # =============================
 
 # Ruta para productos de tienda (sin /api para compatibilidad) - REGISTRADA ANTES QUE frontend_pages_router
-templates_main = Jinja2Templates(directory="Projects/ecomerce/templates")
+# Load templates defensively
+try:
+    templates_main = Jinja2Templates(directory="Projects/ecomerce/templates")
+except Exception as e:
+    templates_main = None
+    logger.error(f"Failed to initialize Jinja2Templates: {e}")
 
 @app.get("/ecomerce/productos/tienda")
 async def get_productos_tienda(request: Request):
     """Renderiza la tienda con Jinja2 (usa base.html)"""
+    if templates_main is None:
+        return Response(status_code=503, content="Templates not available")
     return templates_main.TemplateResponse(
         "productos_tienda.html",
         {"request": request},
@@ -385,19 +433,34 @@ async def get_productos_tienda(request: Request):
         },
     )
 
-logger.info(f"Registrando frontend_pages_router con {len(frontend_pages_router.routes)} rutas")
-for route in frontend_pages_router.routes:
-    logger.info(f"  FRONTEND ROUTE: {route.methods} {route.path}")
-app.include_router(frontend_pages_router)
-logger.info("frontend_pages_router registrado")
+if frontend_pages_router:
+    logger.info(f"Registrando frontend_pages_router con {len(frontend_pages_router.routes)} rutas")
+    for route in frontend_pages_router.routes:
+        logger.info(f"  FRONTEND ROUTE: {route.methods} {route.path}")
+    app.include_router(frontend_pages_router)
+    logger.info("frontend_pages_router registrado")
+else:
+    logger.warning("frontend_pages_router no disponible; se omite su registro")
 
 # Importar y registrar el router de páginas estáticas
-from Projects.ecomerce.routes.static_pages import router as static_pages_router
-logger.info(f"Registrando static_pages_router con {len(static_pages_router.routes)} rutas")
-for route in static_pages_router.routes:
-    logger.info(f"  STATIC ROUTE: {route.methods} {route.path}")
-app.include_router(static_pages_router)
-logger.info("static_pages_router registrado")
+if static_pages_router:
+    logger.info(f"Registrando static_pages_router con {len(static_pages_router.routes)} rutas")
+    for route in static_pages_router.routes:
+        logger.info(f"  STATIC ROUTE: {route.methods} {route.path}")
+    app.include_router(static_pages_router)
+    logger.info("static_pages_router registrado")
+else:
+    logger.warning("static_pages_router no disponible; se omite su registro")
+
+# Indicar que la importación de módulos terminó correctamente (útil para startup preflight)
+try:
+    import datetime
+    p = os.path.join(os.path.dirname(__file__), 'import_check.log')
+    with open(p, 'a') as f:
+        f.write(f"IMPORT_OK {datetime.datetime.utcnow().isoformat()}\n")
+    logger.info(f"Wrote IMPORT_OK to {p}")
+except Exception as e:
+    logger.warning(f"Could not write IMPORT_OK to import_check.log: {e}")
 
 # Importar y registrar el router de mapas
 try:
