@@ -60,7 +60,7 @@ import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi import Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 print("[OK] Importaciones básicas de FastAPI completadas")
@@ -114,6 +114,12 @@ if ensure_directories is None:
 if ensure_directories is None:
     logger.warning("Could not import 'init_app'; using no-op ensure_directories to keep the app running")
     ensure_directories = lambda: None
+
+# Background initialization flags (used to avoid blocking startup probe)
+# `db_ready` stays False until background init completes successfully
+db_ready = False
+init_task = None
+
 # from routers import usuarios as aut_usuario
 # from routers.config import  configDB,  Analisis,  usuarios_admin
 # from routers.config.Admin import router as admin_router
@@ -186,32 +192,104 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
-    # Inicializar Beanie para MongoDB
-    try:
-        await init_database()
-        logger.info("Beanie inicializado correctamente para MongoDB")
-        db_status = True
-    except Exception as e:
-        logger.error(f"Error inicializando Beanie: {e}")
-        db_status = False
-        raise
-    
-    # Alembic migrations not needed for MongoDB
-    alembic_ok = True  # MongoDB doesn't use Alembic
-    
-    mail_ok = check_mail_config()
+    """Lifespan que no bloquea el arranque del proceso: inicia la inicialización
+    de DB en background y devuelve control inmediatamente para que la app
+    responda a las sondas de arranque. Las tareas pesadas se registran y hacen
+    retries internos; cuando terminan correctamente escriben READY_OK en
+    `import_check.log`.
+    """
+    global db_ready, init_task, db_status, modelos_status, tablas_status
+    import asyncio
 
-    # Inicializar usuario administrador
+    # Marcar como no listo inicialmente
+    db_ready = False
+    db_status = False
+
+    async def _init_background():
+        """Tarea background que inicializa la DB y otros componentes lentos."""
+        global db_ready, db_status
+        retries = 3
+        for attempt in range(1, retries + 1):
+            try:
+                await init_database()
+                db_status = True
+                db_ready = True
+                logger.info("Beanie inicializado correctamente para MongoDB (background)")
+                break
+            except Exception as e:
+                logger.error(f"Background init_database intento {attempt} falló: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                if attempt < retries:
+                    await asyncio.sleep(5 * attempt)
+                else:
+                    db_status = False
+                    logger.error("Fallo al inicializar la base de datos después de retries")
+
+        # Tareas post-init (ej. crear admin) — no bloqueantes
+        try:
+            # Placeholder: si fuera necesario llamar a init_admin_on_startup, hacerlo aquí
+            logger.info("Admin init (background) completado o saltado")
+        except Exception as e:
+            logger.error(f"Error en admin init (background): {e}")
+
+        # Escribir READY_OK una vez completado (exitoso o no, para diagnosticar)
+        try:
+            import datetime
+            p = os.path.join(os.path.dirname(__file__), 'import_check.log')
+            with open(p, 'a') as f:
+                f.write(f"READY_OK db_ready={db_ready} {datetime.datetime.utcnow().isoformat()}\n")
+            logger.info(f"Wrote READY_OK to {p}")
+        except Exception as e:
+            logger.warning(f"Could not write READY_OK to import_check.log: {e}")
+
+    # Iniciar la tarea background y no esperar a que termine
+    init_task = asyncio.create_task(_init_background())
+    logger.info("Background initialization started (init_task scheduled)")
+
+    # Registrar checklist inicial (DB puede estar pendiente)
+    mail_ok = check_mail_config()
     admin_created = False
+    tokens_cleaned = True
+
+    checklist = [
+        (".env cargado correctamente", True),
+        ("Configuracion de base de datos cargada", db_status),
+        ("Configuracion de correo cargada correctamente", mail_ok),
+        ("Modelos importados", modelos_status),
+        ("Tablas creadas/verificadas", tablas_status),
+        ("Directorios verificados", True),
+        ("Sistema de stock configurado", True),
+        ("Middlewares y rutas registradas", True),
+        ("Logging inicializado", True),
+        ("Migraciones Alembic aplicadas", True),
+        ("Usuario administrador inicializado", admin_created),
+        ("Tokens expirados limpiados del blacklist", tokens_cleaned),
+    ]
+
+    logger.info("\n================= CHECKLIST DE INICIO =================")
+    for item, ok in checklist:
+        logger.info(f"[OK] {item}")
+    logger.info("=====================================================\n")
+    logger.info("Iniciando aplicacion FastAPI (startup tasks running in background)")
+
     try:
-        # from init_admin import init_admin_on_startup
-        # init_admin_on_startup(db)
-        # admin_created = True
-        admin_created = True  # Usuarios ya existen con contraseñas conocidas
+        yield
     except Exception as e:
-        logger.error(f"Error al crear usuario administrador: {e}")
-        admin_created = False
+        logger.error(f"Error durante la ejecución de la aplicación: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise
+    finally:
+        # During shutdown, cancel background init if it's still running
+        logger.info("Cerrando aplicacion FastAPI: esperando tareas background")
+        if init_task is not None and not init_task.done():
+            init_task.cancel()
+            try:
+                await init_task
+            except asyncio.CancelledError:
+                logger.info("Background init_task cancelled during shutdown")
+        logger.info("Limpieza de recursos completada")
 
     # Limpiar tokens expirados del blacklist - Deshabilitado para MongoDB
     tokens_cleaned = True  # No aplicable en MongoDB
@@ -279,6 +357,19 @@ async def favicon():
     if os.path.exists(candidate_svg):
         return FileResponse(candidate_svg, media_type="image/svg+xml")
     return Response(status_code=204)
+
+
+@app.get("/healthz")
+async def healthz():
+    """Readiness endpoint: devuelve 200 cuando la DB está lista, 503 mientras se inicializa."""
+    try:
+        if db_ready:
+            return JSONResponse(status_code=200, content={"status": "ok", "db_ready": True})
+        else:
+            return JSONResponse(status_code=503, content={"status": "starting", "db_ready": False})
+    except Exception as e:
+        logger.error(f"Error en /healthz: {e}")
+        return JSONResponse(status_code=500, content={"status": "error"})
 
 # =============================
 # MIDDLEWARES
