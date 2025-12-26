@@ -131,3 +131,37 @@ az group delete --name testing --no-wait
 2. Esperar 1-2 minutos para que la app reinicie
 3. Verificar que la app responde correctamente
 4. Revisar logs si hay errores
+
+---
+
+## 🧪 Prueba rápida con `main2.py` (endpoint mínimo)
+
+He añadido un archivo de comprobación muy simple `main2.py` que:
+- Sirve una plantilla `templates/main2.html` en `/`.
+- Intenta leer un documento de la colección `sample` en la base indicada por `MONGO_URL` y `DB_NAME`.
+- Si no hay documento, inserta uno de ejemplo y lo muestra.
+
+### Ejecutar localmente
+
+1. Asegúrate de tener `MONGO_URL` y `DB_NAME` exportados en tu entorno (igual que en Azure):
+```powershell
+$env:MONGO_URL = "<tu-connection-string>"
+$env:DB_NAME = "db_ecomerce"
+```
+2. Ejecuta la app:
+```powershell
+py -m uvicorn main2:app --host 0.0.0.0 --port 8000
+```
+3. Visita `http://localhost:8000/` para ver la página.
+
+### Desplegar en Azure (prueba rápida)
+
+1. Sube los cambios a tu repositorio o ZIP y despliega como antes.
+2. Ajusta el comando de inicio si quieres que App Service use `main2`:
+```powershell
+az webapp config set --name ecommerce-mongo --resource-group testing --startup-file "gunicorn -w 1 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main2:app"
+az webapp restart --name ecommerce-mongo --resource-group testing
+```
+3. Visita `https://ecommerce-mongo-h3gxh7cjfzgme2g9.westus2-01.azurewebsites.net/` y revisa la plantilla.
+
+> Nota: `main2.py` es solo para pruebas rápidas. Si responde correctamente, el problema de arranque del `main` original es probable que esté relacionado con la inicialización de servicios (migrations, conexiones pesadas o carga de módulos) y podremos investigar más en detalle.
