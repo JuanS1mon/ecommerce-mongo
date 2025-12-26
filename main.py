@@ -706,3 +706,7 @@ if __name__ == "__main__":
         logger.info("Bloque finally ejecutado")
 # Force reload 10/21/2025 19:29:27
 
+# Adaptador para Vercel (serverless)
+from mangum import Mangum
+handler = Mangum(app)
+

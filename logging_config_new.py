@@ -25,18 +25,18 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
 
-    # Handler para archivo
-    file_handler = RotatingFileHandler(
-        'app.log',
-        maxBytes=10*1024*1024,  # 10MB
-        backupCount=5
-    )
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
+    # Remover handler para archivo (no compatible con Vercel/serverless)
+    # file_handler = RotatingFileHandler(
+    #     'app.log',
+    #     maxBytes=10*1024*1024,  # 10MB
+    #     backupCount=5
+    # )
+    # file_handler.setLevel(logging.DEBUG)
+    # file_handler.setFormatter(formatter)
 
     # Agregar handlers al logger
     logger.addHandler(console_handler)
-    logger.addHandler(file_handler)
+    # logger.addHandler(file_handler)
 
     # Configurar loggers específicos
     logging.getLogger('uvicorn').setLevel(logging.INFO)
@@ -65,14 +65,14 @@ LOG_CONFIG = {
             "formatter": "default",
             "level": "INFO"
         },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "app.log",
-            "maxBytes": 10485760,  # 10MB
-            "backupCount": 5,
-            "formatter": "default",
-            "level": "DEBUG"
-        },
+        # "file": {  # Removido para compatibilidad con Vercel/serverless
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "filename": "app.log",
+        #     "maxBytes": 10485760,  # 10MB
+        #     "backupCount": 5,
+        #     "formatter": "default",
+        #     "level": "DEBUG"
+        # },
         "access": {
             "class": "logging.StreamHandler",
             "formatter": "access",
@@ -80,13 +80,13 @@ LOG_CONFIG = {
         }
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"],  # Removido "file"
         "level": "DEBUG"
     },
     "loggers": {
         "uvicorn": {
             "level": "INFO",
-            "handlers": ["console", "file"],
+            "handlers": ["console"],  # Removido "file"
             "propagate": False
         },
         "uvicorn.access": {
@@ -96,7 +96,7 @@ LOG_CONFIG = {
         },
         "fastapi": {
             "level": "INFO",
-            "handlers": ["console", "file"],
+            "handlers": ["console"],  # Removido "file"
             "propagate": False
         }
     }

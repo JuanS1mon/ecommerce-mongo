@@ -1,7 +1,18 @@
 # Imports de bibliotecas estándar
 from starlette.middleware.base import BaseHTTPMiddleware
 import logging
-import pyodbc
+try:
+    import pyodbc
+    PYODBC_AVAILABLE = True
+except ImportError:
+    PYODBC_AVAILABLE = False
+    pyodbc = None
+try:
+    from sqlalchemy.exc import SQLAlchemyError
+    SQLALCHEMY_AVAILABLE = True
+except ImportError:
+    SQLAlchemyError = Exception  # Fallback
+    SQLALCHEMY_AVAILABLE = False
 import re
 import traceback
 
@@ -18,7 +29,7 @@ class DBErrorMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         except Exception as e:
             # Captura la excepción y verifica si es un error de columna de SQL Server
-            if isinstance(e, SQLAlchemyError) or isinstance(e, pyodbc.Error):
+            if (SQLALCHEMY_AVAILABLE and isinstance(e, SQLAlchemyError)) or (PYODBC_AVAILABLE and isinstance(e, pyodbc.Error)):
                 error_msg = str(e)
                 
                 # Patrones para detectar errores de columna
