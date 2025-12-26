@@ -27,8 +27,14 @@ def ensure_directories():
     ]
 
     for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-            logger.info(f"[OK] Created directory: {directory}")
-        else:
-            logger.debug(f"Directory already exists: {directory}")
+        try:
+            if not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
+                logger.info(f"[OK] Created directory: {directory}")
+            else:
+                logger.debug(f"Directory already exists: {directory}")
+        except OSError as e:
+            if e.errno == 30:  # Read-only file system
+                logger.warning(f"[WARN] Cannot create directory {directory} on read-only file system: {e}")
+            else:
+                logger.error(f"[ERROR] Failed to create directory {directory}: {e}")

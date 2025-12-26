@@ -8,13 +8,17 @@
 # PRE-IMPORTACIÓN CRÍTICA: Cargar typing_extensions correcto
 # =============================
 import sys, os
-try:
-    import pre_import  # DEBE ser el primer import para evitar conflictos
-    print("[OK] pre_import cargado correctamente")
-except Exception as e:
-    import traceback
-    print(f"[ERROR] No se pudo importar 'pre_import': {e}")
-    traceback.print_exc()
+# Skip pre_import in serverless environments like Vercel
+if os.getenv("VERCEL") != "1":
+    try:
+        import pre_import  # DEBE ser el primer import para evitar conflictos
+        print("[OK] pre_import cargado correctamente")
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] No se pudo importar 'pre_import': {e}")
+        traceback.print_exc()
+else:
+    print("[INFO] Skipping pre_import in Vercel environment")
 # Startup diagnostics to help App Service preflight debugging
 try:
     import pkgutil
