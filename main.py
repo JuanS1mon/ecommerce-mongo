@@ -711,6 +711,6 @@ if __name__ == "__main__":
 # Force reload 10/21/2025 19:29:27
 
 # Adaptador para Vercel (serverless)
-from mangum import Mangum
-handler = Mangum(app)
+# from mangum import Mangum
+# handler = Mangum(app)
 
