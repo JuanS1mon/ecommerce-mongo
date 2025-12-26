@@ -196,62 +196,33 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan que no bloquea el arranque del proceso: inicia la inicialización
-    de DB en background y devuelve control inmediatamente para que la app
-    responda a las sondas de arranque. Las tareas pesadas se registran y hacen
-    retries internos; cuando terminan correctamente escriben READY_OK en
-    `import_check.log`.
-    """
-    global db_ready, init_task, db_status, modelos_status, tablas_status
+    """Lifespan que inicializa la DB antes de que la app esté lista."""
+    global db_ready, db_status, modelos_status, tablas_status
     import asyncio
 
     # Marcar como no listo inicialmente
     db_ready = False
     db_status = False
 
-    async def _init_background():
-        """Tarea background que inicializa la DB y otros componentes lentos."""
-        global db_ready, db_status
-        retries = 3
-        for attempt in range(1, retries + 1):
-            try:
-                await init_database()
-                db_status = True
-                db_ready = True
-                logger.info("Beanie inicializado correctamente para MongoDB (background)")
-                break
-            except Exception as e:
-                logger.error(f"Background init_database intento {attempt} falló: {e}")
-                import traceback
-                logger.error(traceback.format_exc())
-                if attempt < retries:
-                    await asyncio.sleep(5 * attempt)
-                else:
-                    db_status = False
-                    logger.error("Fallo al inicializar la base de datos después de retries")
+    try:
+        await init_database()
+        db_status = True
+        db_ready = True
+        logger.info("Beanie inicializado correctamente para MongoDB")
+    except Exception as e:
+        logger.error(f"Fallo al inicializar la base de datos: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        db_status = False
+        # No raise, para que la app siga funcionando sin DB
 
-        # Tareas post-init (ej. crear admin) — no bloqueantes
-        try:
-            # Placeholder: si fuera necesario llamar a init_admin_on_startup, hacerlo aquí
-            logger.info("Admin init (background) completado o saltado")
-        except Exception as e:
-            logger.error(f"Error en admin init (background): {e}")
+    # Tareas post-init
+    try:
+        logger.info("Admin init completado o saltado")
+    except Exception as e:
+        logger.error(f"Error en admin init: {e}")
 
-        # Escribir READY_OK una vez completado (exitoso o no, para diagnosticar)
-        try:
-            import datetime
-            p = os.path.join(os.path.dirname(__file__), 'import_check.log')
-            with open(p, 'a') as f:
-                f.write(f"READY_OK db_ready={db_ready} {datetime.datetime.utcnow().isoformat()}\n")
-            logger.info(f"Wrote READY_OK to {p}")
-        except Exception as e:
-            logger.warning(f"Could not write READY_OK to import_check.log: {e}")
-
-    # Iniciar la tarea background y no esperar a que termine
-    init_task = asyncio.create_task(_init_background())
-    logger.info("Background initialization started (init_task scheduled)")
-
-    # Registrar checklist inicial (DB puede estar pendiente)
+    # Checklist
     mail_ok = check_mail_config()
     admin_created = False
     tokens_cleaned = True
@@ -275,28 +246,12 @@ async def lifespan(app: FastAPI):
     for item, ok in checklist:
         logger.info(f"[OK] {item}")
     logger.info("=====================================================\n")
-    logger.info("Iniciando aplicacion FastAPI (startup tasks running in background)")
+    logger.info("Aplicacion FastAPI lista")
 
     try:
         yield
-    except Exception as e:
-        logger.error(f"Error durante la ejecución de la aplicación: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise
     finally:
-        # During shutdown, cancel background init if it's still running
-        logger.info("Cerrando aplicacion FastAPI: esperando tareas background")
-        if init_task is not None and not init_task.done():
-            init_task.cancel()
-            try:
-                await init_task
-            except asyncio.CancelledError:
-                logger.info("Background init_task cancelled during shutdown")
-        logger.info("Limpieza de recursos completada")
-
-    # Limpiar tokens expirados del blacklist - Deshabilitado para MongoDB
-    tokens_cleaned = True  # No aplicable en MongoDB
+        logger.info("Cerrando aplicacion FastAPI")
 
     # Mostrar rutas registradas para debug
     logger.info("Rutas registradas:")
