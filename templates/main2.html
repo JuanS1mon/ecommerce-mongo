@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Simple Mongo Check</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;padding:2rem}</style>
+</head>
+<body>
+  <h1>Comprobación rápida - main2</h1>
+  {% if sample and sample.error %}
+    <p style="color:red">Error conectando a MongoDB: {{ sample.error }}</p>
+  {% elif not sample %}
+    <p>No se encontró ningún documento en la colección <code>sample</code>.</p>
+  {% else %}
+    <h2>Documento</h2>
+    <ul>
+      <li><strong>_id:</strong> {{ sample._id if sample._id }}</li>
+      <li><strong>name:</strong> {{ sample.name if sample.name }}</li>
+      <li><strong>value:</strong> {{ sample.value if sample.value }}</li>
+    </ul>
+  {% endif %}
+  <hr>
+  <p>ENV: <code>{{ request.app.title }}</code></p>
+</body>
+</html>
