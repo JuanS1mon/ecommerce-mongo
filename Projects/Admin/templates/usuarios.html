@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - {{ project_name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .brand-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-text h1 strong {
+            font-weight: 700;
+            background: linear-gradient(135deg, #c5a572 0%, #f4e4c1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-logout {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-logout:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
+            transform: translateY(-2px);
+        }
+        
+        .nav-menu {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .nav-menu a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        
+        .nav-menu a:hover {
+            background: rgba(197, 165, 114, 0.1);
+            border-color: rgba(197, 165, 114, 0.3);
+            color: #c5a572;
+        }
+        
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            color: #0a0e1a;
+            font-weight: 600;
+        }
+        
+        .content-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .content-section h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .nav-menu {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>{{ project_name or 'Executive' }} <strong>Portal</strong></h1>
+                </div>
+            </div>
+            <div class="user-info">
+                <span class="user-name">
+                    <i class="fas fa-user-circle"></i> 
+                    <span id="username">Administrador</span>
+                </span>
+                <button onclick="logout()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+        
+        <nav class="nav-menu">
+            <a href="/admin/dashboard" ><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/admin/productos" ><i class="fas fa-box"></i> Productos</a>
+            <a href="/admin/pedidos" ><i class="fas fa-shopping-cart"></i> Pedidos</a>
+            <a href="/admin/presupuestos" ><i class="fas fa-file-invoice"></i> Presupuestos</a>
+            <a href="/admin/carritos" ><i class="fas fa-shopping-basket"></i> Carritos</a>
+            <a href="/admin/usuarios" class="active"><i class="fas fa-users"></i> Usuarios</a>
+            <a href="/admin/configuracion" ><i class="fas fa-cog"></i> Configuración</a>
+        </nav>
+        
+        <div class="content-section">
+            <h2><i class="fas fa-users"></i> Usuarios</h2>
+            <p style="color: rgba(255,255,255,0.6); padding: 40px; text-align: center;">
+                Contenido en desarrollo...
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function verificarAutenticacion() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = '/admin/login?next=/admin/usuarios';
+                return false;
+            }
+            return true;
+        }
+        
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_user');
+                window.location.href = '/admin/login';
+            }
+        }
+        
+        if (verificarAutenticacion()) {
+            const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            if (adminUser.nombre) {
+                document.getElementById('username').textContent = adminUser.nombre;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - {{ project_name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin/css/productos.css?v=1.2">
+</head>
+<body>
+    <div class="container">
+        {% include 'components/header.html' %}
+        
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por nombre, código, descripción o categoría...">
+            </div>
+            <div class="toolbar-actions">
+                <select id="filterCategoria" class="form-control-sm">
+                    <option value="">Todas las categorías</option>
+                </select>
+                <select id="filterEstado" class="form-control-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="true">Activos</option>
+                    <option value="false">Inactivos</option>
+                </select>
+                <button class="btn btn-secondary" onclick="abrirModalCategorias()">
+                    <i class="fas fa-tags"></i> Gestionar Categorías
+                </button>
+                <button class="btn btn-primary" onclick="abrirModalNuevo()">
+                    <i class="fas fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <h2>
+                <i class="fas fa-box"></i> Lista de Productos 
+                <span id="total-productos" class="badge-info">0</span>
+                <span id="total-inactivos" class="badge-inactive" style="margin-left: 8px; font-size: 0.75em;">0 inactivos</span>
+            </h2>
+            
+            <!-- Indicador de filtros activos -->
+            <div id="filtros-activos" style="display: none; margin-top: 10px; margin-bottom: 15px;">
+                <span style="color: var(--text-muted); font-size: 0.9em;">
+                    <i class="fas fa-filter"></i> Filtros aplicados: 
+                </span>
+                <span id="filtro-categoria-texto" style="display: none;">
+                    <span class="badge-info" style="font-size: 0.85em; padding: 4px 8px;">
+                        <i class="fas fa-tag"></i> <span id="filtro-categoria-nombre-display"></span>
+                        <i class="fas fa-times" onclick="limpiarFiltroCategoria()" style="cursor: pointer; margin-left: 5px;"></i>
+                    </span>
+                </span>
+                <span id="filtro-estado-texto" style="display: none;">
+                    <span class="badge-info" style="font-size: 0.85em; padding: 4px 8px; margin-left: 5px;">
+                        <i class="fas fa-circle-check"></i> <span id="estado-nombre"></span>
+                        <i class="fas fa-times" onclick="limpiarFiltroEstado()" style="cursor: pointer; margin-left: 5px;"></i>
+                    </span>
+                </span>
+                <button class="btn btn-secondary btn-sm" onclick="limpiarTodosFiltros()" style="font-size: 0.8em; padding: 4px 10px; margin-left: 10px;">
+                    <i class="fas fa-times"></i> Limpiar todo
+                </button>
+            </div>
+            
+            <div id="productos-loading" class="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Cargando productos...</p>
+            </div>
+            
+            <div id="productos-content" style="display: none;">
+                <div class="table-responsive">
+                    <table id="productos-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Imagen</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th style="width: 120px;">Precio</th>
+                                <th style="width: 100px;">Variantes</th>
+                                <th style="width: 150px;">Categoría</th>
+                                <th style="width: 100px;">Estado</th>
+                                <th style="width: 150px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productos-tbody"></tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination" id="pagination">
+                    <button class="btn-page" id="btnPrev" onclick="cambiarPagina(-1)">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <span id="pageInfo">Página 1 de 1</span>
+                    <button class="btn-page" id="btnNext" onclick="cambiarPagina(1)">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalProducto" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nuevo Producto</h3>
+                <button class="btn-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            
+            <form id="formProducto">
+                <input type="hidden" id="producto-id">
+                
+                <div class="tabs">
+                    <button type="button" class="tab-btn active" onclick="cambiarTab(0)">
+                        <i class="fas fa-info-circle"></i> Información
+                    </button>
+                    <button type="button" class="tab-btn" onclick="cambiarTab(1)" id="tabVariantes">
+                        <i class="fas fa-layer-group"></i> Variantes
+                    </button>
+                </div>
+                
+                <div class="tab-content active" id="tab-info">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Código (SKU)</label>
+                            <input type="text" class="form-control" id="producto-codigo" placeholder="Ej: PROD-001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="producto-nombre" required placeholder="Nombre del producto">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" id="producto-descripcion" rows="3" placeholder="Descripción del producto"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Precio Base *</label>
+                            <input type="number" class="form-control" id="producto-precio" step="0.01" required placeholder="0.00">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Categoría</label>
+                            <select class="form-control" id="producto-categoria">
+                                <option value="">Sin categoría</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">URL de Imagen</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="producto-imagen" placeholder="https://... o /static/img/...">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="abrirSelectorImagenes('producto-imagen')" title="Seleccionar imagen desde el servidor">
+                                <i class="fas fa-images"></i> Seleccionar
+                            </button>
+                        </div>
+                        <small class="form-text">URL de la imagen principal del producto (puedes escribir una URL o seleccionar del servidor)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" id="producto-activo">
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="tab-variantes">
+                    <div class="variantes-header">
+                        <p class="text-muted">Las variantes permiten tener diferentes versiones del mismo producto (colores, tipos, etc.)</p>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="agregarVariante()">
+                            <i class="fas fa-plus"></i> Agregar Variante
+                        </button>
+                    </div>
+                    
+                    <div id="variantes-lista"></div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="modalConfirmar" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Confirmar Eliminación</h3>
+                <button class="btn-close" onclick="cerrarModalConfirmar()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmar-mensaje"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalConfirmar()">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Selector de Imágenes -->
+    <div id="modalImagenes" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><i class="fas fa-images"></i> Seleccionar Imagen</h3>
+                <button class="btn-close" onclick="cerrarSelectorImagenes()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="buscar-imagen" placeholder="Buscar imagen por nombre..." onkeyup="filtrarImagenesSelector()">
+                </div>
+                <div id="imagenes-loading" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px;"></i>
+                    <p>Cargando imágenes...</p>
+                </div>
+                <div id="imagenes-grid" class="imagenes-grid" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Gestión de Categorías -->
+    <div id="modalCategorias" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-tags"></i> Gestión de Categorías</h3>
+                <button class="btn-close" onclick="cerrarModalCategorias()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario Nueva Categoría -->
+                <div class="form-section">
+                    <h4><i class="fas fa-plus-circle"></i> Nueva Categoría</h4>
+                    <form id="formCategoria" onsubmit="guardarCategoria(event)">
+                        <input type="hidden" id="categoria-id">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label class="form-label">Nombre de la Categoría *</label>
+                                <input type="text" class="form-control" id="categoria-nombre" placeholder="Ej: Electrónica" required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Categoría Padre</label>
+                                <select class="form-control" id="categoria-padre">
+                                    <option value="0">--- Sin categoría padre ---</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 3;">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" class="form-control" id="categoria-descripcion" placeholder="Breve descripción de la categoría">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Estado</label>
+                                <select class="form-control" id="categoria-activo">
+                                    <option value="true">Activo</option>
+                                    <option value="false">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 3;">
+                                <label class="form-label">URL de Imagen</label>
+                                <div class="input-group">
+                                    <input type="url" class="form-control" id="categoria-imagen" placeholder="https://example.com/imagen.jpg o /static/img/categorias/...">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="abrirSelectorImagenes('categoria-imagen')" title="Seleccionar imagen desde el servidor">
+                                        <i class="fas fa-images"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group" style="align-self: flex-end;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> <span id="btn-categoria-text">Agregar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Lista de Categorías -->
+                <div class="form-section">
+                    <h4><i class="fas fa-list"></i> Categorías Existentes</h4>
+                    <div class="table-responsive">
+                        <table class="table-simple">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría Padre</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categorias-tbody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center;">
+                                        <i class="fas fa-spinner fa-spin"></i> Cargando...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/admin/js/productos.js?v=1.7"></script>
+</body>
+</html>

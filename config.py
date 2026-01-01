@@ -11,6 +11,7 @@ load_dotenv()
 
 # Environment
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+PROJECT_NAME = os.getenv("PROJECT_NAME", "Ecommerce Admin")
 
 # Frontend URL
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8000")
@@ -29,7 +30,15 @@ ORIGINS = [
     "http://127.0.0.1:8000",
     FRONTEND_URL,
     "https://ecommerce-mongo.azurewebsites.net",  # Azure App Service
+    "https://ecommerce-mongo.vercel.app",  # Vercel deployment
+    "https://ecommerce-mongo-git-main.vercel.app",  # Vercel preview deployments
 ]
+
+# Detect Vercel environment
+VERCEL_URL = os.getenv("VERCEL_URL")
+if VERCEL_URL:
+    ORIGINS.append(f"https://{VERCEL_URL}")
+    ENVIRONMENT = "production"  # Force production mode in Vercel
 
 # Static directory
 STATIC_DIR = "static"
@@ -56,3 +65,11 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
 AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_KEY")
 AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME", "ecommerce-index")
+
+# Company Information (for quotes/invoices)
+COMPANY_NAME = os.getenv("COMPANY_NAME", "Mi Empresa")
+COMPANY_ADDRESS = os.getenv("COMPANY_ADDRESS", "Dirección de la empresa")
+COMPANY_PHONE = os.getenv("COMPANY_PHONE", "+1234567890")
+COMPANY_EMAIL = os.getenv("COMPANY_EMAIL", SMTP_USERNAME or "info@empresa.com")
+COMPANY_WEBSITE = os.getenv("COMPANY_WEBSITE", FRONTEND_URL)
+COMPANY_TAX_ID = os.getenv("COMPANY_TAX_ID", "123456789")

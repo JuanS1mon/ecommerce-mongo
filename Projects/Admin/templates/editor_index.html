@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Index - Executive Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .brand-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-text h1 strong {
+            font-weight: 700;
+            background: linear-gradient(135deg, #c5a572 0%, #f4e4c1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-logout {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-logout:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
+            transform: translateY(-2px);
+        }
+        
+        .nav-menu {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .nav-menu a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        
+        .nav-menu a:hover {
+            background: rgba(197, 165, 114, 0.1);
+            border-color: rgba(197, 165, 114, 0.3);
+            color: #c5a572;
+        }
+        
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            color: #0a0e1a;
+            font-weight: 600;
+        }
+        
+        .content-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .content-section h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Editor Tabs */
+        .editor-tabs {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px 25px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            color: #0a0e1a;
+            border-color: rgba(197, 165, 114, 0.5);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Color Editor */
+        .color-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .color-section {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+        }
+        
+        .color-section h3 {
+            font-size: 1.2rem;
+            color: #c5a572;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .color-control {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .color-control label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+        }
+        
+        .color-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .color-picker {
+            width: 60px;
+            height: 45px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+        }
+        
+        .color-text {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        /* Preview */
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .navbar-preview {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .navbar-preview span {
+            font-weight: 600;
+            margin-right: auto;
+        }
+        
+        .nav-item {
+            padding: 8px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .buttons-preview {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+        }
+        
+        .preview-btn-primary, .preview-btn-secondary {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .btn-save, .btn-reset {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-reset {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .btn-reset:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Sections Editor */
+        .sections-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .section-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            cursor: move;
+        }
+        
+        .section-item:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(197, 165, 114, 0.3);
+        }
+        
+        .section-item.dragging {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+        
+        .section-item.drag-active {
+            opacity: 0.7;
+            box-shadow: 0 10px 40px rgba(197, 165, 114, 0.4);
+        }
+        
+        .section-item.chosen {
+            background: rgba(197, 165, 114, 0.1);
+            border-color: rgba(197, 165, 114, 0.5);
+        }
+        
+        .section-drag-handle {
+            color: rgba(255,255,255,0.3);
+            font-size: 1.5rem;
+            cursor: grab;
+            transition: color 0.3s;
+        }
+        
+        .section-drag-handle:hover {
+            color: rgba(197, 165, 114, 0.8);
+        }
+        
+        .section-drag-handle:active {
+            cursor: grabbing;
+            color: var(--accent-color);
+        }
+        
+        .section-info {
+            flex: 1;
+        }
+        
+        .section-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-name i {
+            color: var(--accent-color);
+        }
+        
+        .section-type {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: capitalize;
+        }
+        
+        .section-order {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        
+        .section-order input {
+            width: 60px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .section-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .section-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(239, 68, 68, 0.3);
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+        
+        .btn-edit:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Placeholder Section */
+        .placeholder-section {
+            text-align: center;
+            padding: 80px 40px;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .placeholder-icon {
+            font-size: 4rem;
+            color: rgba(197, 165, 114, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .placeholder-section h3 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+        
+        /* Loading & Success Messages */
+        .message {
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+        
+        .message-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+        }
+        
+        .modal-container {
+            background: #0a0e1a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .modal-header h2 i {
+            color: var(--accent-color);
+        }
+        
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .modal-body::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb {
+            background: rgba(197, 165, 114, 0.3);
+            border-radius: 4px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group label i {
+            color: var(--accent-color);
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .image-upload-area {
+            min-height: 200px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+        
+        .image-upload-area:hover {
+            border-color: var(--accent-color);
+            background: rgba(197, 165, 114, 0.05);
+        }
+        
+        .upload-placeholder {
+            text-align: center;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-placeholder:hover {
+            transform: scale(1.05);
+        }
+        
+        .upload-placeholder i {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+        
+        .upload-placeholder p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 5px;
+        }
+        
+        .upload-placeholder small {
+            color: rgba(255,255,255,0.4);
+        }
+        
+        .image-preview {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 200px;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        .image-remove {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .image-remove:hover {
+            background: rgba(220, 38, 38, 1);
+            transform: scale(1.1);
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .btn-cancel {
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-cancel:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .nav-menu {
+                justify-content: center;
+            }
+            
+            .editor-tabs {
+                flex-direction: column;
+            }
+            
+            .color-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .section-item {
+                flex-wrap: wrap;
+            }
+            
+            .modal-container {
+                max-width: 100%;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .modal-footer {
+                flex-direction: column-reverse;
+            }
+            
+            .btn-cancel, .btn-save {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Executive <strong>Portal</strong></h1>
+                </div>
+            </div>
+            <div class="user-info">
+                <span class="user-name">
+                    <i class="fas fa-user-circle"></i> 
+                    <span id="username">Administrador</span>
+                </span>
+                <button onclick="logout()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+        
+        <nav class="nav-menu">
+            <a href="/admin/dashboard" ><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/admin/productos" ><i class="fas fa-box"></i> Productos</a>
+            <a href="/admin/pedidos" ><i class="fas fa-shopping-cart"></i> Pedidos</a>
+            <a href="/admin/presupuestos" ><i class="fas fa-file-invoice"></i> Presupuestos</a>
+            <a href="/admin/carritos" ><i class="fas fa-shopping-basket"></i> Carritos</a>
+            <a href="/admin/usuarios" ><i class="fas fa-users"></i> Usuarios</a>
+            <a href="/admin/configuracion" ><i class="fas fa-cog"></i> Configuración</a>
+            <a href="/admin/editor-index" class="active"><i class="fas fa-edit"></i> Editor</a>
+        </nav>
+        
+        <!-- Tabs de Navegación -->
+        <div class="editor-tabs">
+            <button class="tab-btn active" onclick="showTab('colors')">
+                <i class="fas fa-palette"></i> Colores
+            </button>
+            <button class="tab-btn" onclick="showTab('sections')">
+                <i class="fas fa-th-large"></i> Secciones
+            </button>
+            <button class="tab-btn" onclick="showTab('invoices')">
+                <i class="fas fa-file-invoice"></i> Facturas
+            </button>
+        </div>
+
+        <!-- Tab: Editor de Colores -->
+        <div id="tab-colors" class="content-section tab-content active">
+            <h2><i class="fas fa-palette"></i> Editor de Colores</h2>
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 30px;">
+                Personaliza los colores del navbar y botones del sitio
+            </p>
+            
+            <div class="color-editor">
+                <!-- Navbar Colors -->
+                <div class="color-section">
+                    <h3><i class="fas fa-bars"></i> Navbar</h3>
+                    <div class="color-grid">
+                        <div class="color-control">
+                            <label for="navbar_bg">Fondo</label>
+                            <div class="color-input-group">
+                                <input type="color" id="navbar_bg" class="color-picker">
+                                <input type="text" id="navbar_bg_text" class="color-text" placeholder="#0a0e1a">
+                            </div>
+                        </div>
+                        <div class="color-control">
+                            <label for="navbar_text">Texto</label>
+                            <div class="color-input-group">
+                                <input type="color" id="navbar_text" class="color-picker">
+                                <input type="text" id="navbar_text_text" class="color-text" placeholder="#ffffff">
+                            </div>
+                        </div>
+                        <div class="color-control">
+                            <label for="navbar_hover">Hover</label>
+                            <div class="color-input-group">
+                                <input type="color" id="navbar_hover" class="color-picker">
+                                <input type="text" id="navbar_hover_text" class="color-text" placeholder="#c5a572">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button Colors -->
+                <div class="color-section">
+                    <h3><i class="fas fa-hand-pointer"></i> Botones Primarios</h3>
+                    <div class="color-grid">
+                        <div class="color-control">
+                            <label for="btn_primary_bg">Fondo</label>
+                            <div class="color-input-group">
+                                <input type="color" id="btn_primary_bg" class="color-picker">
+                                <input type="text" id="btn_primary_bg_text" class="color-text" placeholder="#c5a572">
+                            </div>
+                        </div>
+                        <div class="color-control">
+                            <label for="btn_primary_text">Texto</label>
+                            <div class="color-input-group">
+                                <input type="color" id="btn_primary_text" class="color-picker">
+                                <input type="text" id="btn_primary_text_text" class="color-text" placeholder="#0a0e1a">
+                            </div>
+                        </div>
+                        <div class="color-control">
+                            <label for="btn_primary_hover">Hover</label>
+                            <div class="color-input-group">
+                                <input type="color" id="btn_primary_hover" class="color-picker">
+                                <input type="text" id="btn_primary_hover_text" class="color-text" placeholder="#8b7355">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div class="color-section">
+                    <h3><i class="fas fa-eye"></i> Vista Previa</h3>
+                    <div class="preview-container">
+                        <div id="navbar-preview" class="navbar-preview">
+                            <span>Navbar</span>
+                            <button class="nav-item">Item 1</button>
+                            <button class="nav-item">Item 2</button>
+                        </div>
+                        <div class="buttons-preview">
+                            <button id="btn-primary-preview" class="preview-btn-primary">Botón Primario</button>
+                            <button id="btn-secondary-preview" class="preview-btn-secondary">Botón Secundario</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="action-buttons">
+                    <button class="btn-save" onclick="saveColors()">
+                        <i class="fas fa-save"></i> Guardar Colores
+                    </button>
+                    <button class="btn-reset" onclick="resetColors()">
+                        <i class="fas fa-undo"></i> Restaurar Valores por Defecto
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Editor de Secciones -->
+        <div id="tab-sections" class="content-section tab-content">
+            <h2><i class="fas fa-th-large"></i> Editor de Secciones</h2>
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 30px;">
+                Gestiona las secciones del index: activar/desactivar, ordenar y editar contenido
+            </p>
+            
+            <div class="sections-editor">
+                <div class="sections-list" id="sections-list">
+                    <!-- Las secciones se cargarán dinámicamente aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Editor de Facturas -->
+        <div id="tab-invoices" class="content-section tab-content">
+            <h2><i class="fas fa-file-invoice"></i> Editor de Facturas</h2>
+            <div class="placeholder-section">
+                <div class="placeholder-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h3>Funcionalidad en Desarrollo</h3>
+                <p>El editor de facturas y presupuestos estará disponible próximamente.</p>
+                <p style="margin-top: 15px; color: rgba(255,255,255,0.5);">
+                    Aquí podrás personalizar el diseño de impresión de facturas y presupuestos.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        // =================================================================
+        // AUTENTICACIÓN
+        // =================================================================
+        function verificarAutenticacion() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = '/admin/login?next=/admin/editor-index';
+                return false;
+            }
+            return true;
+        }
+        
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_user');
+                window.location.href = '/admin/login';
+            }
+        }
+        
+        if (verificarAutenticacion()) {
+            const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            if (adminUser.nombre) {
+                document.getElementById('username').textContent = adminUser.nombre;
+            }
+        }
+
+        // =================================================================
+        // GESTIÓN DE TABS
+        // =================================================================
+        function showTab(tabName) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Desactivar todos los botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar el tab seleccionado
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Activar el botón correspondiente
+            event.target.closest('.tab-btn').classList.add('active');
+            
+            // Cargar datos si es necesario
+            if (tabName === 'colors' && !window.colorsLoaded) {
+                loadColors();
+            } else if (tabName === 'sections' && !window.sectionsLoaded) {
+                loadSections();
+            }
+        }
+
+        // =================================================================
+        // EDITOR DE COLORES
+        // =================================================================
+        let currentColors = {};
+
+        async function loadColors() {
+            try {
+                const response = await fetch('/api/editor/colors');
+                if (!response.ok) throw new Error('Error al cargar colores');
+                
+                currentColors = await response.json();
+                applyColorsToForm(currentColors);
+                updatePreview();
+                window.colorsLoaded = true;
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al cargar configuración de colores', 'error');
+            }
+        }
+
+        function applyColorsToForm(colors) {
+            // Aplicar valores a los inputs
+            for (const [key, value] of Object.entries(colors)) {
+                const colorPicker = document.getElementById(key);
+                const textInput = document.getElementById(key + '_text');
+                
+                if (colorPicker) {
+                    colorPicker.value = value;
+                }
+                if (textInput) {
+                    textInput.value = value;
+                }
+            }
+        }
+
+        function updatePreview() {
+            const navbarPreview = document.getElementById('navbar-preview');
+            const btnPrimaryPreview = document.getElementById('btn-primary-preview');
+            const btnSecondaryPreview = document.getElementById('btn-secondary-preview');
+            
+            // Navbar preview
+            navbarPreview.style.backgroundColor = document.getElementById('navbar_bg').value;
+            navbarPreview.style.color = document.getElementById('navbar_text').value;
+            navbarPreview.style.border = `1px solid ${document.getElementById('navbar_text').value}20`;
+            
+            const navItems = navbarPreview.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.style.color = document.getElementById('navbar_text').value;
+                item.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = document.getElementById('navbar_hover').value + '20';
+                    this.style.color = document.getElementById('navbar_hover').value;
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'transparent';
+                    this.style.color = document.getElementById('navbar_text').value;
+                });
+            });
+            
+            // Button primary preview
+            btnPrimaryPreview.style.backgroundColor = document.getElementById('btn_primary_bg').value;
+            btnPrimaryPreview.style.color = document.getElementById('btn_primary_text').value;
+        }
+
+        async function saveColors() {
+            try {
+                const colors = {
+                    navbar_bg: document.getElementById('navbar_bg').value,
+                    navbar_text: document.getElementById('navbar_text').value,
+                    navbar_hover: document.getElementById('navbar_hover').value,
+                    navbar_border: document.getElementById('navbar_text').value + '14',
+                    btn_primary_bg: document.getElementById('btn_primary_bg').value,
+                    btn_primary_text: document.getElementById('btn_primary_text').value,
+                    btn_primary_hover: document.getElementById('btn_primary_hover').value,
+                    btn_secondary_bg: 'rgba(255,255,255,0.1)',
+                    btn_secondary_text: '#ffffff',
+                    btn_secondary_hover: 'rgba(255,255,255,0.15)',
+                    accent_color: document.getElementById('navbar_hover').value,
+                    background_color: document.getElementById('navbar_bg').value
+                };
+                
+                const response = await fetch('/api/editor/colors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ colors })
+                });
+                
+                if (!response.ok) throw new Error('Error al guardar colores');
+                
+                showMessage('Colores guardados correctamente', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al guardar colores', 'error');
+            }
+        }
+
+        function resetColors() {
+            if (!confirm('¿Restaurar valores por defecto?')) return;
+            
+            const defaults = {
+                navbar_bg: '#0a0e1a',
+                navbar_text: '#ffffff',
+                navbar_hover: '#c5a572',
+                btn_primary_bg: '#c5a572',
+                btn_primary_text: '#0a0e1a',
+                btn_primary_hover: '#8b7355'
+            };
+            
+            applyColorsToForm(defaults);
+            updatePreview();
+        }
+
+        // Sincronizar color picker con text input
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.color-picker').forEach(picker => {
+                const textInput = document.getElementById(picker.id + '_text');
+                
+                picker.addEventListener('input', () => {
+                    if (textInput) textInput.value = picker.value;
+                    updatePreview();
+                });
+                
+                if (textInput) {
+                    textInput.addEventListener('input', () => {
+                        if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
+                            picker.value = textInput.value;
+                            updatePreview();
+                        }
+                    });
+                }
+            });
+            
+            // Cargar colores al inicio
+            loadColors();
+        });
+
+        // =================================================================
+        // EDITOR DE SECCIONES
+        // =================================================================
+        let currentSections = [];
+        let sortable = null;
+
+        async function loadSections() {
+            try {
+                const response = await fetch('/api/editor/sections');
+                if (!response.ok) throw new Error('Error al cargar secciones');
+                
+                currentSections = await response.json();
+                renderSections();
+                initSortable();
+                window.sectionsLoaded = true;
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al cargar secciones', 'error');
+            }
+        }
+
+        function renderSections() {
+            const container = document.getElementById('sections-list');
+            container.innerHTML = '';
+            
+            currentSections.forEach(section => {
+                const item = createSectionItem(section);
+                container.appendChild(item);
+            });
+        }
+
+        function createSectionItem(section) {
+            const div = document.createElement('div');
+            div.className = 'section-item';
+            div.dataset.sectionId = section.id;
+            div.dataset.order = section.order;
+            
+            const statusIcon = section.enabled 
+                ? '<i class="fas fa-eye" style="color: #10b981;"></i>' 
+                : '<i class="fas fa-eye-slash" style="color: #ef4444;"></i>';
+            
+            const typeIcons = {
+                'banner': 'fa-images',
+                'hero': 'fa-star',
+                'productos': 'fa-box',
+                'ofertas': 'fa-tags',
+                'contacto': 'fa-envelope'
+            };
+            
+            div.innerHTML = `
+                <div class="section-drag-handle" title="Arrastra para reordenar">
+                    <i class="fas fa-grip-vertical"></i>
+                </div>
+                <div class="section-info">
+                    <div class="section-name">
+                        <i class="fas ${typeIcons[section.type] || 'fa-cube'}"></i>
+                        ${section.name}
+                    </div>
+                    <div class="section-type">
+                        ${section.type} • Orden: ${section.order}
+                    </div>
+                </div>
+                <label class="section-toggle" title="${section.enabled ? 'Ocultar sección' : 'Mostrar sección'}">
+                    <input type="checkbox" ${section.enabled ? 'checked' : ''} 
+                           onchange="toggleSection('${section.id}', this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+                <div class="section-actions">
+                    <button class="btn-icon btn-edit" onclick="editSection('${section.id}')" title="Editar sección">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        function initSortable() {
+            const container = document.getElementById('sections-list');
+            if (sortable) {
+                sortable.destroy();
+            }
+            
+            sortable = new Sortable(container, {
+                animation: 200,
+                handle: '.section-drag-handle',
+                ghostClass: 'dragging',
+                dragClass: 'drag-active',
+                chosenClass: 'chosen',
+                forceFallback: true,
+                onStart: function(evt) {
+                    evt.item.style.opacity = '0.5';
+                },
+                onEnd: function(evt) {
+                    evt.item.style.opacity = '1';
+                    updateSectionsOrder();
+                }
+            });
+        }
+
+        async function updateSectionsOrder() {
+            const items = document.querySelectorAll('.section-item');
+            const updates = [];
+            
+            items.forEach((item, index) => {
+                const sectionId = item.dataset.sectionId;
+                const section = currentSections.find(s => s.id === sectionId);
+                if (section) {
+                    section.order = index + 1;
+                    updates.push(section);
+                }
+            });
+            
+            try {
+                const response = await fetch('/api/editor/sections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sections: updates })
+                });
+                
+                if (!response.ok) throw new Error('Error al actualizar orden');
+                
+                showMessage('Orden actualizado', 'success');
+                renderSections();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al actualizar orden', 'error');
+            }
+        }
+
+        async function toggleSection(sectionId, enabled) {
+            try {
+                const response = await fetch(`/api/editor/sections/${sectionId}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ section_id: sectionId, enabled })
+                });
+                
+                if (!response.ok) throw new Error('Error al cambiar estado');
+                
+                const result = await response.json();
+                const section = currentSections.find(s => s.id === sectionId);
+                if (section) section.enabled = enabled;
+                
+                showMessage(`Sección ${enabled ? 'activada' : 'desactivada'}`, 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al cambiar estado', 'error');
+            }
+        }
+
+        async function updateSectionOrder(sectionId, newOrder) {
+            try {
+                const response = await fetch(`/api/editor/sections/${sectionId}/reorder`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ section_id: sectionId, new_order: parseInt(newOrder) })
+                });
+                
+                if (!response.ok) throw new Error('Error al cambiar orden');
+                
+                await loadSections();
+                showMessage('Orden actualizado', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al actualizar orden', 'error');
+            }
+        }
+
+        async function editSection(sectionId) {
+            const section = currentSections.find(s => s.id === sectionId);
+            if (!section) {
+                showMessage('Sección no encontrada', 'error');
+                return;
+            }
+            
+            // Abrir modal según el tipo de sección
+            if (section.type === 'hero') {
+                openHeroEditor(section);
+            } else {
+                showMessage(`Editor para sección "${section.type}" próximamente`, 'error');
+            }
+        }
+        
+        function openHeroEditor(section) {
+            // Crear modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'edit-modal';
+            
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-star"></i> Editar Hero Section</h2>
+                        <button class="modal-close" onclick="closeModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <form id="hero-form">
+                            <!-- Nombre de la sección -->
+                            <div class="form-group">
+                                <label for="hero-name">
+                                    <i class="fas fa-heading"></i> Nombre de la Sección
+                                </label>
+                                <input type="text" id="hero-name" class="form-input" 
+                                       value="${section.name}" placeholder="Hero Section">
+                            </div>
+                            
+                            <!-- Subtítulo -->
+                            <div class="form-group">
+                                <label for="hero-subtitle">
+                                    <i class="fas fa-text-height"></i> Subtítulo
+                                </label>
+                                <input type="text" id="hero-subtitle" class="form-input" 
+                                       value="${section.subtitle || ''}" placeholder="Tu eslogan aquí">
+                            </div>
+                            
+                            <!-- Título Principal -->
+                            <div class="form-group">
+                                <label for="hero-title">
+                                    <i class="fas fa-heading"></i> Título Principal
+                                </label>
+                                <input type="text" id="hero-title" class="form-input" 
+                                       value="${section.title || ''}" placeholder="Título grande">
+                            </div>
+                            
+                            <!-- Texto Descriptivo -->
+                            <div class="form-group">
+                                <label for="hero-text">
+                                    <i class="fas fa-align-left"></i> Texto Descriptivo
+                                </label>
+                                <textarea id="hero-text" class="form-textarea" rows="4" 
+                                          placeholder="Descripción de tu hero section">${section.text || ''}</textarea>
+                            </div>
+                            
+                            <!-- Botón -->
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="hero-btn-text">
+                                        <i class="fas fa-hand-pointer"></i> Texto del Botón
+                                    </label>
+                                    <input type="text" id="hero-btn-text" class="form-input" 
+                                           value="${section.button_text || ''}" placeholder="Ver más">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="hero-btn-url">
+                                        <i class="fas fa-link"></i> URL del Botón
+                                    </label>
+                                    <input type="text" id="hero-btn-url" class="form-input" 
+                                           value="${section.button_url || ''}" placeholder="/productos">
+                                </div>
+                            </div>
+                            
+                            <!-- Colores -->
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="hero-bg-color">
+                                        <i class="fas fa-fill-drip"></i> Color de Fondo
+                                    </label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="hero-bg-color" class="color-picker" 
+                                               value="${section.background_color || '#0a0e1a'}">
+                                        <input type="text" id="hero-bg-color-text" class="color-text" 
+                                               value="${section.background_color || '#0a0e1a'}">
+                                    </div>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="hero-text-color">
+                                        <i class="fas fa-palette"></i> Color del Texto
+                                    </label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="hero-text-color" class="color-picker" 
+                                               value="${section.text_color || '#ffffff'}">
+                                        <input type="text" id="hero-text-color-text" class="color-text" 
+                                               value="${section.text_color || '#ffffff'}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Imagen -->
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-image"></i> Imagen Principal
+                                </label>
+                                <div class="image-upload-area" id="hero-image-area">
+                                    ${section.images && section.images.length > 0 ? `
+                                        <div class="image-preview">
+                                            <img src="${section.images[0].url}" alt="${section.images[0].alt}">
+                                            <button type="button" class="image-remove" onclick="removeHeroImage()">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    ` : `
+                                        <div class="upload-placeholder" onclick="document.getElementById('hero-image-input').click()">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <p>Click para subir imagen</p>
+                                            <small>JPG, PNG, GIF, WEBP, SVG</small>
+                                        </div>
+                                    `}
+                                    <input type="file" id="hero-image-input" accept="image/*" 
+                                           style="display: none;" onchange="uploadHeroImage(event)">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button class="btn-cancel" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button class="btn-save" onclick="saveHeroSection('${section.id}')">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Agregar event listeners para sincronizar color pickers
+            setupColorSync('hero-bg-color');
+            setupColorSync('hero-text-color');
+            
+            // Animar entrada
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+        
+        function setupColorSync(baseId) {
+            const picker = document.getElementById(baseId);
+            const text = document.getElementById(baseId + '-text');
+            
+            if (picker && text) {
+                picker.addEventListener('input', () => {
+                    text.value = picker.value;
+                });
+                
+                text.addEventListener('input', () => {
+                    if (/^#[0-9A-F]{6}$/i.test(text.value)) {
+                        picker.value = text.value;
+                    }
+                });
+            }
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('edit-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+        
+        async function uploadHeroImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('section_id', 'hero');
+            
+            try {
+                const response = await fetch('/api/editor/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error('Error al subir imagen');
+                
+                const result = await response.json();
+                
+                // Actualizar preview
+                const area = document.getElementById('hero-image-area');
+                area.innerHTML = `
+                    <div class="image-preview">
+                        <img src="${result.url}" alt="Hero image">
+                        <button type="button" class="image-remove" onclick="removeHeroImage()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                showMessage('Imagen subida correctamente', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al subir imagen', 'error');
+            }
+        }
+        
+        function removeHeroImage() {
+            const area = document.getElementById('hero-image-area');
+            area.innerHTML = `
+                <div class="upload-placeholder" onclick="document.getElementById('hero-image-input').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click para subir imagen</p>
+                    <small>JPG, PNG, GIF, WEBP, SVG</small>
+                </div>
+                <input type="file" id="hero-image-input" accept="image/*" 
+                       style="display: none;" onchange="uploadHeroImage(event)">
+            `;
+        }
+        
+        async function saveHeroSection(sectionId) {
+            try {
+                const section = currentSections.find(s => s.id === sectionId);
+                if (!section) throw new Error('Sección no encontrada');
+                
+                // Obtener imagen si existe
+                const imagePreview = document.querySelector('#hero-image-area .image-preview img');
+                const images = imagePreview ? [{
+                    url: imagePreview.src,
+                    alt: document.getElementById('hero-title').value || 'Hero image',
+                    title: document.getElementById('hero-subtitle').value || ''
+                }] : [];
+                
+                // Preparar datos actualizados
+                const updatedSection = {
+                    ...section,
+                    name: document.getElementById('hero-name').value,
+                    subtitle: document.getElementById('hero-subtitle').value,
+                    title: document.getElementById('hero-title').value,
+                    text: document.getElementById('hero-text').value,
+                    button_text: document.getElementById('hero-btn-text').value || null,
+                    button_url: document.getElementById('hero-btn-url').value || null,
+                    background_color: document.getElementById('hero-bg-color').value,
+                    text_color: document.getElementById('hero-text-color').value,
+                    images: images
+                };
+                
+                // Enviar al servidor
+                const response = await fetch(`/api/editor/sections/${sectionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedSection)
+                });
+                
+                if (!response.ok) throw new Error('Error al guardar');
+                
+                // Actualizar lista local
+                const index = currentSections.findIndex(s => s.id === sectionId);
+                if (index !== -1) {
+                    currentSections[index] = updatedSection;
+                }
+                
+                closeModal();
+                renderSections();
+                showMessage('Sección Hero guardada correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al guardar la sección', 'error');
+            }
+        }
+
+        // =================================================================
+        // MENSAJES
+        // =================================================================
+        function showMessage(text, type = 'success') {
+            const container = document.querySelector('.container');
+            const message = document.createElement('div');
+            message.className = `message message-${type}`;
+            message.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${text}
+            `;
+            
+            container.insertBefore(message, container.firstChild);
+            
+            setTimeout(() => {
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

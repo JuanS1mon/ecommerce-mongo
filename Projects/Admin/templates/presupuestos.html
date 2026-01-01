@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuestos - {{ project_name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin/css/presupuestos.css">
+</head>
+<body>
+    <div class="container">
+        {% include 'components/header.html' %}
+        
+        <!-- Stats Cards -->
+        <div class="stats-container" id="statsContainer">
+            <div class="stat-card stat-card-warning" onclick="filtrarPorEstado('pendiente')">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Pendientes</h3>
+                    <p class="stat-number" id="stat-pendiente">0</p>
+                    <span class="stat-label">Por revisar</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-info" onclick="filtrarPorEstado('contactado')">
+                <div class="stat-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Contactados</h3>
+                    <p class="stat-number" id="stat-contactado">0</p>
+                    <span class="stat-label">En proceso</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-primary" onclick="filtrarPorEstado('presupuestado')">
+                <div class="stat-icon">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Presupuestados</h3>
+                    <p class="stat-number" id="stat-presupuestado">0</p>
+                    <span class="stat-label">Enviados</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-success" onclick="filtrarPorEstado('aprobado')">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Aprobados</h3>
+                    <p class="stat-number" id="stat-aprobado">0</p>
+                    <span class="stat-label">Confirmados</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-danger" onclick="filtrarPorEstado('rechazado')">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Rechazados</h3>
+                    <p class="stat-number" id="stat-rechazado">0</p>
+                    <span class="stat-label">No concretados</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por nombre, email, teléfono...">
+            </div>
+            <div class="toolbar-actions">
+                <select id="filterEstado" class="form-control-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="contactado">Contactado</option>
+                    <option value="presupuestado">Presupuestado</option>
+                    <option value="aprobado">Aprobado</option>
+                    <option value="rechazado">Rechazado</option>
+                </select>
+                <button class="btn-refresh" onclick="cargarPresupuestos()">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+        
+        <!-- Barra de Acciones Masivas -->
+        <div id="bulk-actions" style="display: none; background: rgba(255, 255, 255, 0.03); padding: 15px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(197, 165, 114, 0.2); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span style="font-weight: 500; color: #e4e6eb;">
+                    <i class="fas fa-check-circle" style="color: #c5a572;"></i>
+                    <span id="selected-count">0</span> presupuesto(s) seleccionado(s)
+                </span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="cambiarEstadoMasivo()" style="padding: 8px 16px; background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%); border: none; color: #0a0e1a; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="fas fa-exchange-alt"></i> Cambiar Estado
+                </button>
+                <button class="btn btn-secondary" onclick="limpiarSeleccion()" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(197, 165, 114, 0.3); color: #e4e6eb; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="fas fa-times"></i> Limpiar Selección
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tabla de Presupuestos -->
+        <div class="card">
+            <div class="card-header">
+                <h2>
+                    <i class="fas fa-file-invoice"></i>
+                    Gestión de Presupuestos
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">
+                                    <input type="checkbox" id="select-all" onchange="toggleTodos()" style="cursor: pointer; width: 18px; height: 18px;">
+                                </th>
+                                <th class="sortable" onclick="ordenarPor('id')">
+                                    ID
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" onclick="ordenarPor('nombre')">
+                                    Cliente
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" onclick="ordenarPor('email')">
+                                    Email
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" onclick="ordenarPor('telefono')">
+                                    Teléfono
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th>Consulta</th>
+                                <th class="sortable" onclick="ordenarPor('estado')">
+                                    Estado
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" onclick="ordenarPor('fecha')">
+                                    Fecha
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presupuestosTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center">
+                                    <div class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        Cargando presupuestos...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ver Detalles -->
+    <div id="modalDetalles" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> Detalles del Presupuesto</h2>
+                <button class="modal-close" onclick="cerrarModal('modalDetalles')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="detallesContent">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cambiar Estado -->
+    <div id="modalEstado" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-estado-titulo"><i class="fas fa-exchange-alt"></i> Cambiar Estado</h2>
+                <button class="modal-close" onclick="cerrarModal('modalEstado')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Cambiar el estado del presupuesto <strong id="estadoPresupuestoId"></strong>?</p>
+                <input type="hidden" id="presupuesto-id-estado" value="">
+                
+                <div class="form-group">
+                    <label for="nuevo-estado-select">Nuevo Estado:</label>
+                    <select id="nuevo-estado-select" class="form-control">
+                        <option value="pendiente">⏳ Pendiente</option>
+                        <option value="contactado">📞 Contactado</option>
+                        <option value="presupuestado">📝 Presupuestado</option>
+                        <option value="aprobado">✅ Aprobado</option>
+                        <option value="rechazado">❌ Rechazado</option>
+                    </select>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn-bulk-secondary" onclick="cerrarModal('modalEstado')">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button class="btn-bulk" onclick="cambiarEstadoSubmit()">
+                        <i class="fas fa-check"></i>
+                        Cambiar Estado
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Enviar Presupuesto -->
+    <div id="modalEnviarPresupuesto" class="modal">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <h2><i class="fas fa-paper-plane"></i> Enviar Presupuesto</h2>
+                <button class="modal-close" onclick="cerrarModal('modalEnviarPresupuesto')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="enviarPresupuestoId">
+                
+                <div class="presupuesto-form">
+                    <div class="form-section">
+                        <h3><i class="fas fa-box"></i> Productos/Servicios</h3>
+                        <div id="productosContainer">
+                            <div class="producto-item">
+                                <input type="text" class="form-control" placeholder="Nombre del producto/servicio" data-field="nombre">
+                                <input type="number" class="form-control" placeholder="Cantidad" min="1" value="1" data-field="cantidad">
+                                <input type="number" class="form-control" placeholder="Precio Unitario" min="0" step="0.01" data-field="precio">
+                                <button class="btn-icon-danger" onclick="eliminarProducto(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn-add-product" onclick="agregarProducto()">
+                            <i class="fas fa-plus"></i>
+                            Agregar Producto
+                        </button>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3><i class="fas fa-dollar-sign"></i> Total</h3>
+                        <div class="total-display">
+                            <span class="total-label">Total:</span>
+                            <span class="total-amount" id="presupuestoTotal">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3><i class="fas fa-sticky-note"></i> Observaciones</h3>
+                        <textarea id="observaciones" class="form-control" rows="4" placeholder="Observaciones adicionales (opcional)"></textarea>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3><i class="fas fa-calendar"></i> Validez</h3>
+                        <select id="validezDias" class="form-control">
+                            <option value="15">15 días</option>
+                            <option value="30" selected>30 días</option>
+                            <option value="45">45 días</option>
+                            <option value="60">60 días</option>
+                            <option value="90">90 días</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn-bulk-secondary" onclick="vistaPrevia()">
+                        <i class="fas fa-eye"></i>
+                        Vista Previa
+                    </button>
+                    <button class="btn-bulk-secondary" onclick="cerrarModal('modalEnviarPresupuesto')">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button class="btn-bulk" onclick="enviarPresupuestoSubmit()">
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar Presupuesto
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin/js/presupuestos.js"></script>
+</body>
+</html>

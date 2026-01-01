@@ -1,0 +1,29 @@
+<!-- Header Component -->
+<header>
+    <div class="brand">
+        <div class="brand-icon"><i class="fas fa-crown"></i></div>
+        <div class="brand-text">
+            <h1>{{ project_name or 'Executive' }} <strong>Portal</strong></h1>
+        </div>
+    </div>
+    <div class="user-info">
+        <span class="user-name">
+            <i class="fas fa-user-circle"></i> 
+            <span id="username">Administrador</span>
+        </span>
+        <button onclick="logout()" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Salir
+        </button>
+    </div>
+</header>
+
+<nav class="nav-menu">
+    <a href="/admin/dashboard" {% if active_page == 'dashboard' %}class="active"{% endif %}><i class="fas fa-chart-line"></i> Dashboard</a>
+    <a href="/admin/productos" {% if active_page == 'productos' %}class="active"{% endif %}><i class="fas fa-box"></i> Productos</a>
+    <a href="/admin/pedidos" {% if active_page == 'pedidos' %}class="active"{% endif %}><i class="fas fa-shopping-cart"></i> Pedidos</a>
+    <a href="/admin/presupuestos" {% if active_page == 'presupuestos' %}class="active"{% endif %}><i class="fas fa-file-invoice"></i> Presupuestos</a>
+    <a href="/admin/carritos" {% if active_page == 'carritos' %}class="active"{% endif %}><i class="fas fa-shopping-basket"></i> Carritos</a>
+    <a href="/admin/usuarios" {% if active_page == 'usuarios' or active_page == 'clientes' %}class="active"{% endif %}><i class="fas fa-users"></i> Clientes</a>
+    <a href="/admin/configuracion" {% if active_page == 'configuracion' %}class="active"{% endif %}><i class="fas fa-cog"></i> Configuración</a>
+    <a href="/admin/marketing" {% if active_page == 'marketing' %}class="active"{% endif %}><i class="fas fa-bullhorn"></i> Marketing</a>
+</nav>

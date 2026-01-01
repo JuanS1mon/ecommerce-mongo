@@ -1546,13 +1546,19 @@ window.renderCartPage = function() {
         const cartImage = item.product_image || '/static/img/logo.png';
         const productName = item.product_name || `Producto ${item.id_producto || item.product_id}`;
         const productCode = item.product_codigo || '';
+        const productId = item.id_producto || item.product_id;
+        const productUrl = `/ecomerce/productos/${productId}`;
 
         return `
             <div class="cart-item" data-item-id="${item.id}" style="display: flex !important; justify-content: space-between; align-items: stretch; padding: 1.5rem; border-radius: 12px; background: white; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); gap: 1.5rem; min-height: 120px; margin-bottom: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
                     <img src="${cartImage}" alt="${productName}" style="width: 96px; height: 96px; object-fit: cover; border-radius: 8px;" onerror="this.src='/static/img/logo.png'">
                     <div style="flex: 1;">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">${productName}</h3>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">
+                            <a href="${productUrl}" style="color: #111827; text-decoration: none; transition: color 0.2s ease;" onmouseover="this.style.color='#667eea'" onmouseout="this.style.color='#111827'">
+                                ${productName}
+                            </a>
+                        </h3>
                         ${variantDisplay}
                         <p style="font-size: 0.875rem; color: #6b7280; margin: 0.5rem 0;">${productCode}</p>
                         <p style="font-size: 1.125rem; font-weight: 700; color: #667eea; margin: 0.5rem 0;">$${cart.formatPrice(price)}</p>

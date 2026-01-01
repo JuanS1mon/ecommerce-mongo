@@ -6,8 +6,8 @@ La validación de contraseñas se realiza en hybrid_validation.py
 
 from passlib.context import CryptContext
 from fastapi import Request, Depends, HTTPException, status, Cookie
-from db.models.config.roles import Roles
-from db.schemas.config.Usuarios import UserDB, TokenData
+# TEMP COMENTADO para migración MongoDB: from db.models.config.roles import Roles
+# TEMP COMENTADO para migración MongoDB: from db.schemas.config.Usuarios import UserDB, TokenData
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy import text
@@ -18,8 +18,8 @@ import secrets
 import string
 from typing import Optional, List
 from datetime import datetime, timedelta, timezone
-from db.models.config.usuarios import Usuarios
-from db.models.config.usuarios_rol import UsuariosRol
+# TEMP COMENTADO para migración MongoDB: from db.models.config.usuarios import Usuarios
+# TEMP COMENTADO para migración MongoDB: from db.models.config.usuarios_rol import UsuariosRol
 from fastapi.exceptions import HTTPException
 
 # Inicializar logger
@@ -340,7 +340,7 @@ async def get_current_user_secure(token: str, db = None):
             db = next(db_generator)
         
         # Buscar el usuario en la base de datos
-        from db.models.config.usuarios import Usuarios as UsuariosModel
+        # TEMP COMENTADO para migración MongoDB: from db.models.config.usuarios import Usuarios as UsuariosModel
         user = db.query(UsuariosModel).filter(UsuariosModel.usuario == username).first()
         
         if ENVIRONMENT == "development":
@@ -361,7 +361,7 @@ async def get_current_user_secure(token: str, db = None):
             )
         
         # Cargar roles del usuario
-        from db.schemas.config.Usuarios import Role
+        # TEMP COMENTADO para migración MongoDB: from db.schemas.config.Usuarios import Role
         
         # Acumular roles de ambas tablas
         roles = []
@@ -405,8 +405,16 @@ async def get_current_user(token: str):
     """Alias para compatibilidad"""
     return await get_current_user_secure(token)
 
-def user_pass(db: Session, username: str, password: str):
-    """Verifica las credenciales del usuario y retorna el hash de la contraseña si es válido"""
+# TODO MIGRACIÓN MONGO: Funciones SQL comentadas temporalmente
+# def user_pass(db: Session, username: str, password: str):
+#     """Verifica las credenciales del usuario y retorna el hash de la contraseña si es válido"""
+#     pass
+
+# async def authenticate_user(db: Session, username: str, password: str, request: Request = None) -> Optional[dict]:
+#     """
+#     Autentica un usuario verificando su nombre y contraseña
+#     """
+#     pass
     try:
         
         # Consulta para obtener el hash de la contraseña
@@ -444,83 +452,11 @@ def user_pass(db: Session, username: str, password: str):
         logger.error(f"Error en user_pass: {str(e)}")
         return False
 
-async def authenticate_user(db: Session, username: str, password: str, request: Request = None) -> Optional[dict]:
-    """
-    Autentica un usuario verificando su nombre y contraseña
-    """
-    try:
-        # Obtener información básica de autenticación
-        hashed_password = user_pass(db, username, password)
-        if not hashed_password:
-            logger.warning(f"Intento de inicio de sesión fallido para usuario inexistente: {sanitize_for_log(username)}")
-            return None
-        
-        # La verificación ya se hizo en user_pass, no es necesario repetirla
-        # if not verificar_clave(password, hashed_password):
-        #     logger.warning(f"Contraseña incorrecta para usuario: {sanitize_for_log(username)}")
-        #     return None
-            
-        # Obtener información completa del usuario usando SQL directo (evita problemas de ORM)
-        result = await db.execute(text("""
-            SELECT codigo, usuario, nombre, mail, activo, clave
-            FROM Usuarios 
-            WHERE usuario = :username
-        """), {"username": username})
-        user_row = result.fetchone()
-        
-        if not user_row:
-            logger.warning(f"Usuario autenticado pero no encontrado en la base de datos: {sanitize_for_log(username)}")
-            return None
-          # Obtener roles del usuario si existen
-        roles = []
-        try:
-            # Intentar primero con la tabla usuario_roles
-            roles_result = await db.execute(text("""
-                SELECT r.id, r.nombre, r.descripcion
-                FROM roles r
-                JOIN usuario_roles ur ON r.id = ur.rol_id
-                WHERE ur.usuario_id = :user_id
-            """), {"user_id": user_id})
-            roles = [
-                {"id": role[0], "nombre": role[1], "descripcion": role[2]} 
-                for role in roles_result
-            ]
-            
-            # Si no hay resultados, intentar con usuario_rol
-            if not roles:
-                alt_result = await db.execute(text("""
-                    SELECT r.id, r.nombre, r.descripcion
-                    FROM roles r
-                    JOIN usuario_rol ur ON r.id = ur.id_rol
-                    WHERE ur.id_usuario = :user_id
-                """), {"user_id": user_id})
-                roles = [
-                    {"id": role[0], "nombre": role[1], "descripcion": role[2]} 
-                    for role in alt_result
-                ]
-                
-            # Log de debugging
-            logger.info(f"Roles encontrados para {username}: {len(roles)}")
-            
-        except Exception as e:
-            # Si hay error con roles, registrarlo pero continuar sin ellos
-            logger.error(f"Error obteniendo roles para {username}: {str(e)}")
-            pass
-        
-        logger.info(f"Usuario autenticado exitosamente: {sanitize_for_log(username)}")
-        
-        return {
-            "id": user_row.codigo,
-            "username": user_row.usuario,
-            "mail": user_row.mail,  # CORREGIDO: cambiar de "email" a "mail" para consistencia
-            "nombre": user_row.nombre,
-            "activo": user_row.activo,
-            "roles": roles
-        }
-        
-    except Exception as e:
-        logger.error(f"Error durante autenticación: {str(e)}")
-        return None
+# TODO MIGRACIÓN MONGO: Función SQL comentada temporalmente
+# async def authenticate_user(db: Session, username: str, password: str, request: Request = None) -> Optional[dict]:
+#     """Autentica un usuario verificando su nombre y contraseña"""
+#     pass
+
 # FUNCIONES DE AUTORIZACIÓN
 # ==============================================================================
 

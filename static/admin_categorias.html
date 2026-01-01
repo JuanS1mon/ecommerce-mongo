@@ -313,7 +313,7 @@
         async function cargarCategorias() {
             try {
                 showLoading(true);
-                const response = await fetch('/admin/categorias/');
+                const response = await fetch('/admin/categorias/api');
                 const data = await response.json();
 
                 if (response.ok) {
@@ -455,13 +455,13 @@
                 let response;
                 if (categoriaId) {
                     // Actualizar categoría
-                    response = await fetch(`/admin/categorias/${categoriaId}`, {
+                    response = await fetch(`/admin/categorias/${categoriaId}/upload`, {
                         method: 'PUT',
                         body: formData
                     });
                 } else {
                     // Crear categoría
-                    response = await fetch('/admin/categorias/', {
+                    response = await fetch('/admin/categorias/upload', {
                         method: 'POST',
                         body: formData
                     });

@@ -1,0 +1,407 @@
+"""
+Router de Administración de Usuarios para Admin
+CRUD de usuarios del ecommerce, gestión de roles y estado
+"""
+import logging
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
+
+from db.database import get_db
+from db.models.config.usuarios import Usuarios
+from db.models.config.roles import Roles, usuario_roles
+from Projects.ecomerce.models.usuarios import EcomerceUsuarios
+from Projects.Admin.middleware.admin_auth import require_admin
+from security.security import encriptar_clave
+from Projects.Admin.utils.template_helpers import render_admin_template
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(
+    prefix="/admin/usuarios",
+    tags=["admin-usuarios"]
+)
+
+
+@router.get("/", response_class=HTMLResponse)
+async def lista_usuarios_view(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Vista de lista de usuarios de e-commerce para el admin (autenticación en frontend)"""
+    try:
+        return render_admin_template(
+            "usuarios_ecommerce.html",
+            request,
+            active_page="usuarios"
+        )
+    except Exception as e:
+        logger.error(f"Error cargando usuarios: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error cargando usuarios"
+        )
+
+
+@router.get("/api/sistema/list")
+async def listar_usuarios_sistema_api(
+    admin_user: Usuarios = Depends(require_admin),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    activo: Optional[bool] = None
+):
+    """
+    API para listar usuarios del sistema con filtros
+    
+    Query params:
+    - skip: Número de usuarios a saltar (paginación)
+    - limit: Número máximo de usuarios a devolver
+    - search: Buscar por usuario, nombre o email
+    - activo: Filtrar por estado activo
+    """
+    try:
+        query = db.query(Usuarios)
+        
+        # Aplicar filtros
+        if search:
+            query = query.filter(
+                or_(
+                    Usuarios.usuario.contains(search),
+                    Usuarios.nombre.contains(search),
+                    Usuarios.mail.contains(search)
+                )
+            )
+        
+        if activo is not None:
+            query = query.filter(Usuarios.activo == activo)
+        
+        # Obtener total y usuarios
+        total = query.count()
+        usuarios = query.offset(skip).limit(limit).all()
+        
+        # Obtener roles de cada usuario
+        usuarios_con_roles = []
+        for usuario in usuarios:
+            roles = db.query(Roles).join(
+                usuario_roles,
+                Roles.id == usuario_roles.c.rol_id
+            ).filter(
+                usuario_roles.c.usuario_id == usuario.codigo
+            ).all()
+            
+            usuarios_con_roles.append({
+                "codigo": usuario.codigo,
+                "usuario": usuario.usuario,
+                "nombre": usuario.nombre,
+                "email": usuario.mail,
+                "activo": usuario.activo,
+                "fecha_creacion": usuario.fecha_creacion.isoformat() if usuario.fecha_creacion else None,
+                "ultimo_acceso": usuario.ultimo_acceso.isoformat() if usuario.ultimo_acceso else None,
+                "roles": [{"id": r.id, "nombre": r.nombre} for r in roles]
+            })
+        
+        return {
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+            "usuarios": usuarios_con_roles
+        }
+    except Exception as e:
+        logger.error(f"Error listando usuarios del sistema: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error listando usuarios"
+        )
+
+
+@router.get("/api/ecommerce/list")
+async def listar_usuarios_ecommerce_api(
+    admin_user: AdminUsuarios = Depends(require_admin),
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    activo: Optional[bool] = None
+):
+    """API para listar usuarios del ecommerce con filtros"""
+    from beanie.operators import Or, RegEx
+    try:
+        # Construir filtros
+        filtros = []
+        
+        if search:
+            filtros.append(
+                Or(
+                    RegEx(EcomerceUsuarios.nombre, search, "i"),
+                    RegEx(EcomerceUsuarios.email, search, "i")
+                )
+            )
+        
+        if activo is not None:
+            filtros.append(EcomerceUsuarios.activo == activo)
+        
+        # Obtener usuarios con filtros
+        if filtros:
+            query = EcomerceUsuarios.find(*filtros)
+        else:
+            query = EcomerceUsuarios.find()
+        
+        # Total de usuarios
+        total = await query.count()
+        
+        # Obtener usuarios paginados
+        usuarios = await query.skip(skip).limit(limit).to_list()
+        
+        return {
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+            "usuarios": [
+                {
+                    "id": str(u.id),
+                    "nombre": u.nombre,
+                    "email": u.email,
+                    "telefono": u.telefono,
+                    "direccion": u.direccion,
+                    "activo": u.activo,
+                    "fecha_registro": u.fecha_registro.isoformat() if u.fecha_registro else None
+                }
+                for u in usuarios
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Error listando usuarios del ecommerce: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error listando usuarios"
+        )
+
+
+@router.get("/api/sistema/{usuario_id}")
+async def obtener_usuario_sistema(
+    usuario_id: int,
+    admin_user: Usuarios = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Obtener detalles de un usuario del sistema"""
+    try:
+        usuario = db.query(Usuarios).filter(Usuarios.codigo == usuario_id).first()
+        
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+        
+        # Obtener roles del usuario
+        roles = db.query(Roles).join(
+            usuario_roles,
+            Roles.id == usuario_roles.c.rol_id
+        ).filter(
+            usuario_roles.c.usuario_id == usuario.codigo
+        ).all()
+        
+        return {
+            "codigo": usuario.codigo,
+            "usuario": usuario.usuario,
+            "nombre": usuario.nombre,
+            "email": usuario.mail,
+            "activo": usuario.activo,
+            "telefono": usuario.telefono,
+            "direccion": usuario.direccion,
+            "fecha_creacion": usuario.fecha_creacion.isoformat() if usuario.fecha_creacion else None,
+            "ultimo_acceso": usuario.ultimo_acceso.isoformat() if usuario.ultimo_acceso else None,
+            "roles": [{"id": r.id, "nombre": r.nombre, "descripcion": r.descripcion} for r in roles]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error obteniendo usuario del sistema: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error obteniendo usuario"
+        )
+
+
+@router.put("/api/sistema/{usuario_id}/toggle-active")
+async def toggle_usuario_activo(
+    usuario_id: int,
+    admin_user: Usuarios = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Activar/desactivar un usuario del sistema"""
+    try:
+        usuario = db.query(Usuarios).filter(Usuarios.codigo == usuario_id).first()
+        
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+        
+        # Evitar que el admin se desactive a sí mismo
+        if usuario.codigo == admin_user.codigo:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No puedes desactivar tu propia cuenta"
+            )
+        
+        # Cambiar el estado
+        usuario.activo = not usuario.activo
+        db.commit()
+        
+        logger.info(
+            f"Usuario {usuario.usuario} {'activado' if usuario.activo else 'desactivado'} "
+            f"por admin {admin_user.usuario}"
+        )
+        
+        return {
+            "message": f"Usuario {'activado' if usuario.activo else 'desactivado'} exitosamente",
+            "usuario_id": usuario_id,
+            "activo": usuario.activo
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error cambiando estado del usuario: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error cambiando estado del usuario"
+        )
+
+
+@router.put("/api/sistema/{usuario_id}/roles")
+async def actualizar_roles_usuario(
+    usuario_id: int,
+    admin_user: Usuarios = Depends(require_admin),
+    db: Session = Depends(get_db),
+    roles_ids: str = Form(...)  # Lista de IDs separados por coma
+):
+    """Actualizar los roles de un usuario del sistema"""
+    try:
+        usuario = db.query(Usuarios).filter(Usuarios.codigo == usuario_id).first()
+        
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+        
+        # Parsear los IDs de roles
+        roles_ids_list = [int(rid.strip()) for rid in roles_ids.split(',') if rid.strip()]
+        
+        # Verificar que todos los roles existen
+        roles = db.query(Roles).filter(Roles.id.in_(roles_ids_list)).all()
+        if len(roles) != len(roles_ids_list):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uno o más roles no existen"
+            )
+        
+        # Eliminar roles actuales
+        db.execute(
+            usuario_roles.delete().where(usuario_roles.c.usuario_id == usuario_id)
+        )
+        
+        # Asignar nuevos roles
+        for rol_id in roles_ids_list:
+            db.execute(
+                usuario_roles.insert().values(
+                    usuario_id=usuario_id,
+                    rol_id=rol_id
+                )
+            )
+        
+        db.commit()
+        
+        logger.info(
+            f"Roles actualizados para usuario {usuario.usuario} por admin {admin_user.usuario}"
+        )
+        
+        return {
+            "message": "Roles actualizados exitosamente",
+            "usuario_id": usuario_id,
+            "roles": [{"id": r.id, "nombre": r.nombre} for r in roles]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error actualizando roles del usuario: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error actualizando roles"
+        )
+
+
+@router.put("/api/ecommerce/{usuario_id}/toggle-active")
+async def toggle_usuario_ecommerce_activo(
+    usuario_id: str,
+    admin_user: AdminUsuarios = Depends(require_admin)
+):
+    """Activar/desactivar un usuario del ecommerce"""
+    from bson import ObjectId
+    try:
+        # Buscar usuario por ObjectId
+        usuario = await EcomerceUsuarios.get(ObjectId(usuario_id))
+        
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+        
+        # Cambiar el estado
+        usuario.activo = not usuario.activo
+        await usuario.save()
+        
+        logger.info(
+            f"Usuario ecommerce {usuario.nombre} {'activado' if usuario.activo else 'desactivado'} "
+            f"por admin {admin_user.usuario}"
+        )
+        
+        return {
+            "message": f"Usuario {'activado' if usuario.activo else 'desactivado'} exitosamente",
+            "usuario_id": usuario_id,
+            "activo": usuario.activo
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cambiando estado del usuario ecommerce: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error cambiando estado del usuario"
+        )
+
+
+@router.get("/api/roles")
+async def listar_roles(
+    admin_user: Usuarios = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Listar todos los roles disponibles"""
+    try:
+        roles = db.query(Roles).all()
+        
+        return {
+            "roles": [
+                {
+                    "id": r.id,
+                    "nombre": r.nombre,
+                    "descripcion": r.descripcion
+                }
+                for r in roles
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Error listando roles: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error listando roles"
+        )

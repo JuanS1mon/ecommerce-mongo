@@ -11,8 +11,20 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <!-- Config -->
+    <script src="/static/config.js"></script>
+
     <!-- Custom CSS -->
     <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+        }
+
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
@@ -61,28 +73,147 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b">
+    <!-- NAVBAR -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center">
-                    <a href="/ecomerce/productos/tienda" class="text-blue-600 hover:text-blue-800 transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Continuar comprando
+            <div class="flex justify-between items-center py-2">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
+                        <img alt="Logo" class="h-10 sm:h-11 md:h-12 w-auto transition-all duration-300" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg hidden sm:inline">Tienda Online</span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <h1 class="text-2xl font-bold text-gray-900">Checkout</h1>
+                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
+                        <i class="fas fa-home"></i>
+                        <span class="hidden sm:inline text-sm">Inicio</span>
+                    </a>
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
+                        <i class="fas fa-store"></i>
+                        <span class="hidden sm:inline text-sm">Tienda</span>
+                    </a>
+
+                    <!-- Usuario no autenticado -->
+                    <div id="auth-buttons" class="flex items-center space-x-2">
+                        <a href="/ecomerce/login" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-1 text-sm">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="hidden sm:inline">Iniciar Sesión</span>
+                        </a>
+                        <a href="/ecomerce/register" class="bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-600 hover:text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-1 text-sm">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="hidden sm:inline">Registrarse</span>
+                        </a>
+                    </div>
+
+                    <!-- Usuario autenticado -->
+                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                        <div class="relative">
+                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors text-sm" onclick="event.stopPropagation(); toggleUserDropdown()">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="user-greeting" class="hidden sm:inline">Hola</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                                <div class="py-1">
+                                    <a href="/ecomerce/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" onclick="document.getElementById('user-dropdown').classList.add('hidden')">
+                                        <i class="fas fa-heart text-red-500 mr-2"></i>
+                                        Mis Favoritos
+                                    </a>
+                                    <a href="/ecomerce/usuarios/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" onclick="document.getElementById('user-dropdown').classList.add('hidden')">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <div class="border-t border-gray-200"></div>
+                                    <button onclick="logout(); document.getElementById('user-dropdown').classList.add('hidden')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>
+                                        Salir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Favoritos -->
+                    <a href="/ecomerce/perfil" class="text-gray-600 hover:text-red-500 px-3 py-2 rounded-lg transition-colors relative hidden" id="wishlist-nav-button" title="Mis Favoritos">
+                        <i class="fas fa-heart"></i>
+                        <span class="ml-1 hidden md:inline text-sm">Favoritos</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden" id="wishlist-count">0</span>
+                    </a>
+
+                    <!-- Botón de Carrito (solo visible si está autenticado) -->
+                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative hidden" id="cart-button" onclick="toggleCart()" title="Ver carrito">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="ml-1 hidden md:inline text-sm">Carrito</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- CART SIDEBAR -->
+    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-40 border-l border-gray-200">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>
+                    Mi Carrito
+                </h2>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Los items del carrito se cargarán aquí -->
+            </div>
+
+            <div class="border-t border-gray-200 p-4">
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>Subtotal:</span>
+                        <span id="sidebar-subtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-semibold text-gray-900">
+                        <span>Total:</span>
+                        <span id="sidebar-total">$0.00</span>
+                    </div>
+                </div>
+                <a href="/ecomerce/checkout" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Proceder al Checkout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay para el sidebar -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden" onclick="toggleCart()"></div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-credit-card mr-3 text-blue-600"></i>
+                    Checkout
+                </h1>
+                <p class="mt-2 text-gray-600">Completa tu pedido y finaliza la compra</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Resumen del pedido -->
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
@@ -349,7 +480,9 @@
         // CONFIGURACIÓN Y UTILIDADES
         // ============================================================================
 
-        const API_BASE = '/ecomerce';
+        const API_PRODUCTS = '/ecomerce/api';
+        const API_CARTS = '/ecomerce';
+        const API_CHECKOUT = '/ecomerce';
 
         // Estado del checkout
         let cartItems = [];
@@ -673,7 +806,7 @@
                 }
 
                 // Obtener carrito activo
-                const cartResponse = await fetch(`${API_BASE}/carritos/activo`, {
+                const cartResponse = await fetch(`${API_CARTS}/carritos/activo`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -694,7 +827,7 @@
                         }));
                     } else {
                         // Intenta obtener items del endpoint específico si existen
-                        const itemsResponse = await fetch(`${API_BASE}/carrito_items/carrito/${currentCart.id}`, {
+                        const itemsResponse = await fetch(`${API_CARTS}/carrito_items/carrito/${currentCart.id}`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json'
@@ -743,38 +876,28 @@
                         return;
                     }
 
-                    // Intentar obtener detalles del producto
-                    const response = await fetch(`${API_BASE}/productos/publicos?limit=1000`);
+                    // Obtener detalles del producto individual
+                    const response = await fetch(`${API_PRODUCTS}/productos/${productId}`);
                     if (response.ok) {
-                        const productos = await response.json();
-                        const product = productos.find(p => p.id === productId);
-                        
-                        if (product) {
-                            item.product_name = product.nombre || `Producto ${productId}`;
-                            item.product_image = product.imagen_url || '/static/img/logo.png';
-                            item.product_codigo = product.codigo || '';
-                            item.product_descripcion = product.descripcion || '';
+                        const product = await response.json();
+                        item.product_name = product.nombre || `Producto ${productId}`;
+                        item.product_image = product.imagen_url || '/static/img/logo.png';
+                        item.product_codigo = product.codigo || '';
+                        item.product_descripcion = product.descripcion || '';
 
-                            // Información de variantes
-                            item.variant_info = null;
-                            if (item.variant_data && typeof item.variant_data === 'object') {
-                                item.variant_info = item.variant_data;
-                            } else if (product.variantes && product.variantes.length > 0) {
-                                const defaultVariant = product.variantes.find(v => v.stock > 0) || product.variantes[0];
-                                if (defaultVariant) {
-                                    item.variant_info = {
-                                        color: defaultVariant.color,
-                                        tipo: defaultVariant.tipo,
-                                        precio_adicional: defaultVariant.precio_adicional || 0
-                                    };
-                                }
+                        // Información de variantes
+                        item.variant_info = null;
+                        if (item.variant_data && typeof item.variant_data === 'object') {
+                            item.variant_info = item.variant_data;
+                        } else if (product.variantes && product.variantes.length > 0) {
+                            const defaultVariant = product.variantes.find(v => v.stock > 0) || product.variantes[0];
+                            if (defaultVariant) {
+                                item.variant_info = {
+                                    color: defaultVariant.color,
+                                    tipo: defaultVariant.tipo,
+                                    precio_adicional: defaultVariant.precio_adicional || 0
+                                };
                             }
-                        } else {
-                            item.product_name = `Producto ${productId}`;
-                            item.product_image = '/static/img/logo.png';
-                            item.product_codigo = '';
-                            item.product_descripcion = '';
-                            item.variant_info = null;
                         }
                     } else {
                         item.product_name = `Producto ${productId}`;
@@ -784,7 +907,7 @@
                         item.variant_info = null;
                     }
                 } catch (error) {
-                    console.warn(`Error cargando producto:`, error);
+                    console.warn(`Error cargando producto ${item.id_producto || item.product_id}:`, error);
                     const productId = item.id_producto || item.product_id || 'desconocido';
                     item.product_name = `Producto ${productId}`;
                     item.product_image = '/static/img/logo.png';
@@ -1546,7 +1669,7 @@
                 const shippingData = getShippingData();
 
                 // Llamar al endpoint de checkout para crear la preferencia
-                const response = await fetch(`${API_BASE}/checkout/`, {
+                const response = await fetch(`${API_CHECKOUT}/checkout/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1634,7 +1757,7 @@
                 const shippingData = getShippingData();
 
                 // Llamar al endpoint de checkout (solo para efectivo y presupuesto)
-                const response = await fetch(`${API_BASE}/checkout/`, {
+                const response = await fetch(`${API_CHECKOUT}/checkout/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1740,6 +1863,114 @@
 
         // Event listener para el botón de confirmar
         document.getElementById('confirm-order-btn').addEventListener('click', confirmOrder);
+    </script>
+    </main>
+
+    <!-- SCRIPTS PARA LA NAVBAR -->
+    <script src="/static/ecomerce/auth.js"></script>
+    <script src="/static/ecomerce/animations.js"></script>
+    <script src="/static/ecomerce/carrito.js"></script>
+
+    <script>
+        // Inicializar navbar y funcionalidades
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear instancia global de AuthManager si no existe
+            if (!window.authManager) {
+                window.authManager = new AuthManager();
+            }
+
+            // Inicializar autenticación
+            if (window.authManager && !window.authManager.initialized) {
+                window.authManager.init();
+            }
+
+            // Inicializar carrito
+            if (window.cart) {
+                window.cart.init();
+            }
+        });
+
+        // Funciones para el dropdown de usuario
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('user-dropdown');
+            const button = document.getElementById('user-dropdown-btn');
+
+            // No ocultar si el clic fue en el botón o dentro del dropdown
+            if (button && button.contains(e.target)) {
+                return;
+            }
+
+            if (dropdown && dropdown.contains(e.target)) {
+                return;
+            }
+
+            // Ocultar el dropdown si está visible y el clic fue fuera
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Mostrar UI para usuario no autenticado
+        function showUnauthenticatedUI() {
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+
+            if (authButtons) authButtons.classList.remove('hidden');
+            if (userInfo) userInfo.classList.add('hidden');
+        }
+
+        // Mostrar UI para usuario autenticado
+        function showAuthenticatedUI(user) {
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+            const userGreeting = document.getElementById('user-greeting');
+
+            if (authButtons) authButtons.classList.add('hidden');
+            if (userInfo) userInfo.classList.remove('hidden');
+
+            if (userGreeting) {
+                const displayName = user.nombre || user.name || 'Usuario';
+                userGreeting.textContent = `Hola, ${displayName}`;
+            }
+        }
+
+        // Toggle dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Logout function
+        function logout() {
+            if (window.authManager) {
+                window.authManager.logout();
+            }
+        }
+
+        // Toggle cart sidebar
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+
+            if (sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Listener para cambios de token
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'access_token' || e.key === 'ecommerce_token') {
+                if (window.authManager) {
+                    window.authManager.init();
+                }
+            }
+        });
     </script>
 </body>
 </html>

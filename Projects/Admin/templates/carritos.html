@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carritos - {{ project_name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin/css/carritos.css">
+</head>
+<body>
+    <div class="container">
+        {% include 'components/header.html' %}
+        
+        <!-- Stats Cards con IDs específicos -->
+        <div class="stats-container" id="statsCards" style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <div class="stat-card stat-card-info" onclick="filtrarPorEstado('activo')">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="stat-content">
+                    <h3>Activos</h3>
+                    <p class="stat-number" id="stat-activo">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-primary" onclick="filtrarPorEstado('aceptado')">
+                <div class="stat-icon"><i class="fas fa-check"></i></div>
+                <div class="stat-content">
+                    <h3>Aceptados</h3>
+                    <p class="stat-number" id="stat-aceptado">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-warning" onclick="filtrarPorEstado('preparando')">
+                <div class="stat-icon"><i class="fas fa-box-open"></i></div>
+                <div class="stat-content">
+                    <h3>Preparando</h3>
+                    <p class="stat-number" id="stat-preparando">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-success" onclick="filtrarPorEstado('completado')">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-content">
+                    <h3>Completados</h3>
+                    <p class="stat-number" id="stat-completado">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-delivery" onclick="filtrarPorEstado('pendiente_entrega')">
+                <div class="stat-icon"><i class="fas fa-truck"></i></div>
+                <div class="stat-content">
+                    <h3>Pendiente Entrega</h3>
+                    <p class="stat-number" id="stat-pendiente_entrega">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-done" onclick="filtrarPorEstado('finalizado')">
+                <div class="stat-icon"><i class="fas fa-flag-checkered"></i></div>
+                <div class="stat-content">
+                    <h3>Finalizados</h3>
+                    <p class="stat-number" id="stat-finalizado">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-danger" onclick="filtrarPorEstado('abandonado')">
+                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-content">
+                    <h3>Abandonados</h3>
+                    <p class="stat-number" id="stat-abandonado">0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-total">
+                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-content">
+                    <h3>Valor Total</h3>
+                    <p class="stat-number" id="stat-total-valor">$0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por ID, usuario...">
+            </div>
+            <div class="toolbar-actions">
+                <select id="filterEstado" class="form-control-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="activo"> Activo</option>
+                    <option value="aceptado"> Aceptado</option>
+                    <option value="preparando"> Preparando</option>
+                    <option value="completado"> Completado</option>
+                    <option value="pendiente_entrega"> Pendiente Entrega</option>
+                    <option value="finalizado"> Finalizado</option>
+                    <option value="abandonado"> Abandonado</option>
+                </select>
+                <button class="btn-refresh" onclick="cargarCarritos()">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" style="display: none; text-align: center; padding: 60px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; margin-bottom: 30px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: #c5a572; margin-bottom: 20px;"></i>
+            <p style="color: rgba(255,255,255,0.7); font-size: 1.1rem;">Cargando carritos...</p>
+        </div>
+
+        <div class="card" id="carritos-content">
+            <div class="card-header">
+                <h2><i class="fas fa-shopping-cart"></i> Gestión de Carritos</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" onclick="ordenarPor('id')">ID <i class="fas fa-sort"></i></th>
+                                <th class="sortable" onclick="ordenarPor('usuario')">Usuario <i class="fas fa-sort"></i></th>
+                                <th class="sortable" onclick="ordenarPor('fecha')">Fecha <i class="fas fa-sort"></i></th>
+                                <th class="sortable" onclick="ordenarPor('items')">Items <i class="fas fa-sort"></i></th>
+                                <th class="sortable" onclick="ordenarPor('total')">Total <i class="fas fa-sort"></i></th>
+                                <th class="sortable" onclick="ordenarPor('estado')">Estado <i class="fas fa-sort"></i></th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carritosBody">
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        Cargando carritos...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Mostrando <span id="paginacion-info">0</span> carritos
+                    </div>
+                    <div class="pagination" id="pagination">
+                        <button id="prevPage" class="btn-page">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        <span id="pageInfo" style="margin: 0 15px; color: rgba(255,255,255,0.7);">Página 1 de 1</span>
+                        <button id="nextPage" class="btn-page">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="modalDetalle" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> Detalles del Carrito</h2>
+                <button class="modal-close" onclick="cerrarModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detalle-header">
+                    <div class="detalle-info">
+                        <p><strong>ID:</strong> <span id="detalle-id"></span></p>
+                        <p><strong>Usuario:</strong> <span id="detalle-usuario"></span></p>
+                        <p><strong>Email:</strong> <span id="detalle-email"></span></p>
+                        <p><strong>Teléfono:</strong> <span id="detalle-telefono"></span></p>
+                        <p><strong>Fecha:</strong> <span id="detalle-fecha"></span></p>
+                    </div>
+                    <div class="detalle-estado">
+                        <p><strong>Estado:</strong></p>
+                        <div id="detalle-estado"></div>
+                    </div>
+                </div>
+
+                <div class="detalle-items">
+                    <h3><i class="fas fa-box"></i> Items del Carrito</h3>
+                    <div class="items-list" id="detalle-items"></div>
+                </div>
+
+                <div class="detalle-total">
+                    <h3>Total: <span id="detalle-total"></span></h3>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-primary" onclick="abrirModalEstado()">
+                        <i class="fas fa-exchange-alt"></i>
+                        Cambiar Estado
+                    </button>
+                    <button class="btn-secondary" onclick="cerrarModal()">
+                        <i class="fas fa-times"></i>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEstado" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exchange-alt"></i> Cambiar Estado del Carrito</h2>
+                <button class="modal-close" onclick="cerrarModalEstado()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Deseas cambiar el estado del carrito <strong id="estado-carrito-id"></strong>?</p>
+
+                <div class="estado-actual">
+                    <p><strong>Estado Actual:</strong></p>
+                    <div id="estado-actual-badge"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nuevo-estado">Nuevo Estado:</label>
+                    <select id="nuevo-estado" class="form-control">
+                        <option value="activo"> Activo</option>
+                        <option value="aceptado"> Aceptado</option>
+                        <option value="preparando"> Preparando</option>
+                        <option value="completado"> Completado</option>
+                        <option value="pendiente_entrega"> Pendiente Entrega</option>
+                        <option value="finalizado"> Finalizado</option>
+                        <option value="abandonado"> Abandonado</option>
+                    </select>
+                </div>
+
+                <div class="alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Nota:</strong> Al cambiar el estado a "Completado", se enviará un email automático al cliente notificando que su pedido está listo.
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="cerrarModalEstado()">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button class="btn-primary" onclick="confirmarCambioEstado()">
+                        <i class="fas fa-check"></i>
+                        Confirmar Cambio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/static/admin/js/carritos.js"></script>
+</body>
+</html>
+

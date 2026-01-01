@@ -48,6 +48,13 @@ async def init_database():
     from Projects.ecomerce.models.cupones_beanie import EcomerceCupones
     # Importar modelo de pedidos (nuevo)
     from Projects.ecomerce.models.pedidos_beanie import EcomercePedidos
+    # Importar modelos de Admin
+    from Projects.Admin.models.admin_usuarios_beanie import AdminUsuarios
+    from Projects.Admin.models.marketing_beanie import MarketingConfig, MarketingCampaign
+    from Projects.ecomerce.models.presupuesto_beanie import EcomercePresupuestos
+    from Projects.ecomerce.models.pedido_historial_beanie import EcomercePedidoHistorial
+    from Projects.ecomerce.models.configuracion_beanie import EcomerceConfiguracion
+    
     await init_beanie(database=database, document_models=[
         EcomerceUsuarios,
         EcomerceProductos,
@@ -57,7 +64,13 @@ async def init_database():
         EcomerceResenas,
         EcomerceListaDeseos,
         EcomerceCupones,
-        EcomercePedidos
+        EcomercePedidos,
+        AdminUsuarios,
+        MarketingConfig,
+        MarketingCampaign,
+        EcomercePresupuestos,
+        EcomercePedidoHistorial,
+        EcomerceConfiguracion
     ])  # Lista de modelos Beanie
 
 # Dependencia de base de datos (para FastAPI)

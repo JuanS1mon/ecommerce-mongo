@@ -250,47 +250,22 @@ async def lifespan(app: FastAPI):
 
     try:
         yield
-    finally:
-        logger.info("Cerrando aplicacion FastAPI")
-
-    # Mostrar rutas registradas para debug
-    logger.info("Rutas registradas:")
-    for route in app.routes:
-        if hasattr(route, 'path'):
-            methods = getattr(route, 'methods', ['MOUNT'])
-            logger.info(f"  - {methods} {route.path}")
-
-    checklist = [
-        (".env cargado correctamente", True),
-        ("Configuracion de base de datos cargada", db_status),
-        ("Configuracion de correo cargada correctamente", mail_ok),
-        ("Modelos importados", modelos_status),
-        ("Tablas creadas/verificadas", tablas_status),
-        ("Directorios verificados", True),
-        ("Sistema de stock configurado", True),
-        ("Middlewares y rutas registradas", True),
-        ("Logging inicializado", True),
-        ("Migraciones Alembic aplicadas", alembic_ok),
-        ("Usuario administrador inicializado", admin_created),
-        ("Tokens expirados limpiados del blacklist", tokens_cleaned),
-    ]
-    logger.info("\n================= CHECKLIST DE INICIO =================")
-    for item, ok in checklist:
-        logger.info(f"[OK] {item}")
-    logger.info("======================================================\n")
-    logger.info("Iniciando aplicacion FastAPI")
-
-    try:
-        yield
     except Exception as e:
         logger.error(f"Error durante la ejecución de la aplicación: {e}")
         import traceback
         traceback.print_exc()
         raise
+    finally:
+        logger.info("Cerrando aplicacion FastAPI")
 
-    # Shutdown logic
-    logger.info("Cerrando aplicacion FastAPI")
-    logger.info("Limpieza de recursos completada")
+        # Mostrar rutas registradas para debug
+        logger.info("Rutas registradas:")
+        for route in app.routes:
+            if hasattr(route, 'path'):
+                methods = getattr(route, 'methods', ['MOUNT'])
+                logger.info(f"  - {methods} {route.path}")
+
+        logger.info("Limpieza de recursos completada")
 
 # Crear la aplicación con lifespan
 app = FastAPI(
@@ -502,12 +477,80 @@ if static_pages_router:
 else:
     logger.warning("static_pages_router no disponible; se omite su registro")
 
-# Indicar que la importación de módulos terminó correctamente (útil para startup preflight)
-try:
-    import datetime
-    p = os.path.join(os.path.dirname(__file__), 'import_check.log')
-    with open(p, 'a') as f:
-        f.write(f"IMPORT_OK {datetime.datetime.utcnow().isoformat()}\n")
+@app.get("/debug/admin")
+async def debug_admin():
+    """
+    Endpoint de diagnóstico para verificar el estado del admin en Vercel
+    """
+    import os
+    from db.database import client, database
+    
+    debug_info = {
+        "environment": os.getenv("ENVIRONMENT", "unknown"),
+        "vercel_env": os.getenv("VERCEL", "unknown"),
+        "vercel_url": os.getenv("VERCEL_URL", "unknown"),
+        "mongo_url_configured": bool(os.getenv("MONGO_URL")),
+        "db_name": os.getenv("DB_NAME", "unknown"),
+        "cors_origins": ORIGINS,
+        "python_path": sys.path[:3],  # First 3 paths
+        "current_dir": os.getcwd(),
+        "files_in_root": os.listdir(".")[:10]  # First 10 files
+    }
+    
+    # Test database connection
+    try:
+        await client.admin.command('ping')
+        debug_info["db_connection"] = "OK"
+        
+        # Check if admin users collection exists
+        collections = await database.list_collection_names()
+        debug_info["collections"] = collections
+        debug_info["admin_users_exists"] = "admin_usuarios" in collections
+        
+        if "admin_usuarios" in collections:
+            count = await database.admin_usuarios.count_documents({})
+            debug_info["admin_users_count"] = count
+        else:
+            debug_info["admin_users_count"] = 0
+            
+    except Exception as e:
+        debug_info["db_connection"] = f"ERROR: {str(e)}"
+    
+    return debug_info
+
+
+@app.post("/debug/create-admin")
+async def create_admin_user():
+    """
+    Crear usuario admin por defecto para Vercel
+    """
+    from Projects.Admin.models.admin_usuarios_beanie import AdminUsuarios
+    from security.security import hash_clave
+    from datetime import datetime
+    
+    try:
+        # Verificar si ya existe un admin
+        existing_admin = await AdminUsuarios.find_one(AdminUsuarios.usuario == "admin")
+        if existing_admin:
+            return {"message": "Admin user already exists", "user": existing_admin.usuario}
+        
+        # Crear admin por defecto
+        admin_user = AdminUsuarios(
+            usuario="admin",
+            nombre="Administrator",
+            mail="admin@example.com",
+            clave_hash=hash_clave("admin123"),
+            activo=True,
+            fecha_creacion=datetime.utcnow(),
+            ultimo_acceso=None
+        )
+        
+        await admin_user.insert()
+        return {"message": "Admin user created successfully", "user": "admin", "password": "admin123"}
+        
+    except Exception as e:
+        logger.error(f"Error creating admin user: {e}")
+        return {"error": str(e)}
     logger.info(f"Wrote IMPORT_OK to {p}")
 except Exception as e:
     logger.warning(f"Could not write IMPORT_OK to import_check.log: {e}")
@@ -575,6 +618,85 @@ try:
 except Exception as e:
     logger.error(f"Router google_oauth deshabilitado temporalmente (falta modulo authlib o configuración): {e}")
 
+# =============================
+# ADMIN PANEL ROUTERS
+# =============================
+try:
+    from Projects.Admin.routes.landing import router as admin_landing_router
+    app.include_router(admin_landing_router, tags=["admin-landing"])
+    logger.info("[OK] Admin landing router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_landing_router: {e}")
+
+try:
+    from Projects.Admin.routes.auth import router as admin_auth_router
+    app.include_router(admin_auth_router, tags=["admin-auth"])
+    logger.info("[OK] Admin auth router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_auth_router: {e}")
+
+try:
+    from Projects.Admin.routes.dashboard import router as admin_dashboard_router
+    app.include_router(admin_dashboard_router, tags=["admin-dashboard"])
+    logger.info("[OK] Admin dashboard router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_dashboard_router: {e}")
+
+try:
+    from Projects.Admin.routes.productos import router as admin_productos_router
+    app.include_router(admin_productos_router, tags=["admin-productos"])
+    logger.info("[OK] Admin productos router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_productos_router: {e}")
+
+try:
+    from Projects.Admin.routes.pedidos import router as admin_pedidos_router
+    app.include_router(admin_pedidos_router, tags=["admin-pedidos"])
+    logger.info("[OK] Admin pedidos router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_pedidos_router: {e}")
+
+try:
+    from Projects.Admin.routes.carritos import router as admin_carritos_router
+    app.include_router(admin_carritos_router, tags=["admin-carritos"])
+    logger.info("[OK] Admin carritos router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_carritos_router: {e}")
+
+try:
+    from Projects.Admin.routes.usuarios import router as admin_usuarios_router
+    app.include_router(admin_usuarios_router, tags=["admin-usuarios"])
+    logger.info("[OK] Admin usuarios router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_usuarios_router: {e}")
+
+try:
+    from Projects.Admin.routes.presupuestos import router as admin_presupuestos_router
+    app.include_router(admin_presupuestos_router, tags=["admin-presupuestos"])
+    logger.info("[OK] Admin presupuestos router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_presupuestos_router: {e}")
+
+try:
+    from Projects.Admin.routes.admin_categorias import router as admin_categorias_router
+    app.include_router(admin_categorias_router, tags=["admin-categorias"])
+    logger.info("[OK] Admin categorias router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_categorias_router: {e}")
+
+try:
+    from Projects.Admin.routes.configuracion import router as admin_configuracion_router
+    app.include_router(admin_configuracion_router, tags=["admin-configuracion"])
+    logger.info("[OK] Admin configuracion router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_configuracion_router: {e}")
+
+try:
+    from Projects.Admin.routes.marketing import router as admin_marketing_router
+    app.include_router(admin_marketing_router, tags=["admin-marketing"])
+    logger.info("[OK] Admin marketing router registrado")
+except Exception as e:
+    logger.error(f"[ERROR] Error registrando admin_marketing_router: {e}")
 
 # =============================
 # RUTAS PRINCIPALES

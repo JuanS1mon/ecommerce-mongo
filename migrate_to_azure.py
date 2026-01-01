@@ -52,10 +52,20 @@ async def migrate():
             # Obtener todos los documentos
             documents = await local_collection.find({}).to_list(None)
             
-            # Insertar en Azure
-            if documents:
-                result = await azure_collection.insert_many(documents)
-                print(f"   ✅ {len(result.inserted_ids)} documentos insertados")
+            # Insertar en Azure con upsert para manejar duplicados
+            for doc in documents:
+                try:
+                    # Intentar insertar, si falla por duplicado, actualizar
+                    await azure_collection.replace_one(
+                        {'_id': doc['_id']}, 
+                        doc, 
+                        upsert=True
+                    )
+                except Exception as e:
+                    print(f"   ⚠️ Error con documento {doc.get('_id', 'sin_id')}: {e}")
+                    continue
+            
+            print(f"   ✅ {len(documents)} documentos procesados")
         
         print("\n✨ Migración completada exitosamente")
         

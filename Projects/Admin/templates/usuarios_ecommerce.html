@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes - {{ project_name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .brand-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-text h1 strong {
+            font-weight: 700;
+            background: linear-gradient(135deg, #c5a572 0%, #f4e4c1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-logout {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-logout:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
+            transform: translateY(-2px);
+        }
+        
+        .nav-menu {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .nav-menu a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        
+        .nav-menu a:hover {
+            background: rgba(197, 165, 114, 0.1);
+            border-color: rgba(197, 165, 114, 0.3);
+            color: #c5a572;
+        }
+        
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            color: #0a0e1a;
+            font-weight: 600;
+        }
+        
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 20px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c5a572 0%, #f4e4c1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .content-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+        
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .section-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        /* Search and Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filters input,
+        .filters select {
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .filters input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+        
+        .filters button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            border: none;
+            border-radius: 10px;
+            color: #0a0e1a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .filters button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(197, 165, 114, 0.3);
+        }
+        
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        th {
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        tbody tr {
+            transition: all 0.2s;
+        }
+        
+        tbody tr:hover {
+            background: rgba(197, 165, 114, 0.05);
+        }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .badge.google {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .badge.local {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-action {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .btn-view {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-view:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-edit {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .btn-edit:hover {
+            background: rgba(168, 85, 247, 0.3);
+        }
+        
+        .btn-password {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-password:hover {
+            background: rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-toggle {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .btn-toggle:hover {
+            background: rgba(34, 197, 94, 0.3);
+        }
+        
+        .btn-toggle.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1a1f35;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .modal-header h3 {
+            font-size: 1.3rem;
+            color: #ffffff;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-close:hover {
+            color: #ffffff;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #c5a572;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #c5a572 0%, #8b7355 100%);
+            border: none;
+            border-radius: 10px;
+            color: #0a0e1a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(197, 165, 114, 0.3);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .nav-menu {
+                justify-content: center;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filters input,
+            .filters select,
+            .filters button {
+                width: 100%;
+            }
+            
+            .table-container {
+                overflow-x: scroll;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>{{ project_name or 'Executive' }} <strong>Portal</strong></h1>
+                </div>
+            </div>
+            <div class="user-info">
+                <span class="user-name">
+                    <i class="fas fa-user-circle"></i> 
+                    <span id="username">Administrador</span>
+                </span>
+                <button onclick="logout()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+        
+        <nav class="nav-menu">
+            <a href="/admin/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="/admin/productos"><i class="fas fa-box"></i> Productos</a>
+            <a href="/admin/pedidos"><i class="fas fa-shopping-cart"></i> Pedidos</a>
+            <a href="/admin/presupuestos"><i class="fas fa-file-invoice"></i> Presupuestos</a>
+            <a href="/admin/carritos"><i class="fas fa-shopping-basket"></i> Carritos</a>
+            <a href="/admin/usuarios" class="active"><i class="fas fa-users"></i> Usuarios</a>
+            <a href="/admin/configuracion"><i class="fas fa-cog"></i> Configuración</a>
+        </nav>
+        
+        <!-- Estadísticas -->
+        <div class="stats-container" id="stats">
+            <div class="stat-card">
+                <h3><i class="fas fa-users"></i> Total Clientes</h3>
+                <div class="value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-check-circle"></i> Clientes Activos</h3>
+                <div class="value" id="stat-activos">0</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-shopping-cart"></i> Total Pedidos</h3>
+                <div class="value" id="stat-pedidos">0</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-dollar-sign"></i> Total Ventas</h3>
+                <div class="value" id="stat-ventas">$0</div>
+            </div>
+        </div>
+        
+        <!-- Contenido Principal -->
+        <div class="content-section">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> Gestión de Clientes</h2>
+            </div>
+            
+            <!-- Filtros -->
+            <div class="filters">
+                <input type="text" id="search" placeholder="Buscar por nombre, email, ciudad...">
+                <select id="filterActive">
+                    <option value="">Todos los estados</option>
+                    <option value="true">Activos</option>
+                    <option value="false">Inactivos</option>
+                </select>
+                <select id="filterProvider">
+                    <option value="">Todos los métodos</option>
+                    <option value="local">Local</option>
+                    <option value="google">Google</option>
+                </select>
+                <button onclick="cargarUsuarios()"><i class="fas fa-search"></i> Buscar</button>
+                <button onclick="cargarUsuarios()"><i class="fas fa-sync"></i> Actualizar</button>
+            </div>
+            
+            <!-- Tabla de Clientes -->
+            <div class="table-container">
+                <table id="usuariosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Ciudad</th>
+                            <th>Auth</th>
+                            <th>Estado</th>
+                            <th>Pedidos</th>
+                            <th>Total Gastado</th>
+                            <th>Registro</th>
+                            <th>Última Compra</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuariosBody">
+                        <tr>
+                            <td colspan="11" class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando clientes...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Detalles -->
+    <div id="modalDetalles" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> Detalles del Usuario</h3>
+                <button class="btn-close" onclick="cerrarModal('modalDetalles')">&times;</button>
+            </div>
+            <div id="detallesContent">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Cambio de Contraseña -->
+    <div id="modalPassword" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Cambiar Contraseña</h3>
+                <button class="btn-close" onclick="cerrarModal('modalPassword')">&times;</button>
+            </div>
+            <form id="formPassword" onsubmit="cambiarPassword(event)">
+                <div class="form-group">
+                    <label>Nueva Contraseña</label>
+                    <input type="password" id="nuevaPassword" required minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Contraseña</label>
+                    <input type="password" id="confirmarPassword" required minlength="6" placeholder="Repetir contraseña">
+                </div>
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Cambiar Contraseña
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let usuarioSeleccionado = null;
+        
+        function verificarAutenticacion() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = '/admin/login?next=/admin/usuarios';
+                return false;
+            }
+            return true;
+        }
+        
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_user');
+                window.location.href = '/admin/login';
+            }
+        }
+        
+        async function cargarEstadisticas() {
+            try {
+                const response = await fetch('/admin/ecommerce-usuarios/estadisticas', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('stat-total').textContent = data.total_usuarios;
+                    document.getElementById('stat-activos').textContent = data.usuarios_activos;
+                    document.getElementById('stat-pedidos').textContent = data.total_pedidos;
+                    document.getElementById('stat-ventas').textContent = `$${data.total_ventas.toFixed(2)}`;
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
+        }
+        
+        async function cargarUsuarios() {
+            const tbody = document.getElementById('usuariosBody');
+            tbody.innerHTML = '<tr><td colspan="11" class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
+            
+            try {
+                const search = document.getElementById('search').value;
+                const active = document.getElementById('filterActive').value;
+                const provider = document.getElementById('filterProvider').value;
+                
+                let url = '/admin/ecommerce-usuarios/?';
+                if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (active) url += `active=${active}&`;
+                if (provider) url += `auth_provider=${provider}&`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar usuarios');
+                }
+                
+                const usuarios = await response.json();
+                
+                if (usuarios.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: rgba(255,255,255,0.5);">No se encontraron usuarios</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = usuarios.map(u => `
+                    <tr>
+                        <td>${u.id}</td>
+                        <td>${u.nombre} ${u.apellido}</td>
+                        <td>${u.email}</td>
+                        <td>${u.ciudad || '-'}</td>
+                        <td><span class="badge ${u.auth_provider}">${u.auth_provider}</span></td>
+                        <td><span class="badge ${u.active ? 'active' : 'inactive'}">${u.active ? 'Activo' : 'Inactivo'}</span></td>
+                        <td>${u.total_pedidos}</td>
+                        <td>$${u.total_gastado.toFixed(2)}</td>
+                        <td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td>
+                        <td>${u.ultima_compra ? new Date(u.ultima_compra).toLocaleDateString() : 'Nunca'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-view" onclick="verDetalles(${u.id})" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${u.auth_provider === 'local' ? `
+                                    <button class="btn-action btn-password" onclick="abrirCambiarPassword(${u.id})" title="Cambiar contraseña">
+                                        <i class="fas fa-key"></i>
+                                    </button>
+                                ` : ''}
+                                <button class="btn-action btn-toggle ${u.active ? '' : 'inactive'}" onclick="toggleEstado(${u.id}, ${u.active})" title="${u.active ? 'Desactivar' : 'Activar'}">
+                                    <i class="fas fa-${u.active ? 'ban' : 'check'}"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                tbody.innerHTML = `<tr><td colspan="11" class="error">Error al cargar usuarios: ${error.message}</td></tr>`;
+            }
+        }
+        
+        async function verDetalles(usuarioId) {
+            try {
+                const response = await fetch(`/admin/ecommerce-usuarios/${usuarioId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error al obtener detalles');
+                
+                const usuario = await response.json();
+                
+                // Obtener pedidos
+                const pedidosResponse = await fetch(`/admin/ecommerce-usuarios/${usuarioId}/pedidos`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                let pedidosHtml = '';
+                if (pedidosResponse.ok) {
+                    const pedidosData = await pedidosResponse.json();
+                    pedidosHtml = pedidosData.pedidos.map(p => `
+                        <div style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin: 5px 0;">
+                            <strong>Pedido #${p.id}</strong> - ${new Date(p.fecha_pedido).toLocaleDateString()}<br>
+                            Estado: ${p.estado} | Total: $${p.total.toFixed(2)} | Items: ${p.total_items}
+                        </div>
+                    `).join('') || '<p>No hay pedidos</p>';
+                }
+                
+                document.getElementById('detallesContent').innerHTML = `
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">${usuario.nombre} ${usuario.apellido}</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">${usuario.email}</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">${usuario.telefono || 'No registrado'}</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">${usuario.direccion || 'No registrada'}</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Ubicación</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">${usuario.ciudad || ''}, ${usuario.provincia || ''}, ${usuario.pais || ''}</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Método de Autenticación</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;"><span class="badge ${usuario.auth_provider}">${usuario.auth_provider}</span></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;"><span class="badge ${usuario.active ? 'active' : 'inactive'}">${usuario.active ? 'Activo' : 'Inactivo'}</span></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Estadísticas de Compra</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <strong>Pedidos:</strong> ${usuario.total_pedidos}<br>
+                            <strong>Total Gastado:</strong> $${usuario.total_gastado.toFixed(2)}
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label>Fechas</label>
+                        <p style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                            <strong>Registro:</strong> ${usuario.created_at ? new Date(usuario.created_at).toLocaleString() : 'No disponible'}<br>
+                            <strong>Última Compra:</strong> ${usuario.ultima_compra ? new Date(usuario.ultima_compra).toLocaleString() : 'Nunca'}
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label>Últimos Pedidos</label>
+                        ${pedidosHtml}
+                    </div>
+                `;
+                
+                document.getElementById('modalDetalles').classList.add('show');
+                
+            } catch (error) {
+                alert('Error al obtener detalles: ' + error.message);
+            }
+        }
+        
+        function abrirCambiarPassword(usuarioId) {
+            usuarioSeleccionado = usuarioId;
+            document.getElementById('formPassword').reset();
+            document.getElementById('modalPassword').classList.add('show');
+        }
+        
+        async function cambiarPassword(event) {
+            event.preventDefault();
+            
+            const nueva = document.getElementById('nuevaPassword').value;
+            const confirmar = document.getElementById('confirmarPassword').value;
+            
+            if (nueva !== confirmar) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            if (nueva.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/ecommerce-usuarios/${usuarioSeleccionado}/cambiar-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ nueva_password: nueva })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Contraseña cambiada exitosamente');
+                    cerrarModal('modalPassword');
+                } else {
+                    alert('Error: ' + (data.detail || 'No se pudo cambiar la contraseña'));
+                }
+                
+            } catch (error) {
+                alert('Error al cambiar contraseña: ' + error.message);
+            }
+        }
+        
+        async function toggleEstado(usuarioId, estadoActual) {
+            const accion = estadoActual ? 'desactivar' : 'activar';
+            
+            if (!confirm(`¿Está seguro que desea ${accion} este usuario?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/ecommerce-usuarios/${usuarioId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(data.message);
+                    cargarUsuarios();
+                } else {
+                    alert('Error: ' + (data.detail || 'No se pudo cambiar el estado'));
+                }
+                
+            } catch (error) {
+                alert('Error al cambiar estado: ' + error.message);
+            }
+        }
+        
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+        
+        // Inicialización
+        if (verificarAutenticacion()) {
+            const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            if (adminUser.nombre) {
+                document.getElementById('username').textContent = adminUser.nombre;
+            }
+            
+            cargarEstadisticas();
+            cargarUsuarios();
+            
+            // Auto-actualizar cada 30 segundos
+            setInterval(() => {
+                cargarEstadisticas();
+            }, 30000);
+        }
+    </script>
+</body>
+</html>

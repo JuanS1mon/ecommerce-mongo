@@ -69,41 +69,41 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-4">
-                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-purple-600 transition-colors">
+                    <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
                         <img alt="Logo" class="h-10 sm:h-11 md:h-12 w-auto transition-all duration-300" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
                         <span class="font-bold text-lg hidden sm:inline">Tienda Online</span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-600 hover:text-purple-600 transition-colors flex items-center space-x-1">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
                         <i class="fas fa-home"></i>
                         <span class="hidden sm:inline text-sm">Inicio</span>
                     </a>
-                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-purple-600 transition-colors flex items-center space-x-1">
+                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
                         <i class="fas fa-store"></i>
                         <span class="hidden sm:inline text-sm">Tienda</span>
                     </a>
-                    <button class="text-gray-600 hover:text-purple-600 px-3 py-2 rounded-lg transition-colors relative" id="cart-button" onclick="toggleCart()" title="Ver carrito">
+                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative" id="cart-button" onclick="toggleCart()" title="Ver carrito">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="ml-1 hidden md:inline text-sm">Carrito</span>
                         <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
                     </button>
                     <div id="user-info" class="flex items-center space-x-2 relative">
-                        <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-purple-600 px-3 py-2 rounded-lg transition-colors text-sm">
+                        <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors text-sm" onclick="toggleUserDropdown()">
                             <i class="fas fa-user-circle"></i>
                             <span id="user-greeting" class="hidden sm:inline">Hola</span>
                             <i class="fas fa-chevron-down text-xs"></i>
                         </button>
                         <div id="user-dropdown" class="absolute right-0 top-12 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
                             <div class="py-1">
-                                <button onclick="switchTab('info')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <i class="fas fa-user mr-2"></i>
-                                    Mi Información
-                                </button>
-                                <button onclick="switchTab('wishlist')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <a href="/ecomerce/perfil" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-heart text-red-500 mr-2"></i>
                                     Mis Favoritos
-                                </button>
+                                </a>
+                                <a href="/ecomerce/usuarios/perfil" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-user mr-2"></i>
+                                    Mi Información
+                                </a>
                                 <div class="border-t border-gray-200"></div>
                                 <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-sign-out-alt mr-2"></i>
@@ -119,6 +119,45 @@
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- CART SIDEBAR -->
+    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-40 border-l border-gray-200">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>
+                    Mi Carrito
+                </h2>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Los items del carrito se cargarán aquí -->
+            </div>
+
+            <div class="border-t border-gray-200 p-4">
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>Subtotal:</span>
+                        <span id="sidebar-subtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-semibold text-gray-900">
+                        <span>Total:</span>
+                        <span id="sidebar-total">$0.00</span>
+                    </div>
+                </div>
+                <a href="/ecomerce/checkout" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Proceder al Checkout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART OVERLAY -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden" onclick="toggleCart()"></div>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -473,6 +512,7 @@
                     
                     await loadUserInfo(); // Cargar info del usuario
                     setupUserInfo();
+                    initializeTabFromURL(); // Activar pestaña según URL
                     // El carrito ya está en el DOM, no necesita cargarse
                     // La wishlist se cargará cuando el usuario haga clic en la pestaña
                 } else {
@@ -497,18 +537,19 @@
                     }
                 }
             }
+        }
 
-            // Dropdown toggle
-            const dropdownBtn = document.getElementById('user-dropdown-btn');
-            const dropdown = document.getElementById('user-dropdown');
-            if (dropdownBtn && dropdown) {
-                dropdownBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    dropdown.classList.toggle('hidden');
-                });
-                document.addEventListener('click', function() {
-                    dropdown.classList.add('hidden');
-                });
+        // Detectar URL y activar pestaña correspondiente
+        function initializeTabFromURL() {
+            const currentPath = window.location.pathname;
+
+            // Si la URL es /ecomerce/perfil, activar pestaña de wishlist
+            if (currentPath === '/ecomerce/perfil') {
+                switchTab('wishlist');
+            }
+            // Si la URL es /ecomerce/usuarios/perfil, activar pestaña de info (por defecto ya está activa)
+            else if (currentPath === '/ecomerce/usuarios/perfil') {
+                switchTab('info');
             }
         }
 
@@ -767,6 +808,28 @@
                 localStorage.clear();
             }
             window.location.href = '/ecomerce/login';
+        }
+
+        // Toggle dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Toggle cart sidebar
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+
+            if (sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
         }
     </script>
 

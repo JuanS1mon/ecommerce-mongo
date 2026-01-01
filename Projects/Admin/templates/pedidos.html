@@ -1,0 +1,370 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos - {{ project_name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin/css/pedidos.css">
+</head>
+<body>
+    <div class="container">
+        {% include 'components/header.html' %}
+        
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por ID, usuario, método de pago...">
+            </div>
+            <div class="toolbar-actions">
+                <select id="filterEstado" class="form-control-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="pendiente_pago_efectivo">Pendiente Pago Efectivo</option>
+                    <option value="procesando">Procesando</option>
+                    <option value="enviado">Enviado</option>
+                    <option value="entregado">Entregado</option>
+                    <option value="cancelado">Cancelado</option>
+                </select>
+                <select id="filterMetodoPago" class="form-control-sm">
+                    <option value="">Todos los métodos</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="mercadopago">MercadoPago</option>
+                    <option value="presupuesto">Presupuesto</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div id="statsCards" class="stats-container" style="display: none;">
+            <div class="stat-card stat-card-warning" onclick="filtrarPorEstado('pendiente')">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-pendiente">0</h3>
+                    <p>Pendientes</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-info" onclick="filtrarPorEstado('procesando')">
+                <div class="stat-icon">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-procesando">0</h3>
+                    <p>Procesando</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-primary" onclick="filtrarPorEstado('enviado')">
+                <div class="stat-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-enviado">0</h3>
+                    <p>Enviados</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-success" onclick="filtrarPorEstado('entregado')">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-entregado">0</h3>
+                    <p>Entregados</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-card-danger" onclick="filtrarPorEstado('cancelado')">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-cancelado">0</h3>
+                    <p>Cancelados</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loadingState" class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Cargando pedidos...</p>
+        </div>
+        
+        <div id="pedidos-content" style="display: none;">
+            <!-- Acciones en lote -->
+            <div id="bulkActions" class="bulk-actions" style="display: none;">
+                <span id="selectedCount">0 pedidos seleccionados</span>
+                <button class="btn-bulk" onclick="cambiarEstadoMasivo()">
+                    <i class="fas fa-edit"></i> Cambiar Estado
+                </button>
+                <button class="btn-bulk-secondary" onclick="limpiarSeleccion()">
+                    <i class="fas fa-times"></i> Limpiar Selección
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="pedidos-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('id')">
+                                ID <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('usuario')">
+                                Usuario <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('fecha')">
+                                Fecha <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('total')">
+                                Total <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('estado')">
+                                Estado <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('metodo_pago')">
+                                Método Pago <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th class="sortable" onclick="ordenarPor('items')">
+                                Items <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pedidosBody">
+                        <!-- Pedidos se cargan aquí -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <button id="prevPage" class="btn-page"><i class="fas fa-chevron-left"></i> Anterior</button>
+                <span id="pageInfo">Página 1 de 1</span>
+                <button id="nextPage" class="btn-page">Siguiente <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Detalles -->
+    <div id="modalDetalle" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Detalles del Pedido</h3>
+                <button class="btn-close" onclick="cerrarModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detalle-info">
+                    <div class="info-row">
+                        <label>ID Pedido:</label>
+                        <span id="detalle-id"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Usuario:</label>
+                        <span id="detalle-usuario"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Fecha:</label>
+                        <span id="detalle-fecha"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Estado:</label>
+                        <span id="detalle-estado"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Método de Pago:</label>
+                        <span id="detalle-metodo"></span>
+                    </div>
+                    <div class="info-row">
+                        <label>Total:</label>
+                        <span id="detalle-total" class="total-amount"></span>
+                    </div>
+                </div>
+
+                <h4>Items del Pedido</h4>
+                <div id="detalle-items" class="items-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-bulk" onclick="abrirModalEditarPedido()" style="background: #f39c12;">
+                    <i class="fas fa-edit"></i> Editar Pedido
+                </button>
+                <button class="btn-bulk" onclick="verHistorialPedido()" style="background: #9b59b6;">
+                    <i class="fas fa-history"></i> Ver Historial
+                </button>
+                <button class="btn-bulk" onclick="cerrarModal()">
+                    <i class="fas fa-times-circle"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Pedido -->
+    <div id="modalEditarPedido" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                <h3><i class="fas fa-edit"></i> Editar Pedido #<span id="editar-pedido-id"></span></h3>
+                <button class="btn-close" onclick="cerrarModalEditarPedido()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="info-alert" style="background: #fff3cd; border-left: 4px solid #f39c12; margin-bottom: 20px; color: #856404;">
+                    <i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i>
+                    <span style="color: #856404; font-weight: 500;">Al editar el pedido, se guardará un registro del cambio en el historial.</span>
+                </div>
+                
+                <!-- Buscar producto -->
+                <div class="form-group">
+                    <label style="color: #333; font-weight: 600;"><i class="fas fa-search"></i> Buscar Producto</label>
+                    <input type="text" id="buscar-producto-input" placeholder="Buscar por nombre o código..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; color: #333; font-size: 14px;">
+                    <div id="resultados-busqueda" style="display: none; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
+                </div>
+                
+                <!-- Items del pedido -->
+                <h4 style="margin-top: 20px; margin-bottom: 10px; color: #2c3e50; font-weight: 600;">Items del Pedido</h4>
+                <div id="items-editar-lista" style="max-height: 300px; overflow-y: auto; color: #333;"></div>
+                
+                <!-- Total -->
+                <div style="text-align: right; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <strong style="font-size: 18px; color: #2c3e50;">Total: <span style="color: #27ae60; font-weight: bold;">$<span id="total-editar">0.00</span></span></strong>
+                </div>
+                
+                <!-- Motivo -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="color: #333; font-weight: 600;"><i class="fas fa-comment"></i> Motivo del Cambio (opcional)</label>
+                    <textarea id="motivo-edicion" rows="3" placeholder="Ej: Sin stock del producto original, Cliente solicitó cambio..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; color: #333; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-bulk-secondary" onclick="cerrarModalEditarPedido()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-bulk" onclick="guardarCambiosPedido()" style="background: #27ae60;">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Historial -->
+    <div id="modalHistorial" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                <h3><i class="fas fa-history"></i> Historial de Cambios - Pedido #<span id="historial-pedido-id"></span></h3>
+                <button class="btn-close" onclick="cerrarModalHistorial()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="loadingHistorial" class="loading-state" style="display: none; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando historial...</p>
+                </div>
+                
+                <div id="historial-lista" style="max-height: 500px; overflow-y: auto;"></div>
+                
+                <div id="sin-historial" style="display: none; text-align: center; padding: 40px; opacity: 0.5;">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px;"></i>
+                    <p>No hay cambios registrados en este pedido</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-bulk" onclick="cerrarModalHistorial()">
+                    <i class="fas fa-times-circle"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cambiar Estado -->
+    <div id="modalEstado" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="modal-estado-titulo">Cambiar Estado del Pedido</h3>
+                <button class="btn-close" onclick="cerrarModalEstado()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formEstado" onsubmit="cambiarEstado(event)">
+                    <input type="hidden" id="estado-pedido-id">
+                    
+                    <div id="estado-info" class="info-alert">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="estado-actual"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nuevo-estado">Seleccionar Nuevo Estado *</label>
+                        <select id="nuevo-estado" required>
+                            <option value="">-- Seleccionar estado --</option>
+                            <option value="pendiente">⏳ Pendiente</option>
+                            <option value="pendiente_pago_efectivo">💵 Pendiente Pago Efectivo</option>
+                            <option value="procesando">🔄 Procesando</option>
+                            <option value="enviado">📦 Enviado</option>
+                            <option value="entregado">✅ Entregado</option>
+                            <option value="cancelado">❌ Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-bulk-secondary" onclick="cerrarModalEstado()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn-bulk">
+                            <i class="fas fa-check"></i> Confirmar Cambio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Datos de Usuario -->
+    <div id="modalUsuario" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> Datos de Contacto del Usuario</h3>
+                <button class="btn-close" onclick="cerrarModalUsuario()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="loadingUsuario" class="loading-state" style="display: none; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando datos...</p>
+                </div>
+                
+                <div id="datosUsuario" class="detalle-info">
+                    <div class="info-row">
+                        <label><i class="fas fa-user"></i> Nombre:</label>
+                        <span id="usuario-nombre"></span>
+                    </div>
+                    <div class="info-row">
+                        <label><i class="fas fa-envelope"></i> Email:</label>
+                        <span id="usuario-email"></span>
+                    </div>
+                    <div class="info-row">
+                        <label><i class="fas fa-phone"></i> Teléfono:</label>
+                        <span id="usuario-telefono"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-bulk" onclick="cerrarModalUsuario()">
+                    <i class="fas fa-times-circle"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin/js/admin-utils.js"></script>
+    <script src="/static/admin/js/pedidos.js?v={{ now }}"></script>
+</body>
+</html>

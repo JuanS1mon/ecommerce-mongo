@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing con IA - Panel Administrador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .header-section h1 {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            font-size: 2rem;
+        }
+
+        .header-section h1 i {
+            margin-right: 1rem;
+            color: #00d4ff;
+        }
+
+        .header-section p {
+            color: rgba(255,255,255,0.7);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text h1 strong {
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff 0%, #66e0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
+            transform: translateY(-2px);
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #0a0e1a;
+            font-weight: 600;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 1.5rem;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4ff, #0099cc);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0,212,255,0.3);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.1);
+        }
+
+        .stat-card h3 {
+            color: #ffffff;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .stat-card .stat-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .campaigns-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .campaigns-section h2 {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .campaigns-section h2 i {
+            margin-right: 1rem;
+            color: #00d4ff;
+        }
+
+        .campaign-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .campaign-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .campaign-item:hover {
+            border-color: rgba(0,212,255,0.3);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .campaign-info h4 {
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .campaign-info p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .campaign-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-activa {
+            background: rgba(39,174,96,0.2);
+            color: #27ae60;
+            border: 1px solid rgba(39,174,96,0.3);
+        }
+
+        .status-borrador {
+            background: rgba(243,156,18,0.2);
+            color: #f39c12;
+            border: 1px solid rgba(243,156,18,0.3);
+        }
+
+        .status-completada {
+            background: rgba(52,152,219,0.2);
+            color: #3498db;
+            border: 1px solid rgba(52,152,219,0.3);
+        }
+
+        .actions-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .actions-section h2 {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .actions-section h2 i {
+            margin-right: 1rem;
+            color: #00d4ff;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            border-color: rgba(0,212,255,0.3);
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.1);
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: #00d4ff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+
+        .no-campaigns {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .no-campaigns i {
+            font-size: 3rem;
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .no-campaigns h3 {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-campaigns p {
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #0a0e1a;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header-section,
+            .campaigns-section,
+            .actions-section {
+                padding: 1.5rem;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <div class="container">
+        <div class="header-section">
+            <h1><i class="fas fa-rocket"></i>Marketing con IA</h1>
+            <p>Crea campañas de marketing efectivas con la ayuda de inteligencia artificial</p>
+        </div>
+
+        <div id="stats-container" class="stats-container">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Cargando estadísticas...</p>
+            </div>
+        </div>
+
+        <div class="campaigns-section">
+            <h2><i class="fas fa-bullhorn"></i>Campañas Recientes</h2>
+            <div id="campaigns-container" class="campaign-list">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando campañas...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-section">
+            <h2><i class="fas fa-tools"></i>Acciones</h2>
+            <div class="action-buttons">
+                <a href="/admin/marketing/crear" class="action-btn">
+                    <i class="fas fa-plus-circle"></i>
+                    <div>
+                        <strong>Crear Nueva Campaña</strong>
+                        <p>Genera contenido con IA</p>
+                    </div>
+                </a>
+                <a href="#" onclick="verificarConfiguracion()" class="action-btn">
+                    <i class="fas fa-cog"></i>
+                    <div>
+                        <strong>Configuración</strong>
+                        <p>Configura API de Google Gemini</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function cargarDashboard() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    console.log('No hay token de autenticación, mostrando datos por defecto');
+                    mostrarDatosPorDefecto();
+                    return;
+                }
+
+                // Load statistics and campaigns in parallel
+                const [statsResponse, campaignsResponse] = await Promise.all([
+                    fetch('/admin/marketing/api/estadisticas', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }),
+                    fetch('/admin/marketing/api/campanas', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                ]);
+
+                if (statsResponse.ok && campaignsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    const campaignsData = await campaignsResponse.json();
+                    mostrarEstadisticas(statsData.estadisticas);
+                    mostrarCampanas(campaignsData.campanas || []);
+                } else {
+                    console.warn('Error en respuestas de API:', statsResponse.status, campaignsResponse.status);
+                    mostrarDatosPorDefecto();
+                }
+            } catch (error) {
+                console.error('Error al cargar dashboard:', error);
+                mostrarDatosPorDefecto();
+            }
+        }
+
+        function mostrarDatosPorDefecto() {
+            document.getElementById('stats-container').innerHTML = `
+                <div class="stat-card">
+                    <h3>0</h3>
+                    <p>Campañas Totales</p>
+                    <i class="fas fa-chart-line stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <h3>0</h3>
+                    <p>Campañas Publicadas</p>
+                    <i class="fas fa-play-circle stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <h3>0</h3>
+                    <p>Campañas en Borrador</p>
+                    <i class="fas fa-edit stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <h3>0</h3>
+                    <p>IA Activa</p>
+                    <i class="fas fa-robot stat-icon"></i>
+                </div>
+            `;
+            document.getElementById('campaigns-container').innerHTML = `
+                <div class="no-campaigns">
+                    <i class="fas fa-bullhorn"></i>
+                    <h3>No hay campañas creadas aún</h3>
+                    <p>Crea tu primera campaña de marketing para comenzar a promocionar tus productos.</p>
+                    <a href="/admin/marketing/crear" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear Primera Campaña
+                    </a>
+                </div>
+            `;
+        }
+
+        function mostrarEstadisticas(data) {
+            const container = document.getElementById('stats-container');
+            const stats = [
+                { value: data.total || 0, label: 'Campañas Totales', icon: 'fas fa-chart-line' },
+                { value: data.publicadas || 0, label: 'Campañas Publicadas', icon: 'fas fa-play-circle' },
+                { value: data.borrador || 0, label: 'Campañas en Borrador', icon: 'fas fa-edit' },
+                { value: data.ia_activa ? 1 : 0, label: 'IA Activa', icon: 'fas fa-robot' }
+            ];
+
+            let html = '';
+            stats.forEach(stat => {
+                html += `
+                    <div class="stat-card">
+                        <h3>${stat.value}</h3>
+                        <p>${stat.label}</p>
+                        <i class="${stat.icon} stat-icon"></i>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function mostrarCampanas(campanas) {
+            const container = document.getElementById('campaigns-container');
+
+            if (!campanas || campanas.length === 0) {
+                container.innerHTML = `
+                    <div class="campaign-item">
+                        <div class="campaign-info">
+                            <h4>No hay campañas creadas</h4>
+                            <p>Crea tu primera campaña de marketing con IA</p>
+                        </div>
+                        <span class="campaign-status status-borrador">Sin campañas</span>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            campanas.slice(0, 5).forEach(campana => {
+                const fecha = new Date(campana.fecha_creacion).toLocaleDateString('es-ES');
+                const statusClass = `status-${campana.estado}`;
+
+                html += `
+                    <div class="campaign-item">
+                        <div class="campaign-info">
+                            <h4>${campana.titulo_campana || campana.producto_nombre}</h4>
+                            <p>Creada el ${fecha} • ${campana.plataformas.length} plataformas</p>
+                        </div>
+                        <span class="campaign-status ${statusClass}">${campana.estado}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function verificarConfiguracion() {
+            // Redirigir a la página de configuración de marketing
+            window.location.href = '/admin/configuracion';
+        }
+
+        function cerrarSesion() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin/login';
+            }
+        }
+
+        // Load dashboard on page load
+        cargarDashboard();
+    </script>
+</body>
+</html>

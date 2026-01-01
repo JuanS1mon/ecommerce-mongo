@@ -43,7 +43,7 @@ logger = logging.getLogger("jwt_auth")
 security = HTTPBearer(auto_error=False)
 
 # Configuración de token
-ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hora por defecto
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 horas para admin
 
 class JWTAuthError(HTTPException):
     """Excepción personalizada para errores de JWT"""
@@ -189,6 +189,78 @@ async def get_optional_user(
         if not credentials:
             return None
         return await get_current_user(credentials, request)
+    except Exception:
+        return None
+
+
+async def get_current_admin_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    request: Request = None
+) -> Any:
+    """
+    Obtiene el usuario admin actual desde el token JWT
+    Busca en la colección admin_usuarios
+    
+    Args:
+        credentials: Credenciales del header Authorization (Bearer token)
+        request: Request de FastAPI para obtener cookies
+        
+    Returns:
+        AdminUsuarios: Usuario administrador autenticado
+        
+    Raises:
+        JWTAuthError: Si el token es inválido o el usuario no existe
+    """
+    # Obtener token desde header o cookie admin_token
+    token = None
+    if credentials:
+        token = credentials.credentials
+        logger.debug('Token obtenido desde header Authorization')
+    else:
+        try:
+            if request and request.cookies.get('admin_token'):
+                token = request.cookies.get('admin_token')
+                logger.debug('Token obtenido desde cookie admin_token')
+            elif request and request.cookies.get('ecommerce_token'):
+                # Fallback a ecommerce_token para compatibilidad
+                token = request.cookies.get('ecommerce_token')
+                logger.debug('Token obtenido desde cookie ecommerce_token')
+        except Exception:
+            token = None
+
+    if not token:
+        logger.warning("No se proporcionó token de admin")
+        raise JWTAuthError("Token de acceso requerido")
+    
+    # Verificar token
+    token_data = verify_token(token)
+    
+    # Buscar usuario en colección de admins usando Beanie
+    from Projects.Admin.models.admin_usuarios_beanie import AdminUsuarios  # Lazy import
+    user = await AdminUsuarios.find_one(AdminUsuarios.usuario == token_data.username)
+    
+    if not user:
+        logger.warning(f"Admin no encontrado en BD: {token_data.username}")
+        raise JWTAuthError("Usuario administrador no encontrado")
+    
+    if not user.activo:
+        logger.warning(f"Admin inactivo intentó acceder: {token_data.username}")
+        raise JWTAuthError("Usuario administrador inactivo")
+    
+    logger.debug(f"Admin autenticado: {user.usuario}")
+    return user
+
+
+async def get_optional_admin_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    request: Request = None
+) -> Optional[Any]:
+    """
+    Obtiene el usuario admin actual si está autenticado, sino devuelve None
+    Útil para rutas admin que funcionan con o sin autenticación
+    """
+    try:
+        return await get_current_admin_user(credentials, request)
     except Exception:
         return None
 

@@ -1,0 +1,7 @@
+PythonVersion="3.11.14"
+pythonBuildCommandsFile="/tmp/zipdeploy/extracted/oryx-build-commands.txt"
+virtualEnvName="antenv"
+OperationId="cf4508ab8a03a097"
+SourceDirectoryInBuildContainer="/tmp/8de41c0bad8e826"
+PlatformName="python"
+CompressDestinationDir="true"
