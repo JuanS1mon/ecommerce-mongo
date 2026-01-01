@@ -25,6 +25,11 @@ load_dotenv()
 # =============================
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
+from passlib.context import CryptContext
+from datetime import datetime
+
+# Configuración de encriptación para admin
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Variables de entorno para MongoDB
 # Para Azure Cosmos DB, usa la cadena de conexión del Portal
@@ -36,8 +41,52 @@ DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
 client = AsyncIOMotorClient(MONGO_URL)
 database = client[DB_NAME]
 
+# Función para crear usuario admin por defecto si la base está vacía
+async def create_default_admin():
+    admin_collection = database["admin_usuarios"]
+
+    # Verificar si ya existe el admin por defecto
+    existing_admin = await admin_collection.find_one({"usuario": "admin"})
+    if existing_admin:
+        print("[INFO] Usuario admin por defecto ya existe")
+        return
+
+    # Crear el usuario admin por defecto
+    hashed_password = pwd_context.hash("admin123")
+    admin_user = {
+        "usuario": "admin",
+        "nombre": "Administrator",
+        "mail": "admin@example.com",
+        "clave_hash": hashed_password,
+        "activo": True,
+        "es_super_admin": True,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+
+    result = await admin_collection.insert_one(admin_user)
+    print(f"[SUCCESS] Usuario admin creado: admin/admin123 (ID: {result.inserted_id})")
+
 # Función para inicializar Beanie con los modelos
 async def init_database():
+    print(f"[INFO] Inicializando base de datos: {DB_NAME}")
+
+    # Verificar si la base de datos existe y tiene datos
+    try:
+        collections = await database.list_collection_names()
+        admin_collection = database["admin_usuarios"]
+        admin_count = await admin_collection.count_documents({})
+
+        if not collections or admin_count == 0:
+            print(f"[INFO] Base de datos '{DB_NAME}' está vacía o no tiene admin. Creando usuario admin por defecto...")
+            await create_default_admin()
+        else:
+            print(f"[INFO] Base de datos '{DB_NAME}' ya existe con {len(collections)} colecciones y {admin_count} admins")
+
+    except Exception as e:
+        print(f"[WARNING] Error verificando base de datos: {e}. Intentando crear admin...")
+        await create_default_admin()
+
     # Importar todos los modelos aquí
     from Projects.ecomerce.models.usuarios import EcomerceUsuarios
     from Projects.ecomerce.models.productos_beanie import EcomerceProductos, EcomerceProductosVariantes
@@ -54,7 +103,7 @@ async def init_database():
     from Projects.ecomerce.models.presupuesto_beanie import EcomercePresupuestos
     from Projects.ecomerce.models.pedido_historial_beanie import EcomercePedidoHistorial
     from Projects.ecomerce.models.configuracion_beanie import EcomerceConfiguracion
-    
+
     await init_beanie(database=database, document_models=[
         EcomerceUsuarios,
         EcomerceProductos,
