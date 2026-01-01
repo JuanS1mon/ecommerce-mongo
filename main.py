@@ -551,6 +551,14 @@ async def create_admin_user():
     except Exception as e:
         logger.error(f"Error creating admin user: {e}")
         return {"error": str(e)}
+
+
+# Indicar que la importación de módulos terminó correctamente (útil para startup preflight)
+try:
+    import datetime
+    p = os.path.join(os.path.dirname(__file__), 'import_check.log')
+    with open(p, 'a') as f:
+        f.write(f"IMPORT_OK {datetime.datetime.utcnow().isoformat()}\n")
     logger.info(f"Wrote IMPORT_OK to {p}")
 except Exception as e:
     logger.warning(f"Could not write IMPORT_OK to import_check.log: {e}")
