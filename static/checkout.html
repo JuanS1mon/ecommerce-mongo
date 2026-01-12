@@ -148,12 +148,6 @@
                         <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden" id="wishlist-count">0</span>
                     </a>
 
-                    <!-- Botón de Carrito (solo visible si está autenticado) -->
-                    <button class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg transition-colors relative hidden" id="cart-button" onclick="toggleCart()" title="Ver carrito">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="ml-1 hidden md:inline text-sm">Carrito</span>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" id="cart-count">0</span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -161,45 +155,6 @@
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
-
-    <!-- CART SIDEBAR -->
-    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-40 border-l border-gray-200">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                    <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>
-                    Mi Carrito
-                </h2>
-                <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
-                <!-- Los items del carrito se cargarán aquí -->
-            </div>
-
-            <div class="border-t border-gray-200 p-4">
-                <div class="space-y-2 mb-4">
-                    <div class="flex justify-between text-sm text-gray-600">
-                        <span>Subtotal:</span>
-                        <span id="sidebar-subtotal">$0.00</span>
-                    </div>
-                    <div class="flex justify-between text-lg font-semibold text-gray-900">
-                        <span>Total:</span>
-                        <span id="sidebar-total">$0.00</span>
-                    </div>
-                </div>
-                <a href="/ecomerce/checkout" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
-                    <i class="fas fa-credit-card"></i>
-                    <span>Proceder al Checkout</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Overlay para el sidebar -->
-    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden" onclick="toggleCart()"></div>
 
     <!-- MAIN CONTENT -->
     <main>
@@ -788,10 +743,8 @@
         }
 
         // ============================================================================
-        // CARRITO Y PRODUCTOS
+        // MERCADOPAGO
         // ============================================================================
-
-        async function loadCart() {
             try {
                 const token = getToken();
                 if (!token) {
@@ -1526,11 +1479,8 @@
 
         // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', async () => {
-            // PRIMERO cargar el carrito y datos de envío en paralelo
-            await Promise.all([
-                loadCart(),
-                loadShippingData()
-            ]);
+            // PRIMERO cargar datos de envío
+            await loadShippingData();
 
             // LUEGO cargar configuración de MercadoPago
             const mpConfigured = await loadMercadoPagoConfig();
@@ -1869,7 +1819,6 @@
     <!-- SCRIPTS PARA LA NAVBAR -->
     <script src="/static/ecomerce/auth.js"></script>
     <script src="/static/ecomerce/animations.js"></script>
-    <script src="/static/ecomerce/carrito.js"></script>
 
     <script>
         // Inicializar navbar y funcionalidades
@@ -1944,22 +1893,6 @@
         function logout() {
             if (window.authManager) {
                 window.authManager.logout();
-            }
-        }
-
-        // Toggle cart sidebar
-        function toggleCart() {
-            const sidebar = document.getElementById('cart-sidebar');
-            const overlay = document.getElementById('cart-overlay');
-
-            if (sidebar.classList.contains('translate-x-full')) {
-                sidebar.classList.remove('translate-x-full');
-                overlay.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            } else {
-                sidebar.classList.add('translate-x-full');
-                overlay.classList.add('hidden');
-                document.body.style.overflow = '';
             }
         }
 

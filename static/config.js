@@ -29,11 +29,20 @@ window.ECOMMERCE_CONFIG = {
 };
 
 // **FUNCIÓN HELPER CENTRALIZADA PARA OBTENER TOKEN**
-// Busca el token en el orden correcto: sessionStorage.ecommerce_token → localStorage.token → localStorage.access_token
+// Busca el token en el orden correcto: Cookies > localStorage
 window.getAuthToken = function() {
-    return sessionStorage.getItem('ecommerce_token') ||
-           localStorage.getItem('token') ||
-           localStorage.getItem('access_token');
+    // Helper para obtener cookie
+    const getCookie = function(name) {
+        const value = '; ' + document.cookie;
+        const parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    };
+    
+    return getCookie('access_token') ||
+           getCookie('token') ||
+           localStorage.getItem('access_token') ||
+           localStorage.getItem('token');
 };
 
 // Configuración de la tienda (compatibilidad con código existente)

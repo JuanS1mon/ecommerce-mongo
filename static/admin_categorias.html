@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración de Categorías - Ecommerce Store</title>
+    <title>Sysneg - Administración de Servicios</title>
     <script src="/static/tailwind.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="/static/config.js"></script>
     <style>
         :root {
-            --ecommerce-blue: #00bfff;
-            --ecommerce-dark: #1a1a1a;
-            --ecommerce-gray: #f8f9fa;
-            --ecommerce-light: #ffffff;
-            --ecommerce-text: #333333;
-            --ecommerce-text-light: #666666;
-            --ecommerce-success: #10b981;
-            --ecommerce-error: #ef4444;
-            --ecommerce-warning: #f59e0b;
+            --sysneg-dark: #1a1a1a;
+            --sysneg-blue: #2563eb;
+            --sysneg-gray: #f3f4f6;
+            --sysneg-light: #ffffff;
+            --sysneg-text: #111827;
+            --sysneg-text-light: #6b7280;
+            --sysneg-success: #10b981;
+            --sysneg-error: #ef4444;
+            --sysneg-warning: #f59e0b;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--ecommerce-gray);
-            color: var(--ecommerce-text);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--sysneg-gray);
+            color: var(--sysneg-text);
             line-height: 1.6;
         }
         .admin-header {
-            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+            background: linear-gradient(135deg, var(--sysneg-blue) 0%, #1e40af 100%);
             color: white;
         }
         .admin-card {
@@ -44,34 +44,8 @@
             object-fit: cover;
             border-radius: 8px;
         }
-        .btn-primary {
-            background: var(--ecommerce-blue);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background: #0099cc;
-            transform: translateY(-1px);
-        }
-        .btn-secondary {
-            background: var(--ecommerce-text-light);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-secondary:hover {
-            background: #555;
-            transform: translateY(-1px);
-        }
         .btn-danger {
-            background: var(--ecommerce-error);
+            background: var(--sysneg-error);
             color: white;
             padding: 8px 16px;
             border-radius: 6px;
@@ -92,8 +66,8 @@
         }
         .form-input:focus {
             outline: none;
-            border-color: var(--ecommerce-blue);
-            box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2);
+            border-color: var(--sysneg-blue);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
         .modal {
             display: none;
@@ -144,8 +118,8 @@
                 <div class="flex items-center space-x-4">
                     <i class="fas fa-tags text-2xl"></i>
                     <div>
-                        <h1 class="text-2xl font-bold">Administración de Categorías</h1>
-                        <p class="text-blue-100">Gestiona las categorías de productos de tu tienda</p>
+                        <h1 class="text-2xl font-bold">Administración de Servicios</h1>
+                        <p class="text-blue-100">Gestiona los servicios tecnológicos de Sysneg</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -176,11 +150,11 @@
         <div class="admin-card p-6 mb-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-semibold mb-2">Categorías</h2>
-                    <p class="text-gray-600">Total: <span id="totalCategorias">0</span> categorías</p>
+                    <h2 class="text-xl font-semibold mb-2">Servicios</h2>
+                    <p class="text-gray-600">Total: <span id="totalCategorias">0</span> servicios</p>
                 </div>
                 <button onclick="abrirModalCrear()" class="btn-primary">
-                    <i class="fas fa-plus mr-2"></i>Crear Categoría
+                    <i class="fas fa-plus mr-2"></i>Crear Servicio
                 </button>
             </div>
         </div>
@@ -207,13 +181,13 @@
             <!-- Loading -->
             <div id="loading" class="text-center py-8">
                 <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
-                <p class="mt-2 text-gray-600">Cargando categorías...</p>
+                <p class="mt-2 text-gray-600">Cargando servicios...</p>
             </div>
 
             <!-- No hay categorías -->
             <div id="noCategorias" class="text-center py-8 hidden">
                 <i class="fas fa-tags text-4xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-600 mb-2">No hay categorías</h3>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No hay servicios</h3>
                 <p class="text-gray-500 mb-4">Comienza creando tu primera categoría</p>
                 <button onclick="abrirModalCrear()" class="btn-primary">
                     <i class="fas fa-plus mr-2"></i>Crear primera categoría
@@ -226,7 +200,7 @@
     <div id="modalCategoria" class="modal">
         <div class="modal-content">
             <div class="flex items-center justify-between mb-6">
-                <h3 id="modalTitle" class="text-xl font-semibold">Crear Categoría</h3>
+                <h3 id="modalTitle" class="text-xl font-semibold">Crear Servicio</h3>
                 <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -385,7 +359,7 @@
         // Abrir modal para crear categoría
         function abrirModalCrear() {
             editingCategoria = null;
-            document.getElementById('modalTitle').textContent = 'Crear Categoría';
+            document.getElementById('modalTitle').textContent = 'Crear Servicio';
             document.getElementById('categoriaForm').reset();
             document.getElementById('categoriaId').value = '';
             document.getElementById('imagenPreview').classList.add('hidden');
@@ -543,6 +517,22 @@
             setTimeout(() => {
                 document.getElementById('alertError').style.display = 'none';
             }, 5000);
+        }
+    </script>
+
+    <script>
+        // Verificar token y configurar fetches
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            window.location.href = '/admin';
+        } else {
+            // Agregar token a todos los fetches
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options = {}) {
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+                return originalFetch(url, options);
+            };
         }
     </script>
 </body>

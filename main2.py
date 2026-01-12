@@ -17,7 +17,7 @@ from typing import Dict, Any
 templates = Jinja2Templates(directory="./templates")
 
 MONGO_URL = os.getenv("MONGO_URL")
-DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
+DB_NAME = os.getenv("DB_NAME", "db_sysne")
 # When SKIP_DB is truthy, skip any MongoDB access to allow fast HTTP checks in constrained environments
 SKIP_DB = str(os.getenv("SKIP_DB", "false")).lower() in ("1", "true", "yes")
 

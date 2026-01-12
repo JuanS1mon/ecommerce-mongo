@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Servicios profesionales de consultoría y automatización para empresas, transformación digital y optimización de procesos">
+    <meta name="keywords" content="consultoria, automatizacion, transformacion digital, servicios empresariales, Sysne">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Sysne">
+    <link rel="canonical" href="https://sysne.ar/servicios">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Servicios de Consultoría y Automatización - Sysne">
+    <meta property="og:description" content="Servicios profesionales de consultoría y automatización para empresas, transformación digital y optimización de procesos">
+    <meta property="og:image" content="/static/img/logo.png">
+    <meta property="og:url" content="https://sysne.ar/servicios">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Servicios de Consultoría y Automatización - Sysne">
+    <meta name="twitter:description" content="Servicios profesionales de consultoría y automatización para empresas, transformación digital y optimización de procesos">
+    <meta name="twitter:image" content="/static/img/logo.png">
+    <title>Servicios de Consultoría y Automatización - Sysne</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css?v=20240103-dark-v13">
+    <script src="/static/config.js"></script>
+    <script src="/static/company_config.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="nav-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-2 text-white hover:text-blue-300 transition-colors">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg">Servicios Profesionales</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <span class="text-blue-300 flex items-center space-x-2 font-semibold">
+                        <i class="fas fa-store"></i>
+                        <span>Servicios</span>
+                    </span>
+                    <a href="#contacto" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-envelope"></i>
+                        <span>Contacto</span>
+                    </a>
+                    <!-- Usuario no autenticado -->
+                    <div id="auth-buttons" class="flex items-center space-x-2">
+                        <a href="/login" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                        <a href="/register" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Registrarse</span>
+                        </a>
+                    </div>
+                    <!-- Usuario autenticado -->
+                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                        <div class="relative">
+                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-gray-300 hover:text-blue-300 px-3 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="user-greeting">Hola, Usuario</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                                <div class="py-1">
+                                    <a href="/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>
+                                        Salir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Favoritos -->
+                    <a href="/ecomerce/perfil" class="text-gray-300 hover:text-red-400 px-3 py-2 rounded-lg transition-colors relative hidden" id="wishlist-nav-button" title="Mis Favoritos">
+                        <i class="fas fa-heart"></i>
+                        <span class="ml-1 hidden md:inline text-sm">Favoritos</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden" id="wishlist-count">0</span>
+                    </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <i class="fas fa-cogs mr-4"></i>Servicios Profesionales
+                </h1>
+                <p class="hero-description">
+                    Descubre nuestros servicios de consultoría y automatización para transformar tu empresa con soluciones innovadoras y eficientes
+                </p>
+            </div>
+            <div class="hero-image">
+                <img src="/static/img/servicios-hero.jpg" alt="Servicios Profesionales" class="hero-image-src" onerror="this.src='/static/img/logo.png'">
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and Filter Bar -->
+    <div class="bg-gray-900 rounded-lg shadow-lg p-6 mb-8 mx-4 border border-gray-800">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <i class="fas fa-search mr-2 text-blue-400"></i>Buscar servicios
+                </label>
+                <input type="text"
+                       id="products-search-input"
+                       placeholder="Busca por nombre, descripción o código..."
+                       class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-white placeholder-gray-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <i class="fas fa-filter mr-2 text-blue-400"></i>Categoría
+                </label>
+                <select id="products-category-filter"
+                        class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-white">
+                    <option value="">Todas las categorías</option>
+                    <!-- Las opciones se cargarán dinámicamente -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="featured-products-container">
+            <!-- Los servicios se cargarán dinámicamente aquí -->
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-12" id="load-more-container" style="display: none;">
+            <button id="load-more-btn" class="btn-primary">
+                <i class="fas fa-plus mr-2"></i>Cargar Más Servicios
+            </button>
+        </div>
+    </div>
+
+    <!-- Sección de Contacto -->
+    <section id="contacto" class="py-12 bg-gray-900">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold mb-4 text-white">¿Interesado en nuestros servicios?</h2>
+            <p class="text-gray-300 mb-6">
+                Contáctanos para obtener más información sobre nuestros servicios.
+            </p>
+            <a href="mailto:info@sysne.ar" class="btn-primary inline-block">
+                <i class="fas fa-envelope mr-2"></i>Contactar
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo y descripción -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <img src="/static/img/logo.png" alt="Sysne Logo" class="h-10 w-10 mr-3">
+                        <span class="text-2xl font-bold">Sysne</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Transformamos datos en decisiones inteligentes con servicios tecnológicos avanzados.
+                        Consultoría IA, ecommerce inteligente, desarrollo web.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Enlaces rápidos -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-300 hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="/servicios" class="text-gray-300 hover:text-white transition-colors">Servicios</a></li>
+                        <li><a href="#contacto" class="text-gray-300 hover:text-white transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contacto -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <a href="mailto:info@Sysne.com" class="hover:text-white transition-colors">info@Sysne.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <a href="tel:+1234567890" class="hover:text-white transition-colors">+1 (234) 567-890</a>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mr-2 mt-1"></i>
+                            <span>Tu Ciudad, País</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Línea divisoria -->
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        © 2024 Sysne. Todos los derechos reservados.
+                    </p>
+                    <div class="flex space-x-6 mt-4 md:mt-0">
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Política de Privacidad</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Términos de Servicio</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Política de Cookies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/servicios.js"></script>
+    <script src="/static/ecomerce/auth.js"></script>
+
+    <script>
+        // Toggle dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.getElementById('user-dropdown');
+            const userButton = document.getElementById('user-dropdown-btn');
+
+            if (userButton && !userButton.contains(event.target) && userDropdown && !userDropdown.contains(event.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+
+        // Inicializar AuthManager cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando AuthManager en servicios.html...');
+
+            // Crear instancia global del AuthManager
+            window.authManager = new AuthManager();
+
+            // Inicializar autenticación
+            await window.authManager.init();
+
+            // Limpiar URL si hay token en query params (después de login)
+            const url = new URL(window.location);
+            if (url.searchParams.has('token')) {
+                url.searchParams.delete('token');
+                window.history.replaceState({}, document.title, url.pathname + url.hash);
+            }
+
+            // Event listener para el botón del dropdown
+            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleUserDropdown();
+                });
+            }
+        });
+
+        // Función para mostrar toasts
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'warning' ? 'bg-yellow-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' :
+                                   type === 'error' ? 'fa-exclamation-circle' :
+                                   type === 'warning' ? 'fa-exclamation-triangle' :
+                                   'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>

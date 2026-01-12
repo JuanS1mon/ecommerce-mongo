@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contratar Servicio - Servicios Profesionales</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <!-- Config -->
+    <script src="/static/config.js"></script>
+    <script src="/static/ecomerce/auth.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-slate-900 shadow-lg border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg text-white">Servicios Profesionales</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-slate-300 flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </span>
+                    <a href="/servicios" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-store"></i>
+                        <span>Servicios</span>
+                    </a>
+                    <!-- Usuario no autenticado -->
+                    <div id="auth-buttons" class="flex items-center space-x-2">
+                        <a href="/login" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                        <a href="/register" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Registrarse</span>
+                        </a>
+                    </div>
+                    <!-- Usuario autenticado -->
+                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                        <div class="relative">
+                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-slate-300 hover:text-blue-400 px-3 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="user-greeting">Hola, Usuario</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-slate-800 rounded-md shadow-lg z-50 hidden border border-slate-700">
+                                <div class="py-1">
+                                    <a href="/perfil" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 transition-colors">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 transition-colors">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>
+                                        Salir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700 p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-white mb-2">Contratar Servicio</h1>
+                <p class="text-slate-300">Complete el formulario para contratar el servicio seleccionado</p>
+            </div>
+
+            <!-- Service Information -->
+            <div id="service-info" class="bg-slate-700 rounded-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold text-white mb-4">Información del Servicio</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-slate-400"><strong>Servicio:</strong> <span id="service-name" class="text-white">Cargando...</span></p>
+                        <p class="text-slate-400"><strong>Precio Mensual:</strong> <span id="service-price" class="text-white">$0.00</span></p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400"><strong>Categoría:</strong> <span id="service-category" class="text-white">Cargando...</span></p>
+                        <p class="text-slate-400"><strong>Tipo:</strong> <span id="service-type" class="text-white">Cargando...</span></p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-slate-400"><strong>Descripción:</strong></p>
+                    <p id="service-description" class="text-white mt-2">Cargando descripción...</p>
+                </div>
+            </div>
+
+            <!-- Contract Form -->
+            <form id="contract-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="duracion_meses" class="block text-sm font-medium text-slate-300 mb-2">
+                            Duración del Contrato (meses)
+                        </label>
+                        <select id="duracion_meses" name="duracion_meses" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="1">1 mes</option>
+                            <option value="3" selected>3 meses</option>
+                            <option value="6">6 meses</option>
+                            <option value="12">12 meses</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="renovacion_automatica" class="block text-sm font-medium text-slate-300 mb-2">
+                            Renovación Automática
+                        </label>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="renovacion_automatica" name="renovacion_automatica" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-600 rounded">
+                            <label for="renovacion_automatica" class="ml-2 block text-sm text-slate-300">
+                                Renovar automáticamente al finalizar el contrato
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="detalles" class="block text-sm font-medium text-slate-300 mb-2">
+                        Detalles Adicionales (opcional)
+                    </label>
+                    <textarea id="detalles" name="detalles" rows="4" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Especifique cualquier requerimiento especial o detalle adicional para el servicio..."></textarea>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="bg-slate-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-white mb-4">Términos y Condiciones</h3>
+                    <div class="space-y-2 text-sm text-slate-300">
+                        <p>• El contrato se renovará automáticamente al finalizar el período seleccionado, a menos que se cancele previamente.</p>
+                        <p>• Los pagos se realizarán mensualmente por adelantado.</p>
+                        <p>• La cancelación puede realizarse en cualquier momento, pero no se reembolsarán los meses ya pagados.</p>
+                        <p>• Los servicios se prestarán de acuerdo con las especificaciones acordadas.</p>
+                        <p>• Cualquier modificación al contrato deberá ser acordada por ambas partes.</p>
+                    </div>
+                    <div class="mt-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="accept_terms" name="accept_terms" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-600 rounded">
+                            <span class="ml-2 text-sm text-slate-300">Acepto los términos y condiciones del contrato</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Contract Summary -->
+                <div id="contract-summary" class="bg-slate-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-white mb-4">Resumen del Contrato</h3>
+                    <div class="space-y-2 text-sm">
+                        <p class="text-slate-300"><strong>Precio Mensual:</strong> <span id="summary-price" class="text-white">$0.00</span></p>
+                        <p class="text-slate-300"><strong>Duración:</strong> <span id="summary-duration" class="text-white">3 meses</span></p>
+                        <p class="text-slate-300"><strong>Total Estimado:</strong> <span id="summary-total" class="text-white">$0.00</span></p>
+                        <p class="text-slate-300"><strong>Renovación Automática:</strong> <span id="summary-renewal" class="text-white">Sí</span></p>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" id="submit-contract" class="bg-green-600 text-white py-3 px-8 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-handshake mr-2"></i>
+                        Contratar Servicio
+                    </button>
+                    <p class="text-sm text-slate-400 mt-2">El contrato será revisado por nuestro equipo antes de la activación</p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Service data injected by server
+        try {
+            window.serviceData = JSON.parse('{{ service | tojson | safe }}');
+        } catch (e) {
+            console.error('Error parsing service data:', e);
+            window.serviceData = null;
+        }
+    </script>
+    <script>
+        let serviceData = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar AuthManager para la navbar
+            const authManager = new AuthManager();
+            authManager.init().then(() => {
+                // Después de inicializar la autenticación, cargar datos del servicio
+                loadServiceData();
+                setupFormHandlers();
+            });
+        });
+
+        function showAuthenticationRequired() {
+            const mainContent = document.querySelector('main');
+            mainContent.innerHTML = `
+                <div class="min-h-screen flex items-center justify-center bg-slate-900">
+                    <div class="max-w-md w-full bg-slate-800 rounded-lg shadow-xl border border-slate-700 p-8 text-center">
+                        <div class="mb-6">
+                            <i class="fas fa-lock text-6xl text-slate-400 mb-4"></i>
+                            <h2 class="text-2xl font-bold text-white mb-2">Autenticación Requerida</h2>
+                            <p class="text-slate-300 mb-6">
+                                Para contratar un servicio, necesitas iniciar sesión en tu cuenta.
+                            </p>
+                        </div>
+                        <div class="space-y-4">
+                            <a href="/ecommerce/login" class="block w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                            </a>
+                            <a href="/ecommerce/register" class="block w-full bg-slate-600 text-slate-300 py-3 px-6 rounded-lg hover:bg-slate-700 transition-colors font-semibold">
+                                <i class="fas fa-user-plus mr-2"></i>Crear Cuenta
+                            </a>
+                            <a href="/servicios" class="block w-full bg-slate-700 text-slate-400 py-3 px-6 rounded-lg hover:bg-slate-600 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i>Volver a Servicios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadServiceData() {
+            if (typeof window.serviceData !== 'undefined' && window.serviceData) {
+                serviceData = window.serviceData;
+                renderService();
+            } else {
+                const serviceId = window.location.pathname.split('/').pop();
+                if (serviceId) {
+                    fetchServiceFromAPI(serviceId);
+                } else {
+                    showError('No se pudo cargar la información del servicio');
+                }
+            }
+        }
+
+        async function fetchServiceFromAPI(serviceId) {
+            try {
+                const response = await fetch(`/api/servicios/${serviceId}`);
+                if (!response.ok) {
+                    throw new Error('Servicio no encontrado');
+                }
+                serviceData = await response.json();
+                renderService();
+            } catch (error) {
+                console.error('Error cargando servicio:', error);
+                showError('Error al cargar el servicio');
+            }
+        }
+
+        function renderService() {
+            if (!serviceData) return;
+
+            document.getElementById('service-name').textContent = serviceData.nombre;
+            document.getElementById('service-description').textContent = serviceData.descripcion || 'Sin descripción';
+            document.getElementById('service-price').textContent = `$${serviceData.precio_base.toFixed(2)}`;
+            document.getElementById('service-category').textContent = serviceData.tipo_servicio || 'Sin categoría';
+            document.getElementById('service-type').textContent = serviceData.tipo_servicio || 'General';
+
+            updateContractSummary();
+        }
+
+        function setupFormHandlers() {
+            const form = document.getElementById('contract-form');
+            const durationSelect = document.getElementById('duracion_meses');
+            const renewalCheckbox = document.getElementById('renovacion_automatica');
+
+            durationSelect.addEventListener('change', updateContractSummary);
+            renewalCheckbox.addEventListener('change', updateContractSummary);
+
+            form.addEventListener('submit', handleContractSubmit);
+        }
+
+        function updateContractSummary() {
+            if (!serviceData) return;
+
+            const duration = parseInt(document.getElementById('duracion_meses').value);
+            const renewal = document.getElementById('renovacion_automatica').checked;
+            const monthlyPrice = serviceData.precio_base;
+            const total = monthlyPrice * duration;
+
+            document.getElementById('summary-price').textContent = `$${monthlyPrice.toFixed(2)}`;
+            document.getElementById('summary-duration').textContent = `${duration} meses`;
+            document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('summary-renewal').textContent = renewal ? 'Sí' : 'No';
+        }
+
+        async function handleContractSubmit(event) {
+            event.preventDefault();
+
+            if (!document.getElementById('accept_terms').checked) {
+                showToast('Debe aceptar los términos y condiciones', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-contract');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+
+            try {
+                const formData = new FormData(event.target);
+                const contractData = {
+                    servicio_id: serviceData.id,
+                    duracion_meses: parseInt(formData.get('duracion_meses')),
+                    renovacion_automatica: formData.get('renovacion_automatica') === 'on',
+                    detalles: formData.get('detalles') || ''
+                };
+
+                const response = await fetch('/api/contratos/servicio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...window.getAuthHeaders()
+                    },
+                    body: JSON.stringify(contractData)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Token inválido o expirado
+                        showToast('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'error');
+                        setTimeout(() => {
+                            window.location.href = '/ecommerce/login';
+                        }, 2000);
+                        return;
+                    }
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error al crear el contrato');
+                }
+
+                const result = await response.json();
+                showToast('Contrato creado exitosamente. Será revisado por nuestro equipo.', 'success');
+
+                setTimeout(() => {
+                    window.location.href = '/perfil';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast(error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-handshake mr-2"></i>Contratar Servicio';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('service-name').textContent = 'Error';
+            document.getElementById('service-description').textContent = message;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' :
+                                   type === 'error' ? 'fa-exclamation-circle' :
+                                   'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.getElementById('toast-container').appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

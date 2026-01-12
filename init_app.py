@@ -38,3 +38,40 @@ def ensure_directories():
                 logger.warning(f"[WARN] Cannot create directory {directory} on read-only file system: {e}")
             else:
                 logger.error(f"[ERROR] Failed to create directory {directory}: {e}")
+
+async def create_admin_user():
+    from models.models_beanie import Usuario
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    # Crear admin principal
+    admin = await Usuario.find_one(Usuario.username == "admin")
+    if not admin:
+        hashed_password = pwd_context.hash("admin123")
+        admin = Usuario(
+            username="admin",
+            email="admin@sysne.com",
+            hashed_password=hashed_password,
+            role="admin",
+            is_active=True
+        )
+        await admin.insert()
+        logger.info("[OK] Usuario admin creado")
+    else:
+        logger.info("[OK] Usuario admin ya existe")
+    
+    # Crear admin2
+    admin2 = await Usuario.find_one(Usuario.username == "admin2")
+    if not admin2:
+        hashed_password = pwd_context.hash("admin123")
+        admin2 = Usuario(
+            username="admin2",
+            email="admin2@sysne.com",
+            hashed_password=hashed_password,
+            role="admin",
+            is_active=True
+        )
+        await admin2.insert()
+        logger.info("[OK] Usuario admin2 creado")
+    else:
+        logger.info("[OK] Usuario admin2 ya existe")

@@ -19,7 +19,7 @@ Write-Host "✓ MONGO_URL configurado" -ForegroundColor Cyan
 az webapp config appsettings set `
     --name $appName `
     --resource-group $resourceGroup `
-    --settings "DB_NAME=db_ecomerce" | Out-Null
+    --settings "DB_NAME=db_sysne" | Out-Null
 
 Write-Host "✓ DB_NAME configurado" -ForegroundColor Cyan
 

@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Sysne</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css?v=20240103-dark">
+    <script src="/static/config.js"></script>
+</head>
+<body class="admin-dashboard">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="dashboard-header p-4 md:p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold"><i class="fas fa-tachometer-alt"></i> Dashboard Admin - Sysne</h1>
+                    <p class="text-blue-100 text-sm md:text-base">Gestión completa del sitio</p>
+                </div>
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+                    <a href="/" class="admin-admin-btn-primary text-center"><i class="fas fa-home"></i> <span class="hidden sm:inline">Ver Sitio</span></a>
+                    <button onclick="showTab('admins')" class="admin-admin-btn-secondary text-center"><i class="fas fa-users-cog"></i> <span class="hidden sm:inline">Ir a Admins</span></button>
+                    <button onclick="logout()" class="admin-admin-btn-primary text-center"><i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Logout</span></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-4 md:p-6">
+            <!-- Tabs -->
+            <div class="mb-6">
+                <!-- Tabs Desktop -->
+                <nav class="hidden md:flex space-x-2 overflow-x-auto">
+                    <button onclick="showTab('config')" class="tab-btn active px-3 py-2 text-sm rounded-lg whitespace-nowrap">Configuración del Sitio</button>
+                    <button onclick="showTab('productos')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Productos</button>
+                    <button onclick="showTab('users')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Usuarios</button>
+                    <button onclick="showTab('proyectos-admin')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Proyectos</button>
+                    <button onclick="showTab('admins')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Admins</button>
+                    <button onclick="showTab('contratos')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Contratos</button>
+                    <button onclick="showTab('analytics')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Analytics</button>
+                    <button onclick="showTab('configuracion')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Configuración</button>
+                    <button onclick="showTab('contenido')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Contenido</button>
+                    <button onclick="showTab('marketing')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Marketing</button>
+                    <button onclick="showTab('soporte')" class="tab-btn px-3 py-2 text-sm rounded-lg whitespace-nowrap">Soporte</button>
+                </nav>
+
+                <!-- Tabs Mobile -->
+                <div class="md:hidden">
+                    <select id="mobile-tab-select" onchange="showTab(this.value)" class="w-full admin-form-input" aria-label="Seleccionar sección del dashboard">
+                        <option value="config">📋 Configuración del Sitio</option>
+                        <option value="productos">📦 Administrar Productos</option>
+                        <option value="users">👥 Administrar Usuarios</option>
+                        <option value="proyectos-admin">🗂️ Administrar Proyectos</option>
+                        <option value="admins">👨‍💼 Administrar Admins</option>
+                        <option value="contratos">📄 Administrar Contratos</option>
+                        <option value="analytics">📊 Analytics</option>
+                        <option value="configuracion">⚙️ Configuración Global</option>
+                        <option value="contenido">📝 Gestión de Contenido</option>
+                        <option value="marketing">📢 Marketing</option>
+                        <option value="soporte">🆘 Soporte</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Config Tab -->
+            <div id="config-tab" class="tab-content">
+                <div class="dashboard-card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Editar Secciones del Index</h2>
+                    <div id="sections-container">
+                        <!-- Sections will be loaded dynamically -->
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" onclick="addNewSection()" class="admin-admin-btn-primary px-4 py-2 mr-2">
+                            <i class="fas fa-plus"></i> Agregar Sección
+                        </button>
+                        <button type="button" onclick="saveSections()" class="admin-admin-btn-primary px-4 py-2">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="productos-tab" class="tab-content hidden">
+                <div class="dashboard-card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Administrar Productos</h2>
+                    <div class="mb-4">
+                        <button type="button" onclick="addNewProduct()" class="admin-admin-btn-primary px-4 py-2 mr-2">
+                            <i class="fas fa-plus"></i> Agregar Producto
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-2 text-left">Nombre</th>
+                                    <th class="px-4 py-2 text-left mobile-hidden">Categoría</th>
+                                    <th class="px-4 py-2 text-left mobile-hidden">Precio</th>
+                                    <th class="px-4 py-2 text-left mobile-hidden">Stock</th>
+                                    <th class="px-4 py-2 text-left">Estado</th>
+                                    <th class="px-4 py-2 text-left">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable">
+                                <!-- Products will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content hidden">
+                <div class="dashboard-card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Administrar Usuarios y Proyectos</h2>
+                    <div class="mb-4 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-gray-600">Total: <span id="totalUsers">0</span> usuarios</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="loadUsers(currentPage - 1)" id="prevPage" class="admin-admin-btn-secondary text-xs px-3 py-1">← Anterior</button>
+                            <span class="px-3 py-1 text-sm">Página <span id="currentPageSpan">1</span> de <span id="totalPagesSpan">1</span></span>
+                            <button onclick="loadUsers(currentPage + 1)" id="nextPage" class="admin-admin-btn-secondary text-xs px-3 py-1">Siguiente →</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-2 text-left">Usuario</th>
+                                    <th class="px-4 py-2 text-left">Email</th>
+                                    <th class="px-4 py-2 text-left mobile-hidden">Proyectos</th>
+                                    <th class="px-4 py-2 text-left mobile-hidden">Último Acceso</th>
+                                    <th class="px-4 py-2 text-left">Estado</th>
+                                    <th class="px-4 py-2 text-left">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyectos Admin Tab -->
+            <div id="proyectos-admin-tab" class="tab-content hidden">
+                <div class="dashboard-card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Administrar Proyectos</h2>
+                    <div class="mb-4">
+                        <button onclick="showNuevoProyectoModal()" class="admin-admin-btn-primary px-4 py-2">
+                            <i class="fas fa-plus"></i> Nuevo Proyecto
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-2 text-left">Nombre</th>
+                                    <th class="px-4 py-2 text-left mobile-hidden">Descripción</th>
+                                    <th class="px-4 py-2 text-left">Usuarios Asignados</th>
+                                    <th class="px-4 py-2 text-left">Estado</th>
+                                    <th class="px-4 py-2 text-left">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proyectosTable">
+                                <!-- Proyectos will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contratos Tab -->
+            <div id="contratos-tab" class="tab-content hidden">
+                <!-- Sub-tabs para contratos -->
+                <div class="mb-6">
+                    <nav class="flex space-x-4">
+                        <button onclick="showSubTab('contratos-list')" class="sub-tab-btn active px-4 py-2 rounded-lg bg-blue-600 text-white">Lista de Contratos</button>
+                        <button onclick="showSubTab('contratos-config')" class="sub-tab-btn px-4 py-2 rounded-lg bg-gray-200 text-gray-700">Configuración del Contrato</button>
+                    </nav>
+                </div>
+
+                <!-- Lista de Contratos -->
+                <div id="contratos-list-subtab" class="sub-tab-content">
+                    <div class="dashboard-card p-6">
+                        <h2 class="text-xl font-semibold mb-4">Administrar Contratos de Servicios</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table-auto">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="px-4 py-2 text-left">Usuario</th>
+                                        <th class="px-4 py-2 text-left">Email</th>
+                                        <th class="px-4 py-2 text-left mobile-hidden">Servicio</th>
+                                        <th class="px-4 py-2 text-left mobile-hidden">Precio Mensual</th>
+                                        <th class="px-4 py-2 text-left mobile-hidden">Duración</th>
+                                        <th class="px-4 py-2 text-left mobile-hidden">Fecha Inicio</th>
+                                        <th class="px-4 py-2 text-left mobile-hidden">Fecha Fin</th>
+                                        <th class="px-4 py-2 text-left">Estado</th>
+                                        <th class="px-4 py-2 text-left mobile-hidden">Renovación Auto</th>
+                                        <th class="px-4 py-2 text-left">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contratosTable">
+                                    <!-- Contratos will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <button onclick="loadContratos()" class="admin-admin-btn-primary px-4 py-2">
+                                <i class="fas fa-refresh"></i> Actualizar Lista
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración del Contrato -->
+                <div id="contratos-config-subtab" class="sub-tab-content hidden">
+                    <div class="dashboard-card p-6">
+                        <h2 class="text-xl font-semibold mb-4">Configuración del Contrato SaaS</h2>
+                        <p class="text-gray-600 mb-6">Estos parámetros se utilizarán en la generación de contratos PDF.</p>
+                        
+                        <form id="contractConfigForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Razón Social del Proveedor
+                                    </label>
+                                    <input type="text" id="proveedor_razon_social" name="proveedor_razon_social" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           placeholder="Ej: Mi Empresa S.A.">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        CUIT del Proveedor
+                                    </label>
+                                    <input type="text" id="proveedor_cuit" name="proveedor_cuit" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           placeholder="Ej: 30-12345678-9">
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Domicilio del Proveedor
+                                    </label>
+                                    <input type="text" id="proveedor_domicilio" name="proveedor_domicilio" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           placeholder="Ej: Av. Siempre Viva 123, Ciudad Autónoma de Buenos Aires, Argentina">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Moneda
+                                    </label>
+                                    <select id="moneda" name="moneda" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="ARS">ARS (Peso Argentino)</option>
+                                        <option value="USD">USD (Dólar)</option>
+                                        <option value="EUR">EUR (Euro)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Periodicidad de Facturación
+                                    </label>
+                                    <select id="periodicidad" name="periodicidad" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="mensual">Mensual</option>
+                                        <option value="trimestral">Trimestral</option>
+                                        <option value="anual">Anual</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Días de Vencimiento
+                                    </label>
+                                    <input type="number" id="dias_vencimiento" name="dias_vencimiento" min="1" max="90" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           placeholder="30">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Días de Preaviso para Renovación
+                                    </label>
+                                    <input type="number" id="dias_preaviso" name="dias_preaviso" min="1" max="90" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           placeholder="30">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Días de Retención de Datos
+                                    </label>
+                                    <input type="number" id="dias_retencion" name="dias_retencion" min="1" max="365" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                           placeholder="30">
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="loadContractConfig()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                                    <i class="fas fa-refresh mr-2"></i>Cargar Configuración Actual
+                                </button>
+                                <button type="button" onclick="saveContractConfig()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-save mr-2"></i>Guardar Configuración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admins Tab -->
+    <div id="admins-tab" class="tab-content hidden">
+        <div class="dashboard-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Administrar Usuarios Administradores</h2>
+            <div class="mb-4">
+                <button onclick="addNewAdmin()" class="admin-admin-btn-primary px-4 py-2 mr-2">
+                    <i class="fas fa-user-plus"></i> Agregar Admin
+                </button>
+                <button onclick="loadAdmins()" class="admin-admin-btn-primary px-4 py-2">
+                    <i class="fas fa-refresh"></i> Recargar Admins
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2 text-left">Usuario</th>
+                            <th class="px-4 py-2 text-left mobile-hidden">Nombre</th>
+                            <th class="px-4 py-2 text-left mobile-hidden">Email</th>
+                            <th class="px-4 py-2 text-left">Activo</th>
+                            <th class="px-4 py-2 text-left mobile-hidden">Creado</th>
+                            <th class="px-4 py-2 text-left">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminsTable">
+                        <tr>
+                            <td colspan="6" class="px-4 py-2 text-center text-gray-500 bg-yellow-50">
+                                <i class="fas fa-info-circle"></i> Haz clic en "Recargar Admins" para cargar la lista
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics-tab" class="tab-content hidden">
+        <div class="dashboard-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Analytics Básicos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-blue-800">Total Usuarios</h3>
+                            <p id="total-usuarios" class="text-3xl font-bold text-blue-600 mt-2">Cargando...</p>
+                        </div>
+                        <i class="fas fa-users text-blue-500 text-3xl"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-green-800">Total Contratos</h3>
+                            <p id="total-contratos" class="text-3xl font-bold text-green-600 mt-2">Cargando...</p>
+                        </div>
+                        <i class="fas fa-file-contract text-green-500 text-3xl"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-orange-800">Contratos por Vencer</h3>
+                            <p id="contratos-por-vencer" class="text-3xl font-bold text-orange-600 mt-2">Cargando...</p>
+                        </div>
+                        <i class="fas fa-clock text-orange-500 text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p class="text-gray-600 text-sm text-center">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Los datos se actualizan automáticamente cada 5 minutos
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuración Global Tab -->
+    <div id="configuracion-tab" class="tab-content hidden">
+        <div class="dashboard-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Configuración Global</h2>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-cogs text-blue-600 text-2xl mr-3"></i>
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-800">Configuraciones del Sistema</h3>
+                        <p class="text-blue-600">Próximamente disponible</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-4">Esta sección incluirá configuraciones avanzadas del sistema como:</p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Configuración de emails y notificaciones</li>
+                    <li>Variables globales del sistema</li>
+                    <li>Parámetros de seguridad</li>
+                    <li>Configuración de backups</li>
+                </ul>
+                <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <p class="text-yellow-800 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Esta funcionalidad está en desarrollo y estará disponible próximamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestión de Contenido Tab -->
+    <div id="contenido-tab" class="tab-content hidden">
+        <div class="dashboard-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Gestión de Contenido</h2>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-file-alt text-green-600 text-2xl mr-3"></i>
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-800">Sistema de Contenido</h3>
+                        <p class="text-green-600">Próximamente disponible</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-4">Esta sección permitirá gestionar:</p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Blog posts y artículos</li>
+                    <li>Páginas estáticas del sitio</li>
+                    <li>Contenido multimedia</li>
+                    <li>SEO y meta tags</li>
+                </ul>
+                <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <p class="text-yellow-800 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Esta funcionalidad está en desarrollo y estará disponible próximamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marketing Tab -->
+    <div id="marketing-tab" class="tab-content hidden">
+        <div class="dashboard-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Marketing</h2>
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-bullhorn text-purple-600 text-2xl mr-3"></i>
+                    <div>
+                        <h3 class="text-lg font-semibold text-purple-800">Herramientas de Marketing</h3>
+                        <p class="text-purple-600">Próximamente disponible</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-4">Esta sección incluirá herramientas para:</p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Campañas de marketing por email</li>
+                    <li>Sistema de cupones y descuentos</li>
+                    <li>Promociones especiales</li>
+                    <li>Análisis de conversiones</li>
+                </ul>
+                <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <p class="text-yellow-800 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Esta funcionalidad está en desarrollo y estará disponible próximamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soporte Tab -->
+    <div id="soporte-tab" class="tab-content hidden">
+        <div class="dashboard-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Soporte</h2>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-headset text-red-600 text-2xl mr-3"></i>
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-800">Sistema de Soporte</h3>
+                        <p class="text-red-600">Próximamente disponible</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-4">Esta sección permitirá gestionar:</p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Sistema de tickets de soporte</li>
+                    <li>Chat en vivo con usuarios</li>
+                    <li>Base de conocimientos</li>
+                    <li>Reportes de problemas</li>
+                </ul>
+                <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <p class="text-yellow-800 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Esta funcionalidad está en desarrollo y estará disponible próximamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="addSectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Agregar Nueva Sección</h3>
+                <button onclick="closeAddSectionModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre de la Sección
+                </label>
+                <input type="text" id="newSectionKey" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ej: hero, servicios, contacto" maxlength="50">
+                <p class="text-sm text-gray-500 mt-1">
+                    El nombre debe ser único y descriptivo (máximo 50 caracteres)
+                </p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeAddSectionModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmAddSection()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Agregar Sección
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar nuevo producto -->
+    <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Agregar Nuevo Producto</h3>
+                <button onclick="closeAddProductModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre del Producto
+                    </label>
+                    <input type="text" id="productNombre" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ej: Laptop Gaming">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción
+                    </label>
+                    <textarea id="productDescripcion" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Descripción del producto"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Categoría
+                    </label>
+                    <input type="text" id="productCategoria" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ej: Electrónica, Ropa">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Precio
+                    </label>
+                    <input type="number" id="productPrecio" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="99.99">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Stock
+                    </label>
+                    <input type="number" id="productStock" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="10">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        URL de Imagen (opcional)
+                    </label>
+                    <input type="text" id="productImagen" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="/static/img/producto.jpg">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeAddProductModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmAddProduct()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Agregar Producto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar nuevo admin -->
+    <div id="addAdminModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Agregar Nuevo Administrador</h3>
+                <button onclick="closeAddAdminModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Usuario *
+                    </label>
+                    <input type="text" id="adminUsuario" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ej: admin1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre Completo *
+                    </label>
+                    <input type="text" id="adminNombre" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ej: Juan Pérez" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email *
+                    </label>
+                    <input type="email" id="adminMail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="ej: admin@ejemplo.com" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña *
+                    </label>
+                    <input type="password" id="adminPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="adminActivo" class="mr-2" checked>
+                        <span class="text-sm font-medium text-gray-700">Administrador activo</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeAddAdminModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmAddAdmin()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-user-plus mr-2"></i>Crear Administrador
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Admin dashboard script loaded');
+
+        // Verificar autenticación inmediatamente al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing dashboard...');
+
+            // Check token first
+            const token = localStorage.getItem('admin_token');
+            console.log('Token check:', token ? 'present' : 'missing');
+
+            if (!token) {
+                console.warn('No token found, redirecting to login');
+                window.location.href = '/admin/login';
+                return;
+            }
+
+            // Add token to all fetch requests
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options = {}) {
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+                return originalFetch(url, options);
+            };
+
+            console.log('Authentication setup complete, loading initial tab...');
+
+            // Load initial tab (config by default)
+            loadConfig();
+
+            console.log('Dashboard initialization complete');
+        });
+
+        // Tab switching
+        function showTab(tab) {
+            console.log('showTab called with:', tab);
+
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // Reset all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'bg-blue-600', 'text-white');
+                el.classList.add('bg-gray-200', 'text-gray-700');
+            });
+
+            // Update mobile select
+            const mobileSelect = document.getElementById('mobile-tab-select');
+            if (mobileSelect) {
+                mobileSelect.value = tab;
+            }
+
+            // Show selected tab
+            const tabElement = document.getElementById(tab + '-tab');
+            if (tabElement) {
+                tabElement.classList.remove('hidden');
+                console.log('Tab shown:', tab);
+                
+                // Scroll to a consistent position for all tabs
+                setTimeout(() => {
+                    // Use a fixed scroll position for all tabs to ensure consistency
+                    const fixedScrollPosition = 200; // Fixed position from top
+                    
+                    console.log(`Scrolling to fixed position for tab ${tab}: ${fixedScrollPosition}px`);
+                    
+                    window.scrollTo({
+                        top: fixedScrollPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Add a subtle visual flash effect
+                    tabElement.style.transition = 'all 0.3s ease';
+                    tabElement.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.3)';
+                    setTimeout(() => {
+                        tabElement.style.boxShadow = '';
+                    }, 800);
+                }, 100);
+            } else {
+                console.error('Tab element not found:', tab + '-tab');
+            }
+
+            // Highlight active button with enhanced styling
+            if (event && event.target && event.target.classList.contains('tab-btn')) {
+                event.target.classList.add('active', 'bg-blue-600', 'text-white', 'ring-2', 'ring-blue-300', 'font-bold');
+                event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            }
+
+            // Load tab content
+            if (tab === 'config') {
+                console.log('Loading config tab');
+                loadConfig();
+            }
+            if (tab === 'users') {
+                console.log('Loading users tab - this one works well');
+                loadUsers();
+            }
+            if (tab === 'proyectos-admin') {
+                console.log('Loading proyectos admin tab');
+                loadProyectos();
+            }
+            if (tab === 'contratos') {
+                console.log('Loading contratos tab - this one has issues');
+                loadContratos();
+                // Show default sub-tab
+                document.querySelectorAll('.sub-tab-content').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active', 'bg-blue-600', 'text-white'));
+                document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.add('bg-gray-200', 'text-gray-700'));
+                document.getElementById('contratos-list-subtab').classList.remove('hidden');
+                document.querySelector('.sub-tab-btn.active')?.classList.remove('active', 'bg-blue-600', 'text-white');
+                document.querySelector('.sub-tab-btn.active')?.classList.add('bg-gray-200', 'text-gray-700');
+                document.querySelector('button[onclick="showSubTab(\'contratos-list\')"]').classList.add('active', 'bg-blue-600', 'text-white');
+                document.querySelector('button[onclick="showSubTab(\'contratos-list\')"]').classList.remove('bg-gray-200', 'text-gray-700');
+            }
+            if (tab === 'admins') {
+                console.log('Loading admins tab - this one has issues');
+                loadAdmins();
+                
+                // Debug spacing for this problematic tab
+                setTimeout(() => debugSpacing('admins'), 200);
+                
+                // Show notification that admins tab is active
+                setTimeout(() => {
+                    showNotification('📊 Pestaña "Administrar Admins" activada - Los administradores se están cargando...', 'info');
+                }, 100);
+                
+                // Add visual indicator that this tab is active
+                setTimeout(() => {
+                    const tabElement = document.getElementById('admins-tab');
+                    if (tabElement) {
+                        // Add a pulsing animation to draw attention
+                        tabElement.style.animation = 'pulse 2s ease-in-out';
+                        setTimeout(() => {
+                            tabElement.style.animation = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+            if (tab === 'analytics') {
+                console.log('Loading analytics tab - this one has issues');
+                loadAnalytics();
+                
+                // Debug spacing for this problematic tab
+                setTimeout(() => debugSpacing('analytics'), 200);
+            }
+        }
+
+        // Debug spacing function to identify layout issues
+        function debugSpacing(tabName) {
+            console.log(`=== DEBUGGING SPACING FOR TAB: ${tabName} ===`);
+            
+            const tabContent = document.getElementById(`${tabName}-tab`);
+            if (!tabContent) {
+                console.log(`Tab content element not found for ${tabName}`);
+                return;
+            }
+            
+            // Get computed styles
+            const computedStyle = window.getComputedStyle(tabContent);
+            console.log('Tab content styles:', {
+                marginTop: computedStyle.marginTop,
+                marginBottom: computedStyle.marginBottom,
+                paddingTop: computedStyle.paddingTop,
+                paddingBottom: computedStyle.paddingBottom,
+                height: computedStyle.height,
+                display: computedStyle.display,
+                visibility: computedStyle.visibility
+            });
+            
+            // Get bounding rect
+            const rect = tabContent.getBoundingClientRect();
+            console.log('Tab content bounding rect:', {
+                top: rect.top,
+                bottom: rect.bottom,
+                height: rect.height
+            });
+            
+            // Check parent elements
+            let parent = tabContent.parentElement;
+            let level = 1;
+            while (parent && level <= 3) {
+                const parentStyle = window.getComputedStyle(parent);
+                console.log(`Parent ${level} (${parent.tagName}.${parent.className}):`, {
+                    marginTop: parentStyle.marginTop,
+                    marginBottom: parentStyle.marginBottom,
+                    paddingTop: parentStyle.paddingTop,
+                    paddingBottom: parentStyle.paddingBottom
+                });
+                parent = parent.parentElement;
+                level++;
+            }
+            
+            // Check for elements with large margins
+            const allElements = tabContent.querySelectorAll('*');
+            console.log(`Total elements in ${tabName} tab: ${allElements.length}`);
+            
+            const largeMarginElements = Array.from(allElements).filter(el => {
+                const style = window.getComputedStyle(el);
+                const marginTop = parseFloat(style.marginTop) || 0;
+                const marginBottom = parseFloat(style.marginBottom) || 0;
+                return marginTop > 20 || marginBottom > 20;
+            });
+            
+            if (largeMarginElements.length > 0) {
+                console.log('Elements with large margins:');
+                largeMarginElements.forEach(el => {
+                    const style = window.getComputedStyle(el);
+                    console.log(`  ${el.tagName}.${el.className}: margin-top=${style.marginTop}, margin-bottom=${style.marginBottom}`);
+                });
+            }
+            
+            console.log(`=== END DEBUGGING FOR ${tabName} ===`);
+        }
+
+        // Load config
+        async function loadConfig() {
+            try {
+                const response = await fetch('/admin/config', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                const config = await response.json();
+                const indexSections = config.index_sections || '{}';
+                const sections = JSON.parse(indexSections);
+                renderSections(sections);
+            } catch (error) {
+                console.error('Error loading config:', error);
+                renderSections({});
+            }
+        }
+
+        // Render sections in UI
+        function renderSections(sections) {
+            const container = document.getElementById('sections-container');
+            container.innerHTML = '';
+            Object.keys(sections).forEach(sectionKey => {
+                const section = sections[sectionKey];
+                const sectionDiv = createSectionElement(sectionKey, section);
+                container.appendChild(sectionDiv);
+            });
+        }
+
+        // Create section element
+        function createSectionElement(key, data) {
+            const div = document.createElement('div');
+            div.className = 'section-item bg-gray-50 p-4 rounded-lg mb-4';
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold">${key}</h3>
+                    <button type="button" onclick="removeSection('${key}')" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nombre de la Sección</label>
+                        <input type="text" class="admin-form-input section-key" value="${key}" placeholder="ej: hero, servicios">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Título</label>
+                        <input type="text" class="admin-form-input section-titulo" value="${data.titulo || ''}" placeholder="Título de la sección">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Subtítulo</label>
+                        <input type="text" class="admin-form-input section-subtitulo" value="${data.subtitulo || ''}" placeholder="Subtítulo opcional">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Imagen (URL)</label>
+                        <input type="text" class="admin-form-input section-imagen" value="${data.imagen || ''}" placeholder="/static/img/imagen.jpg">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">Contenido</label>
+                        <textarea class="admin-form-input section-contenido" rows="3" placeholder="Contenido de la sección">${data.contenido || ''}</textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="section-show-button mr-2" ${data.showButton ? 'checked' : ''} onchange="toggleButtonText(this)">
+                            <span class="text-sm font-medium">Mostrar botón en esta sección</span>
+                        </label>
+                    </div>
+                    <div class="md:col-span-2 section-button-text-container" style="display: ${data.showButton ? 'block' : 'none'};">
+                        <label class="block text-sm font-medium mb-1">Texto del Botón</label>
+                        <input type="text" class="admin-form-input section-button-text" value="${data.buttonText || ''}" placeholder="ej: Más Información, Contactar, Solicitar">
+                    </div>
+                    <div class="md:col-span-2 section-button-link-container" style="display: ${data.showButton ? 'block' : 'none'};">
+                        <label class="block text-sm font-medium mb-1">Link del Botón</label>
+                        <input type="text" class="admin-form-input section-button-link" value="${data.buttonLink || ''}" placeholder="ej: /admin/dashboard, https://example.com">
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        // Add new section
+        function addNewSection() {
+            document.getElementById('addSectionModal').classList.remove('hidden');
+            document.getElementById('newSectionKey').value = '';
+            document.getElementById('newSectionKey').focus();
+        }
+
+        // Close add section modal
+        function closeAddSectionModal() {
+            document.getElementById('addSectionModal').classList.add('hidden');
+        }
+
+        // Confirm add section
+        function confirmAddSection() {
+            const key = document.getElementById('newSectionKey').value.trim();
+            if (!key) {
+                showNotification('Por favor ingresa un nombre para la sección', 'error');
+                return;
+            }
+            
+            // Validar que no esté vacío y no contenga caracteres especiales
+            if (!/^[a-zA-Z0-9_-]+$/.test(key)) {
+                showNotification('El nombre solo puede contener letras, números, guiones y guiones bajos', 'error');
+                return;
+            }
+            
+            // Verificar que no exista ya
+            const existingSections = document.querySelectorAll('.section-key');
+            for (let input of existingSections) {
+                if (input.value.toLowerCase() === key.toLowerCase()) {
+                    showNotification('Ya existe una sección con ese nombre', 'error');
+                    return;
+                }
+            }
+            
+            const container = document.getElementById('sections-container');
+            const sectionDiv = createSectionElement(key, {});
+            container.appendChild(sectionDiv);
+            
+            closeAddSectionModal();
+            showNotification(`Sección "${key}" agregada correctamente`, 'success');
+        }
+
+        // Toggle button text field visibility
+        function toggleButtonText(checkbox) {
+            const textContainer = checkbox.closest('.section-item').querySelector('.section-button-text-container');
+            const linkContainer = checkbox.closest('.section-item').querySelector('.section-button-link-container');
+            if (checkbox.checked) {
+                textContainer.style.display = 'block';
+                linkContainer.style.display = 'block';
+            } else {
+                textContainer.style.display = 'none';
+                linkContainer.style.display = 'none';
+            }
+        }
+
+        // Remove section
+        function removeSection(key) {
+            if (confirm(`¿Estás seguro de que quieres eliminar la sección "${key}"?\n\nEsta acción no se puede deshacer.`)) {
+                const container = document.getElementById('sections-container');
+                const sections = container.querySelectorAll('.section-item');
+                sections.forEach(section => {
+                    const keyInput = section.querySelector('.section-key');
+                    if (keyInput && keyInput.value === key) {
+                        section.remove();
+                    }
+                });
+                showNotification(`Sección "${key}" eliminada`, 'warning');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 px-4 py-3 rounded-md shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
+            
+            let bgColor, textColor, icon;
+            switch (type) {
+                case 'success':
+                    bgColor = 'bg-green-500';
+                    textColor = 'text-white';
+                    icon = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-500';
+                    textColor = 'text-white';
+                    icon = 'fas fa-exclamation-circle';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-500';
+                    textColor = 'text-black';
+                    icon = 'fas fa-exclamation-triangle';
+                    break;
+                default:
+                    bgColor = 'bg-blue-500';
+                    textColor = 'text-white';
+                    icon = 'fas fa-info-circle';
+            }
+            
+            notification.classList.add(bgColor, textColor);
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="${icon} mr-2"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 hover:opacity-75">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Save sections
+        async function saveSections() {
+            const container = document.getElementById('sections-container');
+            const sections = {};
+            const sectionItems = container.querySelectorAll('.section-item');
+            
+            sectionItems.forEach(item => {
+                const key = item.querySelector('.section-key').value.trim();
+                const titulo = item.querySelector('.section-titulo').value;
+                const subtitulo = item.querySelector('.section-subtitulo').value;
+                const imagen = item.querySelector('.section-imagen').value;
+                const contenido = item.querySelector('.section-contenido').value;
+                const showButton = item.querySelector('.section-show-button').checked;
+                const buttonText = item.querySelector('.section-button-text').value;
+                const buttonLink = item.querySelector('.section-button-link').value;
+                
+                if (key) {
+                    sections[key] = {
+                        titulo: titulo || '',
+                        subtitulo: subtitulo || '',
+                        imagen: imagen || '',
+                        contenido: contenido || '',
+                        showButton: showButton,
+                        buttonText: buttonText || '',
+                        buttonLink: buttonLink || ''
+                    };
+                }
+            });
+            
+            try {
+                const data = {
+                    index_sections: JSON.stringify(sections)
+                };
+                const response = await fetch('/admin/config', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    showNotification('Configuración guardada exitosamente', 'success');
+                    // Recargar las secciones desde la base de datos para confirmar que se guardaron
+                    loadConfig();
+                } else {
+                    showNotification('Error al guardar la configuración. Inténtalo de nuevo.', 'error');
+                }
+            } catch (error) {
+                showNotification('Error al guardar. Verifica que los datos sean correctos.', 'error');
+                console.error('Error saving sections:', error);
+            }
+        }
+
+        // Load users
+        let currentPage = 1;
+        let totalPages = 1;
+        
+        async function loadUsers(page = 1) {
+            try {
+                if (page < 1 || (page > totalPages && totalPages > 0)) return;
+                
+                const response = await fetch(`/admin/users?page=${page}&limit=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                currentPage = data.page;
+                totalPages = data.pages;
+                
+                document.getElementById('totalUsers').textContent = data.total;
+                document.getElementById('currentPageSpan').textContent = data.page;
+                document.getElementById('totalPagesSpan').textContent = data.pages;
+                document.getElementById('prevPage').disabled = data.page <= 1;
+                document.getElementById('nextPage').disabled = data.page >= data.pages;
+                
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = '';
+                
+                data.users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-gray-50';
+                    
+                    // Proyectos badge con detalles
+                    let proyectosBadge = '';
+                    if (user.sin_proyectos) {
+                        proyectosBadge = '<span class="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded">Sin asignar</span>';
+                    } else {
+                        proyectosBadge = '<div class="space-y-1">';
+                        user.proyectos.forEach(p => {
+                            const fechaVenc = new Date(p.fecha_vencimiento).toLocaleDateString('es-ES');
+                            const badgeClass = p.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                            const diasInfo = p.estado === 'activo' ? `(${p.dias_restantes}d)` : '(vencido)';
+                            
+                            // Necesitamos escapar las comillas simples en el nombre del proyecto
+                            const nombreEscapado = p.nombre.replace(/'/g, "\\'");
+                            
+                            proyectosBadge += `
+                                <div class="text-xs flex items-center justify-between">
+                                    <div>
+                                        <span class="px-2 py-1 rounded ${badgeClass} inline-block">
+                                            ${p.nombre}
+                                        </span>
+                                        <span class="text-gray-600 ml-1">${fechaVenc} ${diasInfo}</span>
+                                    </div>
+                                    <button onclick="editarVencimientoProyecto('${user.id}', '${p.proyecto_id}', '${p.fecha_vencimiento}', '${nombreEscapado}')" 
+                                            class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        proyectosBadge += '</div>';
+                    }
+                    
+                    // Último acceso
+                    let ultimoAcceso = 'Nunca';
+                    if (user.last_validated_at) {
+                        const fecha = new Date(user.last_validated_at);
+                        ultimoAcceso = fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+                    }
+                    
+                    // Estado
+                    const statusClass = user.is_active ? 'status-active' : 'status-expired';
+                    const statusText = user.is_active ? 'Activo' : 'Inactivo';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 font-medium">${user.username}</td>
+                        <td class="px-4 py-2">${user.email}</td>
+                        <td class="px-4 py-2 mobile-hidden">${proyectosBadge}</td>
+                        <td class="px-4 py-2 mobile-hidden text-sm text-gray-600">${ultimoAcceso}</td>
+                        <td class="px-4 py-2"><span class="${statusClass}">${statusText}</span></td>
+                        <td class="px-4 py-2">
+                            <button onclick="showUserProyectos('${user.id}', '${user.email}')" class="admin-admin-btn-primary text-xs mr-1 mb-1">
+                                <i class="fas fa-folder"></i> Proyectos
+                            </button>
+                            <button onclick="showAsignarProyectoModal('${user.id}', '${user.email}')" class="admin-admin-btn-secondary text-xs mr-1 mb-1">
+                                <i class="fas fa-plus"></i> Asignar
+                            </button>
+                            <button onclick="toggleUser('${user.id}', ${user.is_active})" class="admin-admin-btn-primary text-xs mr-1 mb-1">
+                                ${user.is_active ? 'Deshabilitar' : 'Habilitar'}
+                            </button>
+                            <button onclick="changePassword('${user.id}')" class="admin-admin-btn-secondary text-xs mb-1">
+                                <i class="fas fa-key"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showNotification('Error al cargar usuarios', 'error');
+            }
+        }
+
+        // Toggle user active
+        async function toggleUser(userId, currentActive) {
+            try {
+                const response = await fetch(`/admin/users/${userId}/toggle`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ active: !currentActive })
+                });
+                if (response.ok) {
+                    loadUsers();
+                } else {
+                    showNotification('Error al cambiar el estado del usuario', 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling user:', error);
+            }
+        }
+
+        // Change user password
+        async function changePassword(userId) {
+            const newPassword = prompt('Ingrese la nueva contraseña:');
+            if (!newPassword) return;
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/change-password`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ new_password: newPassword })
+                });
+                if (response.ok) {
+                    showNotification('Contraseña cambiada exitosamente', 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Error al cambiar la contraseña', 'error');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showNotification('Error al cambiar la contraseña', 'error');
+            }
+        }
+
+        // Load contratos
+        async function loadContratos() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                console.log('Token from localStorage:', token);
+                if (!token) {
+                    console.error('No admin token found in localStorage');
+                    showNotification('Sesión expirada. Por favor, inicie sesión nuevamente.', 'error');
+                    window.location.href = '/admin/login';
+                    return;
+                }
+                const response = await fetch('/admin/contratos', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    if (response.status === 401) {
+                        console.error('Token inválido o expirado, redirigiendo al login');
+                        localStorage.removeItem('admin_token');
+                        alert('Sesión expirada. Redirigiendo al login...');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${errorData.detail || 'Unknown error'}`);
+                }
+                const contratos = await response.json();
+                console.log('Contratos received:', contratos);
+                const tbody = document.getElementById('contratosTable');
+                tbody.innerHTML = '';
+                contratos.forEach(contrato => {
+                    console.log('Processing contrato:', contrato); // Debug log
+                    const row = document.createElement('tr');
+                    row.className = 'border-b';
+                    
+                    const fechaInicio = contrato.fecha_contrato ? new Date(contrato.fecha_contrato).toLocaleDateString() : 'N/A';
+                    const fechaFin = contrato.fecha_fin ? new Date(contrato.fecha_fin).toLocaleDateString() : 'N/A';
+                    const statusClass = contrato.estado === 'activo' ? 'status-active' : contrato.estado === 'expirado' ? 'status-expired' : 'status-pending';
+                    
+                    // Ensure contrato.id is a string
+                    const contratoId = contrato.id ? String(contrato.id) : 'undefined';
+                    console.log('Contrato ID:', contratoId); // Debug log
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2">${contrato.usuario_nombre || contrato.usuario_id}</td>
+                        <td class="px-4 py-2">${contrato.usuario_email || 'N/A'}</td>
+                        <td class="px-4 py-2 mobile-hidden">${contrato.servicio_nombre || contrato.servicio_id || 'N/A'}</td>
+                        <td class="px-4 py-2 mobile-hidden">$${contrato.precio_mensual || 0}</td>
+                        <td class="px-4 py-2 mobile-hidden">${contrato.duracion_meses || 0} meses</td>
+                        <td class="px-4 py-2 mobile-hidden">${fechaInicio}</td>
+                        <td class="px-4 py-2 mobile-hidden">${fechaFin}</td>
+                        <td class="px-4 py-2"><span class="${statusClass}">${contrato.estado}</span></td>
+                        <td class="px-4 py-2 mobile-hidden">${contrato.renovacion_automatica ? 'Sí' : 'No'}</td>
+                        <td class="px-4 py-2">
+                            <select onchange="updateContratoEstado('${contratoId}', this.value)" class="text-xs p-1 border rounded">
+                                <option value="pendiente" ${contrato.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                                <option value="aprobado" ${contrato.estado === 'aprobado' ? 'selected' : ''}>Aprobado</option>
+                                <option value="activo" ${contrato.estado === 'activo' ? 'selected' : ''}>Activo</option>
+                                <option value="suspendido" ${contrato.estado === 'suspendido' ? 'selected' : ''}>Suspendido</option>
+                                <option value="cancelado" ${contrato.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                                <option value="expirado" ${contrato.estado === 'expirado' ? 'selected' : ''}>Expirado</option>
+                            </select>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading contratos:', error);
+            }
+        }
+
+        // Update contrato estado
+        async function updateContratoEstado(contratoId, nuevoEstado) {
+            try {
+                const response = await fetch(`/admin/contratos/${contratoId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ estado: nuevoEstado, detalles: '' })
+                });
+                if (response.ok) {
+                    showNotification('Contrato actualizado exitosamente', 'success');
+                    loadContratos();
+                } else {
+                    showNotification('Error al actualizar contrato', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating contrato:', error);
+                showNotification('Error al actualizar contrato', 'error');
+            }
+        }
+
+        // Sub-tab switching for contratos
+        function showSubTab(subtab) {
+            document.querySelectorAll('.sub-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active', 'bg-blue-600', 'text-white'));
+            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.add('bg-gray-200', 'text-gray-700'));
+            
+            document.getElementById(subtab + '-subtab').classList.remove('hidden');
+            event.target.classList.add('active', 'bg-blue-600', 'text-white');
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            
+            if (subtab === 'contratos-config') loadContractConfig();
+        }
+
+        // Load contract configuration
+        async function loadContractConfig() {
+            try {
+                const response = await fetch('/admin/config', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                const config = await response.json();
+                
+                // Fill form with current values
+                document.getElementById('proveedor_razon_social').value = config.proveedor_razon_social || '';
+                document.getElementById('proveedor_cuit').value = config.proveedor_cuit || '';
+                document.getElementById('proveedor_domicilio').value = config.proveedor_domicilio || '';
+                document.getElementById('moneda').value = config.moneda || 'ARS';
+                document.getElementById('periodicidad').value = config.periodicidad || 'mensual';
+                document.getElementById('dias_vencimiento').value = config.dias_vencimiento || 30;
+                document.getElementById('dias_preaviso').value = config.dias_preaviso || 30;
+                document.getElementById('dias_retencion').value = config.dias_retencion || 30;
+                
+                showNotification('Configuración del contrato cargada', 'success');
+            } catch (error) {
+                console.error('Error loading contract config:', error);
+                showNotification('Error al cargar configuración del contrato', 'error');
+            }
+        }
+
+        // Save contract configuration
+        async function saveContractConfig() {
+            try {
+                const formData = new FormData(document.getElementById('contractConfigForm'));
+                const configData = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    // Convert numeric fields
+                    if (['dias_vencimiento', 'dias_preaviso', 'dias_retencion'].includes(key)) {
+                        configData[key] = parseInt(value) || 30;
+                    } else {
+                        configData[key] = value;
+                    }
+                }
+                
+                const response = await fetch('/admin/config', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify(configData)
+                });
+                
+                if (response.ok) {
+                    showNotification('Configuración del contrato guardada exitosamente', 'success');
+                } else {
+                    showNotification('Error al guardar configuración del contrato', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving contract config:', error);
+                showNotification('Error al guardar configuración del contrato', 'error');
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = '/admin';
+        }
+
+        // Product management functions
+        function loadProducts() {
+            fetch('/admin/productos', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                }
+            })
+                .then(response => response.json())
+                .then(products => {
+                    renderProducts(products);
+                })
+                .catch(error => {
+                    console.error('Error loading products:', error);
+                    showNotification('Error al cargar productos', 'error');
+                });
+        }
+
+        function renderProducts(products) {
+            const tbody = document.getElementById('productsTable');
+            tbody.innerHTML = '';
+            
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200';
+                row.innerHTML = `
+                    <td class="px-4 py-2">${product.nombre}</td>
+                    <td class="px-4 py-2 mobile-hidden">${product.categoria}</td>
+                    <td class="px-4 py-2 mobile-hidden">$${product.precio.toFixed(2)}</td>
+                    <td class="px-4 py-2 mobile-hidden">${product.stock}</td>
+                    <td class="px-4 py-2">
+                        <span class="px-2 py-1 rounded-full text-xs ${product.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${product.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2">
+                        <button onclick="editProduct('${product.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteProduct('${product.id}')" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function addNewProduct() {
+            document.getElementById('addProductModal').classList.remove('hidden');
+            document.getElementById('productNombre').value = '';
+            document.getElementById('productDescripcion').value = '';
+            document.getElementById('productCategoria').value = '';
+            document.getElementById('productPrecio').value = '';
+            document.getElementById('productStock').value = '';
+            document.getElementById('productImagen').value = '';
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.add('hidden');
+        }
+
+        function confirmAddProduct() {
+            const nombre = document.getElementById('productNombre').value.trim();
+            const descripcion = document.getElementById('productDescripcion').value.trim();
+            const categoria = document.getElementById('productCategoria').value.trim();
+            const precio = parseFloat(document.getElementById('productPrecio').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            const imagen_url = document.getElementById('productImagen').value.trim();
+
+            if (!nombre || !descripcion || !categoria || isNaN(precio) || isNaN(stock)) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+
+            const productData = {
+                nombre,
+                descripcion,
+                categoria,
+                precio,
+                stock,
+                imagen_url: imagen_url || null
+            };
+
+            console.log('Enviando datos del producto:', productData);
+
+            fetch('/admin/productos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                },
+                body: JSON.stringify(productData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(`HTTP ${response.status}: ${JSON.stringify(err)}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showNotification('Producto agregado exitosamente', 'success');
+                closeAddProductModal();
+                loadProducts();
+            })
+            .catch(error => {
+                console.error('Error adding product:', error);
+                showNotification(`Error al agregar producto: ${error.message}`, 'error');
+            });
+        }
+
+        function deleteProduct(productId) {
+            if (!confirm('¿Está seguro de que desea eliminar este producto?')) {
+                return;
+            }
+
+            fetch(`/admin/productos/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Producto eliminado exitosamente', 'success');
+                    loadProducts();
+                } else {
+                    throw new Error('Error al eliminar producto');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting product:', error);
+                showNotification('Error al eliminar producto', 'error');
+            });
+        }
+
+        function editProduct(productId) {
+            showNotification('Función de editar producto próximamente', 'info');
+        }
+
+        // Modify showTab to load products when switching to products tab
+        const originalShowTab = window.showTab;
+        window.showTab = function(tab) {
+            if (originalShowTab) originalShowTab(tab);
+            if (tab === 'productos') {
+                loadProducts();
+            }
+        };
+
+        // Add keyboard listeners for modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAddSectionModal();
+                closeAddProductModal();
+                closeAddAdminModal();
+            }
+            if (event.key === 'Enter' && !document.getElementById('addSectionModal').classList.contains('hidden')) {
+                confirmAddSection();
+            }
+            if (event.key === 'Enter' && !document.getElementById('addProductModal').classList.contains('hidden')) {
+                confirmAddProduct();
+            }
+            if (event.key === 'Enter' && !document.getElementById('addAdminModal').classList.contains('hidden')) {
+                confirmAddAdmin();
+            }
+        });
+
+        // Admin management functions
+        function addNewAdmin() {
+            document.getElementById('addAdminModal').classList.remove('hidden');
+            document.getElementById('adminUsuario').value = '';
+            document.getElementById('adminNombre').value = '';
+            document.getElementById('adminMail').value = '';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('adminActivo').checked = true;
+            document.getElementById('adminUsuario').focus();
+        }
+
+        function closeAddAdminModal() {
+            document.getElementById('addAdminModal').classList.add('hidden');
+        }
+
+        async function confirmAddAdmin() {
+            const usuario = document.getElementById('adminUsuario').value.trim();
+            const nombre = document.getElementById('adminNombre').value.trim();
+            const mail = document.getElementById('adminMail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const activo = document.getElementById('adminActivo').checked;
+
+            // Validaciones
+            if (!usuario || !nombre || !mail || !password) {
+                showNotification('Por favor complete todos los campos obligatorios', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+
+            // Validar email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(mail)) {
+                showNotification('Por favor ingrese un email válido', 'error');
+                return;
+            }
+
+            const adminData = {
+                usuario,
+                nombre,
+                mail,
+                password,
+                activo
+            };
+
+            console.log('Creando nuevo admin:', adminData);
+
+            try {
+                const response = await fetch('/admin/admins', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify(adminData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Error ${response.status}`);
+                }
+
+                const data = await response.json();
+                showNotification('Administrador creado exitosamente', 'success');
+                closeAddAdminModal();
+                loadAdmins();
+            } catch (error) {
+                console.error('Error creating admin:', error);
+                showNotification(`Error al crear administrador: ${error.message}`, 'error');
+            }
+        }
+
+        // Load Admins
+        async function loadAdmins() {
+            console.log('🔄 loadAdmins() function called');
+
+            try {
+                // Get table body element
+                const tableBody = document.getElementById('adminsTable');
+                if (!tableBody) {
+                    console.error('❌ adminsTable element not found in DOM');
+                    return;
+                }
+
+                // Show loading state
+                tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-2 text-center"><i class="fas fa-spinner fa-spin"></i> Cargando administradores...</td></tr>';
+
+                // Get token
+                const token = localStorage.getItem('admin_token');
+                console.log('🔑 Token status:', token ? 'present' : 'missing');
+
+                if (!token) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-2 text-center text-red-500">Sesión expirada. Recarga la página e inicia sesión nuevamente.</td></tr>';
+                    return;
+                }
+
+                // Make request
+                console.log('📡 Making request to /admin/admins');
+                const response = await fetch('/admin/admins', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📡 Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ API Error:', response.status, errorText);
+                    tableBody.innerHTML = `<tr><td colspan="6" class="px-4 py-2 text-center text-red-500">Error ${response.status}: ${errorText}</td></tr>`;
+                    return;
+                }
+
+                // Parse response
+                const admins = await response.json();
+                console.log('✅ Received admins data:', admins);
+
+                // Clear loading state
+                tableBody.innerHTML = '';
+
+                // Check if empty
+                if (!admins || admins.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-2 text-center text-gray-500">No hay usuarios administradores registrados</td></tr>';
+                    return;
+                }
+
+                // Populate table
+                admins.forEach((admin, index) => {
+                    console.log(`👤 Processing admin ${index + 1}:`, admin.usuario);
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-b';
+
+                    row.innerHTML = `
+                        <td class="px-4 py-2">${admin.usuario || 'N/A'}</td>
+                        <td class="px-4 py-2 mobile-hidden">${admin.nombre || 'N/A'}</td>
+                        <td class="px-4 py-2 mobile-hidden">${admin.mail || 'N/A'}</td>
+                        <td class="px-4 py-2">${admin.activo ? 'Sí' : 'No'}</td>
+                        <td class="px-4 py-2 mobile-hidden">${admin.created_at || 'N/A'}</td>
+                        <td class="px-4 py-2">
+                            <button onclick="toggleAdmin('${admin.id}', ${admin.activo})" class="px-2 py-1 bg-blue-500 text-white rounded text-sm mr-2">
+                                ${admin.activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                            <button onclick="changeAdminPassword('${admin.id}')" class="px-2 py-1 bg-green-500 text-white rounded text-sm">
+                                Cambiar Contraseña
+                            </button>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+
+                console.log('✅ Admins table populated with', admins.length, 'rows');
+                showNotification('Admins cargados exitosamente: ' + admins.length + ' administradores', 'success');
+
+            } catch (error) {
+                console.error('❌ Error in loadAdmins:', error);
+                const tableBody = document.getElementById('adminsTable');
+                if (tableBody) {
+                    tableBody.innerHTML = `<tr><td colspan="6" class="px-4 py-2 text-center text-red-500">Error de conexión: ${error.message}</td></tr>`;
+                }
+            }
+        }
+
+        // Toggle Admin
+        async function toggleAdmin(adminId, currentActive) {
+            try {
+                const response = await fetch(`/admin/admins/${adminId}/toggle`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ activo: !currentActive })
+                });
+                if (response.ok) {
+                    loadAdmins();
+                    showNotification('Admin actualizado exitosamente', 'success');
+                } else {
+                    showNotification('Error al actualizar admin', 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling admin:', error);
+                showNotification('Error al actualizar admin', 'error');
+            }
+        }
+
+        // Change Admin Password
+        async function changeAdminPassword(adminId) {
+            const newPassword = prompt('Ingrese la nueva contraseña para el admin:');
+            if (!newPassword) return;
+            
+            try {
+                const response = await fetch(`/admin/admins/${adminId}/change-password`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ new_password: newPassword })
+                });
+                if (response.ok) {
+                    showNotification('Contraseña del admin cambiada exitosamente', 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Error al cambiar la contraseña del admin', 'error');
+                }
+            } catch (error) {
+                console.error('Error changing admin password:', error);
+                showNotification('Error al cambiar la contraseña del admin', 'error');
+            }
+        }
+
+        // Load Analytics
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/admin/analytics');
+                const data = await response.json();
+                document.getElementById('total-usuarios').textContent = data.total_usuarios;
+                document.getElementById('total-contratos').textContent = data.total_contratos;
+                document.getElementById('contratos-por-vencer').textContent = data.contratos_por_vencer;
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Debug spacing function
+        function debugSpacing() {
+            const nav = document.querySelector('nav');
+            const adminsTab = document.getElementById('admins-tab');
+            
+            console.log('=== SPACING DEBUG ===');
+            console.log('Nav element:', nav);
+            console.log('Nav rect:', nav ? nav.getBoundingClientRect() : 'NOT FOUND');
+            console.log('Admins tab element:', adminsTab);
+            console.log('Admins tab rect:', adminsTab ? adminsTab.getBoundingClientRect() : 'NOT FOUND');
+            
+            if (nav && adminsTab) {
+                const navBottom = nav.getBoundingClientRect().bottom;
+                const tabTop = adminsTab.getBoundingClientRect().top;
+                const space = tabTop - navBottom;
+                console.log('Space between nav and tab:', space, 'pixels');
+                
+                // Check for hidden elements
+                const allElements = document.querySelectorAll('*');
+                let hiddenCount = 0;
+                allElements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top >= navBottom && rect.bottom <= tabTop && rect.height > 10) {
+                        console.log('Element between nav and tab:', el, 'Height:', rect.height);
+                        hiddenCount++;
+                    }
+                });
+                console.log('Total elements found between nav and tab:', hiddenCount);
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // ===== FUNCIONES DE GESTIÓN DE PROYECTOS =====
+        
+        // Cargar proyectos
+        async function loadProyectos() {
+            try {
+                const response = await fetch('/admin/proyectos', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                const proyectos = await response.json();
+                const tbody = document.getElementById('proyectosTable');
+                tbody.innerHTML = '';
+                
+                proyectos.forEach(proyecto => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-gray-50';
+                    
+                    const statusClass = proyecto.activo ? 'status-active' : 'status-expired';
+                    const statusText = proyecto.activo ? 'Activo' : 'Inactivo';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 font-medium">${proyecto.nombre}</td>
+                        <td class="px-4 py-2 mobile-hidden text-sm text-gray-600">${proyecto.descripcion}</td>
+                        <td class="px-4 py-2"><span class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">${proyecto.usuarios_asignados} usuarios</span></td>
+                        <td class="px-4 py-2"><span class="${statusClass}">${statusText}</span></td>
+                        <td class="px-4 py-2">
+                            <button onclick="editarProyecto('${proyecto.id}', '${proyecto.nombre}', '${proyecto.descripcion}')" class="admin-admin-btn-secondary text-xs mr-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button onclick="toggleProyecto('${proyecto.id}', ${proyecto.activo})" class="admin-admin-btn-primary text-xs">
+                                ${proyecto.activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading proyectos:', error);
+                showNotification('Error al cargar proyectos', 'error');
+            }
+        }
+        
+        // Mostrar modal nuevo proyecto
+        function showNuevoProyectoModal() {
+            const modal = document.createElement('div');
+            modal.id = 'proyectoModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-xl font-semibold mb-4">Nuevo Proyecto</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nombre del Proyecto</label>
+                            <input type="text" id="proyectoNombre" class="w-full px-3 py-2 border rounded-lg" placeholder="Ej: CRM Ventas 2026">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Descripción</label>
+                            <textarea id="proyectoDescripcion" class="w-full px-3 py-2 border rounded-lg" rows="3" placeholder="Descripción del proyecto"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button onclick="closeModal('proyectoModal')" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+                        <button onclick="crearProyecto()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Crear Proyecto</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Crear proyecto
+        async function crearProyecto() {
+            const nombre = document.getElementById('proyectoNombre').value;
+            const descripcion = document.getElementById('proyectoDescripcion').value;
+            
+            if (!nombre) {
+                showNotification('El nombre del proyecto es requerido', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/proyectos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ nombre, descripcion })
+                });
+                
+                if (response.ok) {
+                    showNotification('Proyecto creado exitosamente', 'success');
+                    closeModal('proyectoModal');
+                    loadProyectos();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Error al crear proyecto', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al crear proyecto', 'error');
+            }
+        }
+        
+        // Editar proyecto
+        function editarProyecto(id, nombre, descripcion) {
+            const modal = document.createElement('div');
+            modal.id = 'editProyectoModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-xl font-semibold mb-4">Editar Proyecto</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nombre del Proyecto</label>
+                            <input type="text" id="editProyectoNombre" value="${nombre}" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Descripción</label>
+                            <textarea id="editProyectoDescripcion" class="w-full px-3 py-2 border rounded-lg" rows="3">${descripcion}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button onclick="closeModal('editProyectoModal')" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+                        <button onclick="guardarProyecto('${id}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Guardar Cambios</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Guardar cambios de proyecto
+        async function guardarProyecto(id) {
+            const nombre = document.getElementById('editProyectoNombre').value;
+            const descripcion = document.getElementById('editProyectoDescripcion').value;
+            
+            try {
+                const response = await fetch(`/admin/proyectos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ nombre, descripcion })
+                });
+                
+                if (response.ok) {
+                    showNotification('Proyecto actualizado exitosamente', 'success');
+                    closeModal('editProyectoModal');
+                    loadProyectos();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Error al actualizar proyecto', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al actualizar proyecto', 'error');
+            }
+        }
+        
+        // Toggle estado proyecto
+        async function toggleProyecto(id, currentActive) {
+            try {
+                const response = await fetch(`/admin/proyectos/${id}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ activo: !currentActive })
+                });
+                
+                if (response.ok) {
+                    showNotification('Estado del proyecto actualizado', 'success');
+                    loadProyectos();
+                } else {
+                    showNotification('Error al cambiar estado del proyecto', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al cambiar estado del proyecto', 'error');
+            }
+        }
+        
+        // Mostrar proyectos de un usuario
+        async function showUserProyectos(userId, userEmail) {
+            try {
+                const response = await fetch(`/admin/users/${userId}/proyectos`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                let proyectosHtml = '';
+                if (data.proyectos.length === 0) {
+                    proyectosHtml = '<p class="text-gray-500 text-center py-4">No hay proyectos asignados</p>';
+                } else {
+                    proyectosHtml = '<div class="space-y-3">';
+                    data.proyectos.forEach(p => {
+                        const statusClass = p.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                        const fechaVenc = new Date(p.fecha_vencimiento).toLocaleDateString('es-ES');
+                        proyectosHtml += `
+                            <div class="border rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 class="font-semibold">${p.proyecto_nombre}</h4>
+                                        <p class="text-sm text-gray-600">${p.proyecto_descripcion}</p>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs rounded ${statusClass}">${p.estado}</span>
+                                </div>
+                                <div class="text-sm text-gray-600 mt-2">
+                                    <p><i class="fas fa-calendar"></i> Vence: ${fechaVenc} (${p.dias_restantes} días)</p>
+                                    <p><i class="fas fa-${p.proyecto_activo ? 'check-circle text-green-600' : 'times-circle text-red-600'}"></i> Proyecto: ${p.proyecto_activo ? 'Activo' : 'Inactivo'}</p>
+                                </div>
+                                <div class="mt-3 flex space-x-2">
+                                    <button onclick="editarVencimientoProyecto('${userId}', '${p.proyecto_id}', '${p.fecha_vencimiento}', '${p.proyecto_nombre}')" class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded">
+                                        <i class="fas fa-edit"></i> Cambiar Fecha
+                                    </button>
+                                    <button onclick="desvincularProyecto('${userId}', '${p.proyecto_id}', '${p.proyecto_nombre}')" class="text-xs px-3 py-1 bg-red-100 text-red-700 rounded">
+                                        <i class="fas fa-unlink"></i> Desvincular
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    proyectosHtml += '</div>';
+                }
+                
+                const modal = document.createElement('div');
+                modal.id = 'userProyectosModal';
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <h3 class="text-xl font-semibold mb-2">Proyectos de ${userEmail}</h3>
+                        <p class="text-sm text-gray-600 mb-4">Usuario ${data.usuario.is_active ? 'activo' : 'inactivo'}</p>
+                        ${proyectosHtml}
+                        <div class="mt-6 flex justify-end">
+                            <button onclick="closeModal('userProyectosModal')" class="px-4 py-2 bg-gray-200 rounded-lg">Cerrar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al cargar proyectos del usuario', 'error');
+            }
+        }
+        
+        // Mostrar modal asignar proyecto
+        async function showAsignarProyectoModal(userId, userEmail) {
+            try {
+                // Cargar lista de proyectos
+                const response = await fetch('/admin/proyectos', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                const proyectos = await response.json();
+                
+                let proyectosOptions = '';
+                proyectos.filter(p => p.activo).forEach(p => {
+                    proyectosOptions += `<option value="${p.id}">${p.nombre}</option>`;
+                });
+                
+                if (!proyectosOptions) {
+                    showNotification('No hay proyectos activos disponibles', 'error');
+                    return;
+                }
+                
+                const fechaDefecto = new Date();
+                fechaDefecto.setFullYear(fechaDefecto.getFullYear() + 1);
+                const fechaStr = fechaDefecto.toISOString().split('T')[0];
+                
+                const modal = document.createElement('div');
+                modal.id = 'asignarProyectoModal';
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-xl font-semibold mb-4">Asignar Proyecto a ${userEmail}</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Proyecto</label>
+                                <select id="asignarProyectoId" class="w-full px-3 py-2 border rounded-lg">
+                                    ${proyectosOptions}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Fecha de Vencimiento</label>
+                                <input type="date" id="asignarFechaVencimiento" value="${fechaStr}" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-2">
+                            <button onclick="closeModal('asignarProyectoModal')" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+                            <button onclick="asignarProyecto('${userId}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Asignar Proyecto</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al cargar proyectos', 'error');
+            }
+        }
+        
+        // Asignar proyecto a usuario
+        async function asignarProyecto(userId) {
+            const proyectoId = document.getElementById('asignarProyectoId').value;
+            const fechaVencimiento = document.getElementById('asignarFechaVencimiento').value;
+            
+            if (!fechaVencimiento) {
+                showNotification('La fecha de vencimiento es requerida', 'error');
+                return;
+            }
+            
+            try {
+                const fechaISO = new Date(fechaVencimiento).toISOString();
+                const response = await fetch(`/admin/users/${userId}/proyectos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({
+                        proyecto_id: proyectoId,
+                        fecha_vencimiento: fechaISO
+                    })
+                });
+                
+                if (response.ok) {
+                    showNotification('Proyecto asignado exitosamente', 'success');
+                    closeModal('asignarProyectoModal');
+                    loadUsers(currentPage);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Error al asignar proyecto', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al asignar proyecto', 'error');
+            }
+        }
+        
+        // Editar vencimiento de proyecto
+        async function editarVencimientoProyecto(userId, proyectoId, fechaActual, nombreProyecto) {
+            // Obtener la fecha del contrato activo del usuario como sugerencia
+            let fechaSugerida = new Date(fechaActual).toISOString().split('T')[0];
+            
+            try {
+                const response = await fetch('/admin/contratos', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                if (response.ok) {
+                    const contratos = await response.json();
+                    // Buscar contrato activo del usuario
+                    const contratoActivo = contratos.find(c => 
+                        c.usuario_id === userId && 
+                        (c.estado === 'activo' || c.estado === 'aprobado') &&
+                        c.fecha_fin
+                    );
+                    if (contratoActivo) {
+                        fechaSugerida = new Date(contratoActivo.fecha_fin).toISOString().split('T')[0];
+                    }
+                }
+            } catch (error) {
+                console.log('No se pudo obtener contratos, usando fecha actual');
+            }
+            
+            const modal = document.createElement('div');
+            modal.id = 'editVencimientoModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-xl font-semibold mb-4">Cambiar Fecha de Vencimiento</h3>
+                    <p class="text-sm text-gray-600 mb-4">Proyecto: <strong>${nombreProyecto}</strong></p>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nueva Fecha de Vencimiento</label>
+                        <input type="date" id="nuevaFechaVencimiento" value="${fechaSugerida}" class="w-full px-3 py-2 border rounded-lg">
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button onclick="closeModal('editVencimientoModal')" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
+                        <button onclick="guardarVencimiento('${userId}', '${proyectoId}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Guardar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Guardar nuevo vencimiento
+        async function guardarVencimiento(userId, proyectoId) {
+            const fechaVencimiento = document.getElementById('nuevaFechaVencimiento').value;
+            
+            if (!fechaVencimiento) {
+                showNotification('La fecha es requerida', 'error');
+                return;
+            }
+            
+            try {
+                const fechaISO = new Date(fechaVencimiento).toISOString();
+                const response = await fetch(`/admin/users/${userId}/proyectos/${proyectoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ fecha_vencimiento: fechaISO })
+                });
+                
+                if (response.ok) {
+                    showNotification('Fecha actualizada exitosamente', 'success');
+                    closeModal('editVencimientoModal');
+                    closeModal('userProyectosModal');
+                    loadUsers(currentPage);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Error al actualizar fecha', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al actualizar fecha', 'error');
+            }
+        }
+        
+        // Desvincular proyecto
+        async function desvincularProyecto(userId, proyectoId, nombreProyecto) {
+            if (!confirm(`¿Está seguro de desvincular el proyecto "${nombreProyecto}"?`)) return;
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}/proyectos/${proyectoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    showNotification('Proyecto desvinculado exitosamente', 'success');
+                    closeModal('userProyectosModal');
+                    loadUsers(currentPage);
+                } else {
+                    showNotification('Error al desvincular proyecto', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al desvincular proyecto', 'error');
+            }
+        }
+        
+        // Cerrar modal genérico
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.remove();
+        }
+    </script>
+</body>
+</html>

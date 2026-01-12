@@ -14,7 +14,19 @@ const indexProducts = (() => {
     // Cargar productos públicos desde la API
     async function loadProducts() {
         try {
-            const response = await fetch('/ecomerce/api/productos/publicos?limit=12');
+            // Mostrar indicador de carga
+            if (container) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        <p class="mt-2 text-gray-600">Cargando servicios...</p>
+                    </div>
+                `;
+            }
+
+            // Usar límite mayor para página de servicios
+            const limit = window.location.pathname.includes('/servicios') ? 1000 : 12;
+            const response = await fetch(`/ecomerce/api/productos/publicos?limit=${limit}`);
             
             if (!response.ok) {
                 throw new Error('Error al cargar productos');
@@ -24,8 +36,10 @@ const indexProducts = (() => {
             filteredProducts = [...allProducts];
             renderProducts();
             
-            // Cargar productos recomendados
-            loadRecommendedProducts();
+            // Cargar productos recomendados solo si existe el contenedor
+            if (recommendedContainer) {
+                loadRecommendedProducts();
+            }
             
             initializeEventListeners();
         } catch (error) {
@@ -104,19 +118,10 @@ const indexProducts = (() => {
                     
                     <div class="flex items-center justify-between">
                         <span class="text-2xl font-bold text-blue-600">$${product.precio}</span>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors add-to-cart-btn" 
-                                data-product-id="${product.id}" 
-                                data-product-name="${product.nombre}"
-                                data-price="${product.precio}">
-                            <i class="fas fa-cart-plus mr-1"></i>Agregar
-                        </button>
                     </div>
                 </div>
             </div>
         `).join('');
-
-        // Agregar event listeners a los botones de agregar al carrito
-        attachCartButtonListeners();
     }
 
     // Renderizar productos en el DOM
@@ -159,19 +164,10 @@ const indexProducts = (() => {
                     
                     <div class="flex items-center justify-between">
                         <span class="text-2xl font-bold text-blue-600">$${product.precio}</span>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors add-to-cart-btn" 
-                                data-product-id="${product.id}" 
-                                data-product-name="${product.nombre}"
-                                data-price="${product.precio}">
-                            <i class="fas fa-cart-plus mr-1"></i>Agregar
-                        </button>
                     </div>
                 </div>
             </div>
         `).join('');
-
-        // Agregar event listeners a los botones de agregar al carrito
-        attachCartButtonListeners();
     }
 
     // Filtrar productos
@@ -213,51 +209,6 @@ const indexProducts = (() => {
     }
 
     // Adjuntar listeners a botones de carrito
-    function attachCartButtonListeners() {
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.addEventListener('click', async function(e) {
-                e.preventDefault();
-                
-                const productId = this.getAttribute('data-product-id');
-                const productName = this.getAttribute('data-product-name');
-                const price = parseFloat(this.getAttribute('data-price'));
-
-                // Verificar autenticación
-                const token = localStorage.getItem('ecommerce_token');
-                if (!token) {
-                    showToast('Debes iniciar sesión para agregar productos', 'warning');
-                    setTimeout(() => {
-                        window.location.href = '/ecomerce/login';
-                    }, 1500);
-                    return;
-                }
-
-                // Animación del botón
-                const originalHTML = this.innerHTML;
-                this.disabled = true;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Agregando...';
-
-                try {
-                    // Usar la función global del carrito si está disponible
-                    if (window.cart && typeof window.cart.addProduct === 'function') {
-                        await window.cart.addProduct(productId, 1, price);
-                        showToast(`${productName} agregado al carrito`, 'success');
-                    } else {
-                        showToast('El carrito no está disponible', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showToast('Error al agregar el producto', 'error');
-                } finally {
-                    setTimeout(() => {
-                        this.innerHTML = originalHTML;
-                        this.disabled = false;
-                    }, 1500);
-                }
-            });
-        });
-    }
-
     // Mostrar mensaje de error
     function showErrorMessage(message) {
         if (container) {

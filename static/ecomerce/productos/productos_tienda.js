@@ -14,7 +14,7 @@ function updatePriceFilter() {
         document.getElementById('price-display-min').textContent = minVal.toLocaleString('es-ES');
         document.getElementById('price-display-max').textContent = maxVal.toLocaleString('es-ES');
         
-        // Filtrar productos
+        // Filtrar servicios
         filterProducts();
     }
 }
@@ -50,7 +50,7 @@ function clearPriceFilter() {
     filterProducts();
 }
 /**
- * JavaScript para la tienda pública de productos
+ * JavaScript para la tienda pública de servicios
  */
 
 // Variables globales
@@ -184,7 +184,7 @@ async function loadCategories() {
 }
 
 /**
- * Carga los productos desde el servidor
+ * Carga los servicios desde el servidor
  */
 async function loadProducts() {
     try {
@@ -199,7 +199,7 @@ async function loadProducts() {
         // Verificar si la respuesta es un array
         if (!Array.isArray(data)) {
             console.error("La respuesta no es un array:", data);
-            showToast('Error al cargar los productos. La respuesta no tiene el formato esperado.', 'error');
+            showToast('Error al cargar los servicios. La respuesta no tiene el formato esperado.', 'error');
             return;
         }
 
@@ -210,7 +210,7 @@ async function loadProducts() {
         updateProductsGrid(data);
         updateRecordCount(data.length);
 
-        // Si hay filtros activos, reaplicar después de cargar productos
+        // Si hay filtros activos, reaplicar después de cargar servicios
         const searchInput = document.getElementById('search-input');
         const categorySelect = document.getElementById('category-select');
 
@@ -221,16 +221,16 @@ async function loadProducts() {
             filterProducts();
         }
 
-        if (window.log) window.log('Productos cargados exitosamente: ' + data.length);
+        if (window.log) window.log('Servicios cargados exitosamente: ' + data.length);
     } catch (error) {
-        console.error("Error al cargar productos:", error);
-        showToast('Error al cargar los productos: ' + error.message, 'error');
+        console.error("Error al cargar servicios:", error);
+        showToast('Error al cargar los servicios: ' + error.message, 'error');
 
         const grid = document.getElementById('products-container');
         if (grid) {
             grid.innerHTML = '<div class="col-span-full text-center py-12">' +
                 '<i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>' +
-                '<p class="text-red-500 text-lg">Error al cargar productos. Intente recargar la página.</p>' +
+                '<p class="text-red-500 text-lg">Error al cargar servicios. Intente recargar la página.</p>' +
                 '</div>';
         }
     }
@@ -293,13 +293,13 @@ function updateRecordCount(count) {
     const counter = document.getElementById('record-count');
     if (counter) {
         counter.textContent = count === 1
-            ? '1 producto disponible'
-            : count + ' productos disponibles';
+            ? '1 servicio disponible'
+            : count + ' servicios disponibles';
     }
 }
 
 /**
- * Filtra los productos según búsqueda y categoría
+ * Filtra los servicios según búsqueda y categoría
  */
 function filterProducts() {
     const searchInput = document.getElementById('search-input');
@@ -427,11 +427,11 @@ function filterProducts() {
     updateRecordCount(filteredData.length);
     updateCategoryDescription(selectedCategory, filteredData.length, allData.length);
 
-    if (window.log) window.log('Productos filtrados: ' + filteredData.length + ' de ' + allData.length);
+    if (window.log) window.log('Servicios filtrados: ' + filteredData.length + ' de ' + allData.length);
 }
 
 /**
- * Actualiza el grid con los productos proporcionados
+ * Actualiza el grid con los servicios proporcionados
  */
 function updateProductsGrid(data) {
     const grid = document.getElementById('products-container');
@@ -450,7 +450,7 @@ function updateProductsGrid(data) {
         } else {
             grid.innerHTML = '<div class="col-span-full empty-state">' +
                 '<i class="fas fa-box-open empty-icon"></i>' +
-                '<p class="text-lg">No se encontraron productos disponibles</p>' +
+                '<p class="text-lg">No se encontraron servicios disponibles</p>' +
                 '</div>';
         }
         return;
@@ -504,26 +504,31 @@ function updateProductsGrid(data) {
         const escapedDescripcion = (item.descripcion || 'Sin descripción').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         const escapedCodigo = (item.codigo || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        card.innerHTML = '<a href="/ecomerce/productos/' + item.id + '" class="product-image-container relative block">' +
-            '<img src="' + imageUrl + '" alt="' + escapedNombre + '" class="product-image" onerror="this.onerror=null; this.src=\'/static/img/logo.png\'">' +
-            '</a>' +
-            '<button class="wishlist-btn absolute top-3 right-3 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-600 hover:text-red-500 p-2 rounded-full shadow-lg transition-all duration-200 z-10" data-product-id="' + item.id + '" title="Agregar a favoritos">' +
-            '<i class="fas fa-heart text-xl"></i>' +
+        card.innerHTML = '<div class="product-image-container relative block group overflow-hidden">' +
+            '<img src="' + imageUrl + '" alt="' + escapedNombre + '" class="product-image w-full h-72 object-cover transition-transform duration-700 ease-out group-hover:scale-110" onerror="this.onerror=null; this.src=\'/static/img/logo.png\'">' +
+            '<div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>' +
+            '<div class="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">NUEVO</div>' +
+            '<button class="wishlist-btn absolute top-4 right-4 bg-white/95 hover:bg-white text-gray-600 hover:text-red-500 p-3 rounded-full shadow-xl transition-all duration-300 z-10 transform translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100" data-product-id="' + item.id + '" title="Agregar a favoritos">' +
+            '<i class="fas fa-heart text-lg"></i>' +
             '</button>' +
-            '<div class="product-info">' +
-            '<h3 class="product-title">' + escapedNombre + '</h3>' +
-            '<p class="product-description">' + escapedDescripcion + '</p>' +
-            '<div class="product-price-container">' +
-            priceDisplay +
             '</div>' +
-            '<div class="product-code">Código: ' + escapedCodigo + '</div>' +
+            '<div class="product-info p-6 bg-white">' +
+            '<h3 class="product-title text-xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight hover:text-blue-600 transition-colors">' + escapedNombre + '</h3>' +
+            '<p class="product-description text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">' + escapedDescripcion + '</p>' +
+            '<div class="product-price-container mb-4">' +
+            '<div class="flex items-center gap-2">' +
+            priceDisplay +
+            '<span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">ARS</span>' +
+            '</div>' +
+            '</div>' +
+            '<div class="product-code text-xs text-gray-500 font-medium mb-5 bg-blue-50 px-3 py-2 rounded-lg inline-block border border-blue-100">Código: <span class="font-mono text-blue-600">' + escapedCodigo + '</span></div>' +
             variantsHtml +
-            '<div class="product-actions">' +
-            '<button class="btn-primary product-btn" data-action="view" data-product-id="' + item.id + '">' +
-            '<i class="fas fa-eye mr-1"></i> Ver Detalles' +
+            '<div class="product-actions grid grid-cols-1 gap-3">' +
+            '<button class="btn-primary product-btn flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 border-transparent hover:border-blue-200" data-action="view" data-product-id="' + item.id + '">' +
+            '<i class="fas fa-eye text-sm"></i> <span>Ver Detalles</span>' +
             '</button>' +
-            '<button class="btn-primary product-btn" data-action="add-to-cart" data-product-id="' + escapedCodigo + '" data-price="' + basePrice + '" data-has-variants="' + hasVariants + '">' +
-            '<i class="fas fa-cart-plus mr-1"></i> Agregar al Carrito' +
+            '<button class="btn-secondary product-btn flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105" data-action="add-to-cart" data-product-id="' + escapedCodigo + '" data-price="' + basePrice + '" data-has-variants="' + hasVariants + '">' +
+            '<i class="fas fa-cart-plus text-sm"></i> <span>Agregar al Carrito</span>' +
             '</button>' +
             '</div>' +
             '</div>';
@@ -534,12 +539,12 @@ function updateProductsGrid(data) {
     // Agregar event listeners para variantes después de crear las cards
     setupVariantListeners();
     
-    // Cargar estados de wishlist para todos los productos visibles
+    // Cargar estados de wishlist para todos los servicios visibles
     loadWishlistStates();
 }
 
 /**
- * Carga los estados de wishlist para todos los productos visibles
+ * Carga los estados de wishlist para todos los servicios visibles
  * Optimizado: hace una sola llamada para obtener toda la lista
  */
 async function loadWishlistStates() {
@@ -751,13 +756,13 @@ function updateCategoryDescription(selectedCategoryId, filteredCount, totalCount
 
     // Actualizar contenido
     title.textContent = category.nombre;
-    description.textContent = category.descripcion || 'Descubre nuestros productos de esta categoría.';
+    description.textContent = category.descripcion || 'Descubre nuestros servicios de esta categoría.';
 
     // Actualizar contador
     if (filteredCount !== totalCount) {
-        count.textContent = `Mostrando ${filteredCount} de ${totalCount} productos`;
+        count.textContent = `Mostrando ${filteredCount} de ${totalCount} servicios`;
     } else {
-        count.textContent = `Mostrando ${totalCount} productos`;
+        count.textContent = `Mostrando ${totalCount} servicios`;
     }
 
     // Construir ruta de imagen basada en el nombre de la categoría
@@ -874,10 +879,10 @@ function updateProductPrice(productCard) {
 }
 
 /**
- * Configura los event listeners para los botones de productos
+ * Configura los event listeners para los botones de servicios
  */
 function setupProductButtonListeners() {
-    // Usar event delegation para los botones de productos
+    // Usar event delegation para los botones de servicios
     document.addEventListener('click', function(e) {
         const button = e.target.closest('.product-btn');
         if (button) {
@@ -957,7 +962,7 @@ function handleAddToCart(button) {
     }
 }
 
-// Inicializar event listeners para botones de productos al cargar la página
+// Inicializar event listeners para botones de servicios al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     setupProductButtonListeners();
     

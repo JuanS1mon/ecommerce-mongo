@@ -29,6 +29,8 @@ class TokenData:
 # Local password verification function
 from passlib.context import CryptContext
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 def verificar_clave(password: str, hashed_password: str) -> bool:
     """Verifica contraseña contra su hash"""
     if not password or not hashed_password:
@@ -156,22 +158,39 @@ async def get_current_user(
     token_data = verify_token(token)
     
     # Buscar usuario en base de datos usando Beanie
-    from Projects.ecomerce.models.usuarios import EcomerceUsuarios  # Lazy import
-    user = await EcomerceUsuarios.find_one(EcomerceUsuarios.email == token_data.username)
+    from models.models_beanie import Usuario  # Lazy import
+    from bson import ObjectId
+    
+    try:
+        # Intentar buscar por ID primero (el token contiene el ID en 'sub')
+        user_id = ObjectId(token_data.username)
+        user = await Usuario.get(user_id)
+        logger.debug(f"Usuario encontrado por ID: {token_data.username}")
+    except Exception as e:
+        logger.debug(f"No encontrado por ID ({e}), buscando por email: {token_data.username}")
+        # Si no se encuentra por ID, intentar por email (compatibilidad hacia atrás)
+        user = await Usuario.find_one(Usuario.email == token_data.username)
     
     if not user:
         logger.warning(f"Usuario no encontrado en BD: {token_data.username}")
         raise JWTAuthError("Usuario no encontrado")
     
-    if not user.activo:
+    if not user.is_active:
         logger.warning(f"Usuario inactivo intentó acceder: {token_data.username}")
         raise JWTAuthError("Usuario inactivo")
     
-    # Los roles ya están en el documento del usuario
-    user.roles = [user.rol] if user.rol else []
+    # Devolver información del usuario como diccionario
+    user_info = {
+        "user_id": str(user.id),
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "roles": [user.role] if user.role else [],
+        "is_active": user.is_active
+    }
     
-    logger.debug(f"Usuario autenticado: {user.email} con roles: {user.roles}")
-    return user
+    logger.debug(f"Usuario autenticado: {user.email} con roles: {user_info['roles']}")
+    return user_info
 
 async def get_optional_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
@@ -236,8 +255,18 @@ async def get_current_admin_user(
     token_data = verify_token(token)
     
     # Buscar usuario en colección de admins usando Beanie
-    from Projects.Admin.models.admin_usuarios_beanie import AdminUsuarios  # Lazy import
-    user = await AdminUsuarios.find_one(AdminUsuarios.usuario == token_data.username)
+    from models.models_beanie import AdminUsuarios  # Lazy import
+    from bson import ObjectId
+    
+    try:
+        # Intentar buscar por ID primero (el token contiene el ID en 'sub')
+        user_id = ObjectId(token_data.username)
+        user = await AdminUsuarios.get(user_id)
+        logger.debug(f"Admin encontrado por ID: {token_data.username}")
+    except Exception as e:
+        logger.debug(f"No encontrado por ID ({e}), buscando por usuario: {token_data.username}")
+        # Si no se encuentra por ID, intentar por usuario (compatibilidad hacia atrás)
+        user = await AdminUsuarios.find_one(AdminUsuarios.usuario == token_data.username)
     
     if not user:
         logger.warning(f"Admin no encontrado en BD: {token_data.username}")
@@ -275,36 +304,34 @@ def require_role(required_role: str):
         Función dependency que verifica el rol
     """
     def check_role(current_user: Any = Depends(get_current_user)) -> Any:
-        if not current_user.roles or required_role.lower() not in current_user.roles:
+        if not current_user.get("roles") or required_role.lower() not in current_user.get("roles"):
             logger.warning(
-                f"Usuario {current_user.email} intentó acceder sin rol {required_role}. "
-                f"Roles actuales: {current_user.roles}"
+                f"Usuario {current_user.get('email')} intentó acceder sin rol {required_role}. "
+                f"Roles actuales: {current_user.get('roles')}"
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Rol '{required_role}' requerido"
             )
         
-        logger.debug(f"Acceso autorizado para {current_user.usuario} con rol {required_role}")
+        logger.debug(f"Acceso autorizado para {current_user.get('username')} con rol {required_role}")
         return current_user
     
     return check_role
 
-def require_admin(current_user: Any = Depends(get_current_user)) -> Any:
+def require_admin(current_user: Any = Depends(get_current_admin_user)) -> Any:
     """
     Dependency específico para requerir rol de administrador
+    Busca en la colección admin_usuarios
     """
-    if not current_user.roles or "admin" not in current_user.roles:
-        logger.warning(
-            f"Usuario {current_user.email} intentó acceder al panel de admin. "
-            f"Roles actuales: {current_user.roles}"
-        )
+    if not current_user or not current_user.activo:
+        logger.warning("Usuario admin inactivo o no encontrado")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Acceso de administrador requerido"
         )
     
-    logger.debug(f"Acceso de admin autorizado para {current_user.email}")
+    logger.debug(f"Acceso de admin autorizado para {current_user.usuario}")
     return current_user
 
 async def authenticate_user_jwt(username: str, password: str) -> Optional[dict]:
@@ -328,24 +355,24 @@ async def authenticate_user_jwt(username: str, password: str) -> Optional[dict]:
         logger.debug(f"  Password repr: {repr(password) if password else 'None'}")
         
         # Buscar usuario usando Beanie
-        from Projects.ecomerce.models.usuarios import EcomerceUsuarios  # Lazy import
-        user = await EcomerceUsuarios.find_one(EcomerceUsuarios.email == username)
+        from models.models_beanie import Usuario  # Lazy import
+        user = await Usuario.find_one(Usuario.email == username)
         
         if not user:
             logger.warning(f"❌ Intento de login con usuario inexistente: {username}")
             return None
             
         logger.debug(f"✅ Usuario encontrado en BD: {user.email}")
-        logger.debug(f"  Usuario activo: {user.activo}")
-        logger.debug(f"  Hash en BD: {user.contraseña_hash[:20]}... (longitud: {len(user.contraseña_hash) if user.contraseña_hash else 0})")
+        logger.debug(f"  Usuario activo: {user.is_active}")
+        logger.debug(f"  Hash en BD: {user.hashed_password[:20]}... (longitud: {len(user.hashed_password) if user.hashed_password else 0})")
 
-        if not user.activo:
+        if not user.is_active:
             logger.warning(f"❌ Intento de login con usuario inactivo: {username}")
             return None
         
         # Verificar contraseña
         logger.debug(f"🔑 Verificando contraseña...")
-        password_valid = verificar_clave(password, user.contraseña_hash)
+        password_valid = verificar_clave(password, user.hashed_password)
         logger.debug(f"🔑 Resultado verificación: {password_valid}")
         
         if not password_valid:
