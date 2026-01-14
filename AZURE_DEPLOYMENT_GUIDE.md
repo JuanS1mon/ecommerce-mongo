@@ -17,7 +17,7 @@ gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 main:app
 
 ### 4. Variables de Entorno Configuradas
 Las siguientes variables están configuradas correctamente:
-- ✅ DB_NAME=db_ecomerce
+- ✅ DB_NAME=db_sysne
 - ✅ ENVIRONMENT=production
 - ✅ SECRET_KEY=ed53d0e9d819395d703d9f6236cab23338c5bf8d82b64cfd8d62e13d18bcf179
 - ✅ FRONTEND_URL=https://ecommerce-mongo-h3gxh7cjfzgme2g9.westus2-01.azurewebsites.net
@@ -146,7 +146,7 @@ He añadido un archivo de comprobación muy simple `main2.py` que:
 1. Asegúrate de tener `MONGO_URL` y `DB_NAME` exportados en tu entorno (igual que en Azure):
 ```powershell
 $env:MONGO_URL = "<tu-connection-string>"
-$env:DB_NAME = "db_ecomerce"
+$env:DB_NAME = "db_sysne"
 ```
 2. Ejecuta la app:
 ```powershell

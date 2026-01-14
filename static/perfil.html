@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - Tienda Online</title>
+    <title>Mi Perfil - Servicios Profesionales</title>
     <script src="/static/tailwind.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -71,7 +71,7 @@
                 <div class="flex items-center space-x-4">
                     <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
                         <img alt="Logo" class="h-10 sm:h-11 md:h-12 w-auto transition-all duration-300" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
-                        <span class="font-bold text-lg hidden sm:inline">Tienda Online</span>
+                        <span class="font-bold text-lg hidden sm:inline">Servicios Profesionales</span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -79,7 +79,7 @@
                         <i class="fas fa-home"></i>
                         <span class="hidden sm:inline text-sm">Inicio</span>
                     </a>
-                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
+                    <a href="/ecomerce/servicios/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-1">
                         <i class="fas fa-store"></i>
                         <span class="hidden sm:inline text-sm">Tienda</span>
                     </a>
@@ -265,8 +265,8 @@
             <div id="empty-state" class="hidden empty-state bg-white rounded-lg shadow-sm">
                 <i class="fas fa-heart-broken empty-icon"></i>
                 <h2 class="text-xl font-semibold text-gray-700 mb-2">Tu lista de deseos está vacía</h2>
-                <p class="text-gray-500 mb-6">Explora nuestra tienda y agrega tus productos favoritos</p>
-                <a href="/ecomerce/productos/tienda" class="btn-primary inline-flex items-center">
+                <p class="text-gray-500 mb-6">Explora nuestra tienda y agrega tus servicios favoritos</p>
+                <a href="/ecomerce/servicios/tienda" class="btn-primary inline-flex items-center">
                     <i class="fas fa-store mr-2"></i>
                     Ir a la Tienda
                 </a>
@@ -311,7 +311,7 @@
             <div id="empty-cart" class="hidden text-center py-12">
                 <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
                 <p class="text-gray-500 text-lg">Tu carrito está vacío</p>
-                <a href="/ecomerce/productos/tienda" class="inline-block mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <a href="/ecomerce/servicios/tienda" class="inline-block mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                     <i class="fas fa-store mr-2"></i>
                     Ir a la Tienda
                 </a>
@@ -351,7 +351,7 @@
     <footer class="bg-gray-900 text-white py-8 mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
-                <p>&copy; 2025 Tienda Online. Todos los derechos reservados.</p>
+                <p>&copy; 2025 Servicios Profesionales. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
@@ -684,7 +684,7 @@
                                 <i class="fas fa-cart-plus mr-1"></i>
                                 Agregar al Carrito
                             </button>
-                            <a href="/ecomerce/productos/${product.id}" class="flex items-center justify-center px-3 py-2 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">
+                            <a href="/ecomerce/servicios/${product.id}" class="flex items-center justify-center px-3 py-2 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors">
                                 <i class="fas fa-eye"></i>
                             </a>
                         </div>
@@ -835,7 +835,6 @@
 
     <!-- Scripts externos -->
     <script src="/static/ecomerce/auth.js"></script>
-    <script src="/static/ecomerce/carrito.js"></script>
     <script src="/static/config.js"></script>
 </body>
 </html>

@@ -18,6 +18,7 @@ from pydantic import Field, EmailStr
 from datetime import datetime
 from typing import Optional, Any
 from passlib.context import CryptContext
+from models.models_beanie import Configuracion, Usuario
 
 # Configurar bcrypt localmente para evitar imports problemáticos
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
@@ -65,28 +66,26 @@ async def init_admin_user():
     """Crea el usuario admin inicial"""
     print("🔐 Creando usuario admin...")
     
-    # Verificar si ya existe
-    existing_user = await AdminUsuarios.find_one(AdminUsuarios.usuario == "juan")
+    # Verificar si ya existe en AdminUsuarios
+    existing_user = await AdminUsuarios.find_one(AdminUsuarios.mail == "juan@admin.com")
     if existing_user:
-        print("⚠️  Usuario 'juan' ya existe. Saltando creación.")
+        print("⚠️  Usuario admin ya existe. Saltando creación.")
         return existing_user
     
     # Hashear contraseña
     password_hash = encriptar_clave("qwe123")
     
-    # Crear usuario admin
+    # Crear usuario admin en AdminUsuarios
     admin_user = AdminUsuarios(
         usuario="juan",
-        nombre="Juan Administrador",
+        nombre="Juan Admin",
         mail="juan@admin.com",
         clave_hash=password_hash,
-        activo=True,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        activo=True
     )
     
     await admin_user.insert()
-    print(f"✅ Usuario admin creado: {admin_user.usuario} (ID: {admin_user.id})")
+    print("✅ Usuario admin creado: juan@admin.com / qwe123")
     return admin_user
 
 
@@ -150,6 +149,34 @@ async def init_configurations():
             "modificable": True
         },
         {
+            "clave": "index_sections",
+            "valor": """{
+                "hero": {
+                    "titulo": "Transformamos datos en decisiones inteligentes",
+                    "subtitulo": "Consultoría IA, ecommerce inteligente, desarrollo web",
+                    "contenido": "Ofrecemos soluciones tecnológicas avanzadas para potenciar tu negocio con inteligencia artificial y desarrollo web profesional.",
+                    "imagen": "/static/img/logo.png",
+                    "buttonText": "🚀 Descubre nuestros servicios",
+                    "buttonLink": "#servicios",
+                    "showButton": true
+                },
+                "servicios": {
+                    "titulo": "Nuestros Servicios",
+                    "subtitulo": "Ofrecemos soluciones tecnológicas avanzadas",
+                    "contenido": "Transformamos tu negocio con las últimas tecnologías",
+                    "imagen": null,
+                    "buttonText": "Solicitar Presupuesto",
+                    "buttonLink": "/presupuestos",
+                    "showButton": true
+                }
+            }""",
+            "descripcion": "Secciones dinámicas de la página principal",
+            "tipo": "json",
+            "categoria": "frontend",
+            "es_publica": True,
+            "modificable": True
+        },
+        {
             "clave": "envio_gratis_desde",
             "valor": 50000,
             "descripcion": "Monto mínimo para envío gratis",
@@ -172,8 +199,8 @@ async def init_configurations():
     created_count = 0
     for config_data in configuraciones_default:
         # Verificar si ya existe
-        existing = await EcomerceConfiguracion.find_one(
-            EcomerceConfiguracion.clave == config_data["clave"]
+        existing = await Configuracion.find_one(
+            Configuracion.key == config_data["clave"]
         )
         
         if existing:
@@ -181,16 +208,44 @@ async def init_configurations():
             continue
         
         # Crear configuración
-        config = EcomerceConfiguracion(
-            **config_data,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+        config = Configuracion(
+            key=config_data["clave"],
+            value=str(config_data["valor"])
         )
         await config.insert()
         created_count += 1
-        print(f"✅ Configuración creada: {config.clave} = {config.valor}")
+        print(f"✅ Configuración creada: {config.key} = {config.value}")
     
     print(f"\n✅ {created_count} configuraciones creadas.")
+
+
+async def init_contract_configurations():
+    """Inicializa configuraciones del contrato"""
+    print("\n📄 Inicializando configuraciones del contrato...")
+    
+    contract_configs = [
+        ('proveedor_razon_social', 'SysNeg S.A.'),
+        ('proveedor_cuit', '30-XXXXXXXX-9'),
+        ('proveedor_domicilio', 'Ciudad Autónoma de Buenos Aires, Argentina'),
+        ('moneda', 'ARS'),
+        ('periodicidad', 'mensual'),
+        ('dias_vencimiento', '30'),
+        ('dias_preaviso', '30'),
+        ('dias_retencion', '30')
+    ]
+    
+    created_count = 0
+    for key, value in contract_configs:
+        existing = await Configuracion.find_one(Configuracion.key == key)
+        if not existing:
+            config = Configuracion(key=key, value=value)
+            await config.insert()
+            created_count += 1
+            print(f"   ✅ Creada: {key} = {value}")
+        else:
+            print(f"   ⏭️  Ya existe: {key}")
+    
+    print(f"\n✅ {created_count} configuraciones del contrato inicializadas.")
 
 
 async def main():
@@ -204,7 +259,7 @@ async def main():
     load_dotenv()
     
     MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-    DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
+    DB_NAME = os.getenv("DB_NAME", "db_sysne")
     
     print(f"\n📡 Conectando a MongoDB...")
     print(f"   URL: {MONGO_URL}")
@@ -217,7 +272,7 @@ async def main():
     # Inicializar Beanie
     await init_beanie(
         database=database,
-        document_models=[AdminUsuarios, EcomerceConfiguracion]
+        document_models=[Usuario, Configuracion, AdminUsuarios]
     )
     
     print("✅ Conexión establecida\n")
@@ -228,11 +283,14 @@ async def main():
     # Crear configuraciones
     await init_configurations()
     
+    # Crear configuraciones del contrato
+    await init_contract_configurations()
+    
     print("\n" + "=" * 60)
     print("✅ INICIALIZACIÓN COMPLETADA")
     print("=" * 60)
     print("\n📋 Credenciales del admin:")
-    print("   Usuario: juan")
+    print("   Email: juan@admin.com")
     print("   Contraseña: qwe123")
     print("\n🌐 Acceso al panel: http://localhost:8000/admin/login")
     print("=" * 60)

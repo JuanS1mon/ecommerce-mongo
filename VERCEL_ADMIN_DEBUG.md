@@ -11,7 +11,7 @@
 
    ```
    MONGO_URL=mongodb+srv://dbadmin:Pantone123@ecommerce-db.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000
-   DB_NAME=db_ecomerce
+   DB_NAME=db_sysne
    ENVIRONMENT=production
    SECRET_KEY=tu_clave_secreta_aqui
    VERCEL=1

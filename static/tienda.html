@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Servicios profesionales de consultoría y automatización para empresas, transformación digital y optimización de procesos">
+    <meta name="keywords" content="consultoria, automatizacion, transformacion digital, servicios empresariales, Sysne">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Sysne">
+    <link rel="canonical" href="https://sysne.ar/ecomerce/servicios/tienda">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Servicios de Consultoría y Automatización - Sysne">
+    <meta property="og:description" content="Servicios profesionales de consultoría y automatización para empresas, transformación digital y optimización de procesos">
+    <meta property="og:image" content="/static/img/logo.png">
+    <meta property="og:url" content="https://sysne.ar/ecomerce/servicios/tienda">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Servicios de Consultoría y Automatización - Sysne">
+    <meta name="twitter:description" content="Servicios profesionales de consultoría y automatización para empresas, transformación digital y optimización de procesos">
+    <meta name="twitter:image" content="/static/img/logo.png">
+    <title>Servicios de Consultoría y Automatización - Sysne</title>
+    <script src="/static/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/static/config.js"></script>
+    <style>
+        :root {
+            --ecommerce-blue: #00bfff;
+            --ecommerce-dark: #1a1a1a;
+            --ecommerce-gray: #f8f9fa;
+            --ecommerce-light: #ffffff;
+            --ecommerce-text: #333333;
+            --ecommerce-text-light: #666666;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--ecommerce-gray);
+            color: var(--ecommerce-text);
+            line-height: 1.6;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
+        }
+        .product-card {
+            background: var(--ecommerce-light);
+            border-radius: 20px;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.08),
+                0 1px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        .product-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow:
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 10px 25px rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 191, 255, 0.2);
+        }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--ecommerce-blue), #0099cc, #00bfff);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .product-card:hover::before {
+            opacity: 1;
+        }
+        .product-image-container {
+            position: relative;
+            overflow: hidden;
+            height: 280px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover .product-image {
+            transform: scale(1.08);
+        }
+        .product-info {
+            padding: 24px;
+            background: white;
+        }
+        .product-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--ecommerce-text);
+            margin-bottom: 8px;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-description {
+            color: var(--ecommerce-text-light);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-price-container {
+            margin-bottom: 12px;
+        }
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--ecommerce-blue);
+            display: inline-block;
+        }
+        .product-code {
+            font-size: 0.8rem;
+            color: var(--ecommerce-text-light);
+            font-weight: 500;
+            margin-bottom: 20px;
+            background: rgba(0, 191, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+        }
+        .product-actions .btn-primary {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .product-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 191, 255, 0.3);
+        }
+        .wishlist-btn {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .wishlist-btn:hover {
+            transform: scale(1.1);
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .group:hover .group-hover\:opacity-100 {
+            opacity: 1;
+        }
+        .group:hover .group-hover\:translate-y-0 {
+            transform: translateY(0);
+        }
+        .group:hover .group-hover\:scale-110 {
+            transform: scale(1.1);
+        }
+        .group:hover .group-hover\:bg-opacity-10 {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        /* Responsive grid */
+        @media (max-width: 640px) {
+            .product-card {
+                margin-bottom: 1rem;
+            }
+            .product-info {
+                padding: 1rem;
+            }
+            .product-title {
+                font-size: 1.1rem;
+            }
+            .product-price {
+                font-size: 1.3rem;
+            }
+        }
+        /* Badge styles */
+        .badge-new {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+        /* Enhanced button styles */
+        .product-actions .btn-primary {
+            position: relative;
+            overflow: hidden;
+        }
+        .product-actions .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .product-actions .btn-primary:hover::before {
+            left: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img src="/static/img/logo.png" alt="Sysne Logo" class="h-8 w-8">
+                        <span class="text-xl font-bold text-gray-900">Sysne</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-gray-700 hover:text-blue-600 transition-colors">Inicio</a>
+                    <a href="/ecomerce/servicios/tienda" class="text-blue-600 font-semibold">Servicios</a>
+                    <a href="#contacto" class="text-gray-700 hover:text-blue-600 transition-colors">Contacto</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="cart-button" class="relative p-2 text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <span id="cart-counter" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                    <a href="/login" class="btn-secondary">Iniciar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                <i class="fas fa-cogs mr-4"></i>Servicios Profesionales
+            </h1>
+            <p class="text-xl mb-8 text-blue-100 max-w-3xl mx-auto">
+                Descubre nuestros servicios de consultoría y automatización para transformar tu empresa con soluciones innovadoras y eficientes
+            </p>
+        </div>
+    </section>
+
+    <!-- Search and Filter Bar -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8 mx-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-search mr-2"></i>Buscar servicios
+                </label>
+                <input type="text"
+                       id="products-search-input"
+                       placeholder="Busca por nombre, descripción o código..."
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-filter mr-2"></i>Categoría
+                </label>
+                <select id="products-category-filter"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                    <option value="">Todas las categorías</option>
+                    <!-- Las opciones se cargarán dinámicamente -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="products-container">
+            <!-- Los servicios se cargarán dinámicamente aquí -->
+            <div class="col-span-full text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p class="mt-2 text-gray-600">Cargando servicios...</p>
+            </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-12" id="load-more-container" style="display: none;">
+            <button id="load-more-btn" class="btn-primary">
+                <i class="fas fa-plus mr-2"></i>Cargar Más Servicios
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo y descripción -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <img src="/static/img/logo.png" alt="Sysne Logo" class="h-10 w-10 mr-3">
+                        <span class="text-2xl font-bold">Sysne</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">
+                        Transformamos datos en decisiones inteligentes con servicios tecnológicos avanzados.
+                        Consultoría IA, ecommerce inteligente, desarrollo web.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Enlaces rápidos -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-300 hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="/ecomerce/servicios/tienda" class="text-gray-300 hover:text-white transition-colors">Servicios</a></li>
+                        <li><a href="#contacto" class="text-gray-300 hover:text-white transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contacto -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <a href="mailto:info@Sysne.com" class="hover:text-white transition-colors">info@Sysne.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <a href="tel:+1234567890" class="hover:text-white transition-colors">+1 (234) 567-890</a>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mr-2 mt-1"></i>
+                            <span>Tu Ciudad, País</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Línea divisoria -->
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        © 2024 Sysne. Todos los derechos reservados.
+                    </p>
+                    <div class="flex space-x-6 mt-4 md:mt-0">
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Política de Privacidad</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Términos de Servicio</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors">Política de Cookies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/ecomerce/productos/productos_tienda.js"></script>
+    <script src="/static/ecomerce/auth.js"></script>
+
+    <script>
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Tienda page loaded');
+            // Initialize cart counter
+            updateCartCounter();
+        });
+    </script>
+
+</body>
+</html>

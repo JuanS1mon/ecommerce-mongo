@@ -9,6 +9,15 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# =============================
+# CONSTANTES DE LA EMPRESA
+# =============================
+COMPANY_NAME = os.getenv("COMPANY_NAME", "Sysne")
+COMPANY_EMAIL = os.getenv("COMPANY_EMAIL", "info@sysne.ar")
+COMPANY_DOMAIN = os.getenv("COMPANY_DOMAIN", "sysne.ar")
+COMPANY_DESCRIPTION = os.getenv("COMPANY_DESCRIPTION", "Transformamos datos en decisiones inteligentes con servicios tecnológicos avanzados")
+COMPANY_TAGLINE = os.getenv("COMPANY_TAGLINE", "Consultoría IA, ecommerce inteligente, desarrollo web")
+
 # Environment
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 PROJECT_NAME = os.getenv("PROJECT_NAME", "Ecommerce Admin")
@@ -29,9 +38,6 @@ ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     FRONTEND_URL,
-    "https://ecommerce-mongo.azurewebsites.net",  # Azure App Service
-    "https://ecommerce-mongo.vercel.app",  # Vercel deployment
-    "https://ecommerce-mongo-git-main.vercel.app",  # Vercel preview deployments
 ]
 
 # Detect Vercel environment
@@ -48,7 +54,7 @@ STATIC_DIR = "static"
 # Para Azure Cosmos DB, obtén la cadena de conexión desde Azure Portal > Connection String
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 MONGODB_URL = os.getenv("MONGODB_URL", MONGO_URL)  # Para compatibilidad
-DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
+DB_NAME = os.getenv("DB_NAME", "db_sysne")
 
 # JWT Secret
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
@@ -62,9 +68,9 @@ SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
 # Azure Search
-AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
-AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_KEY")
-AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME", "ecommerce-index")
+# AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
+# AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_KEY")
+# AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME", "ecommerce-index")
 
 # Company Information (for quotes/invoices)
 COMPANY_NAME = os.getenv("COMPANY_NAME", "Mi Empresa")

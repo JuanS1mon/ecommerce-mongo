@@ -7,7 +7,7 @@ function createProductCard(product) {
     : 'Sin descripción';
   
   // Crear alt text descriptivo para SEO
-  const altText = `${product.nombre} - ${description} - ${price} - Tienda Online`;
+  const altText = `${product.nombre} - ${description} - ${price} - Servicios Profesionales`;
   
   return `
     <div class="product-card bg-white rounded-lg overflow-hidden cursor-pointer" onclick="goToProduct('${product.id}')" itemscope itemtype="https://schema.org/Product">

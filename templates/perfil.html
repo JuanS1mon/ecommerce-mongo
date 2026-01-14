@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Servicios Profesionales</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <!-- Config -->
+    <script src="/static/config.js"></script>
+    <script src="/static/ecomerce/auth.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-slate-900 shadow-lg border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg text-white">Servicios Profesionales</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="/servicios" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-store"></i>
+                        <span>Servicios</span>
+                    </a>
+                    <span class="text-blue-400 flex items-center space-x-2 font-semibold">
+                        <i class="fas fa-user"></i>
+                        <span>Mi Perfil</span>
+                    </span>
+                    <button id="logout-btn" class="text-slate-300 hover:text-red-400 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                <h1 class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-user-circle mr-3"></i>
+                    Mi Perfil
+                </h1>
+                <p class="text-blue-100 mt-1">Gestiona tu cuenta y contratos</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                <!-- User Info Section -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-id-card mr-2 text-blue-400"></i>
+                        Información Personal
+                    </h2>
+                    <div class="bg-slate-700 rounded-lg p-4 border border-slate-600">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
+                                <p id="user-name" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500">
+                                    Cargando...
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                                <p id="user-email" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500">
+                                    Cargando...
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">Tipo de Usuario</label>
+                                <p id="user-type" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500">
+                                    Cargando...
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">ID de Usuario</label>
+                                <p id="user-id" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500 font-mono text-sm">
+                                    Cargando...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contracts Section -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-file-contract mr-2 text-green-400"></i>
+                        Mis Contratos
+                    </h2>
+                    <div id="contracts-container" class="space-y-4">
+                        <div class="bg-slate-700 rounded-lg p-4 border border-slate-600">
+                            <div class="animate-pulse">
+                                <div class="h-4 bg-slate-600 rounded w-3/4 mb-2"></div>
+                                <div class="h-4 bg-slate-600 rounded w-1/2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Section -->
+                <div class="flex flex-wrap gap-4">
+                    <a href="/servicios" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Contratar Nuevo Servicio</span>
+                    </a>
+                    <button id="change-password-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2">
+                        <i class="fas fa-key"></i>
+                        <span>Cambiar Contraseña</span>
+                    </button>
+                    <button id="refresh-profile" class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize AuthManager
+        console.log('🚀 Inicializando AuthManager en perfil.html...');
+        window.authManager.init().then(() => {
+            console.log('✅ AuthManager inicializado en perfil.html');
+            loadUserProfile();
+            loadUserContracts();
+        }).catch(error => {
+            console.error('❌ Error inicializando AuthManager:', error);
+            window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+        });
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (window.authManager) {
+                window.authManager.logout();
+            }
+            window.location.href = '/';
+        });
+
+        // Refresh profile
+        document.getElementById('refresh-profile').addEventListener('click', () => {
+            loadUserProfile();
+            loadUserContracts();
+        });
+
+        async function loadUserProfile() {
+            try {
+                const user = window.authManager.getCurrentUser();
+                if (user) {
+                    document.getElementById('user-name').textContent = user.nombre || user.name || 'Usuario';
+                    document.getElementById('user-email').textContent = user.email || user.sub || 'Sin email';
+                    document.getElementById('user-type').textContent = user.tipo || user.type || 'Cliente';
+                    document.getElementById('user-id').textContent = user.user_id || user.id || 'Sin ID';
+                } else {
+                    console.log('❌ No se encontró información del usuario');
+                    document.getElementById('user-name').textContent = 'Usuario no encontrado';
+                    document.getElementById('user-email').textContent = 'Email no disponible';
+                    document.getElementById('user-type').textContent = 'Desconocido';
+                    document.getElementById('user-id').textContent = 'Sin ID';
+                }
+            } catch (error) {
+                console.error('Error cargando perfil:', error);
+                showToast('Error al cargar el perfil', 'error');
+            }
+        }
+
+        async function loadUserContracts() {
+            try {
+                const response = await fetch('/api/contratos/usuario', {
+                    headers: {
+                        ...window.getAuthHeaders()
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar contratos');
+                }
+
+                const contracts = await response.json();
+                renderContracts(contracts);
+            } catch (error) {
+                console.error('Error cargando contratos:', error);
+                document.getElementById('contracts-container').innerHTML = `
+                    <div class="bg-red-900 border border-red-700 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-400 mr-3"></i>
+                            <div>
+                                <h3 class="text-red-400 font-semibold">Error al cargar contratos</h3>
+                                <p class="text-red-300 text-sm">No se pudieron cargar tus contratos. Intenta nuevamente.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderContracts(contracts) {
+            const container = document.getElementById('contracts-container');
+
+            if (!contracts || contracts.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-slate-700 rounded-lg p-6 border border-slate-600 text-center">
+                        <i class="fas fa-file-contract text-4xl text-slate-500 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-white mb-2">No tienes contratos</h3>
+                        <p class="text-slate-300 mb-4">Aún no has contratado ningún servicio.</p>
+                        <a href="/servicios" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Ver Servicios Disponibles</span>
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = contracts.map(contract => `
+                <div class="bg-slate-700 rounded-lg p-4 border border-slate-600 hover:bg-slate-600 transition-colors">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1 cursor-pointer contract-item" 
+                             data-contract-id="${contract.id}" 
+                             onclick="showContractDetail('${contract.id}')">
+                            <h3 class="text-lg font-semibold text-white">${contract.servicio?.nombre || 'Servicio'}</h3>
+                            <p class="text-slate-300 text-sm">ID: ${contract.id || contract._id}</p>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                                contract.estado === 'activo' ? 'bg-green-900 text-green-300' :
+                                contract.estado === 'pendiente' ? 'bg-yellow-900 text-yellow-300' :
+                                'bg-red-900 text-red-300'
+                            }">
+                                ${contract.estado || 'Desconocido'}
+                            </span>
+                            <button onclick="event.stopPropagation(); downloadContractPDF('${contract.id}')"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                                    title="Descargar PDF del contrato">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm cursor-pointer contract-item" 
+                         data-contract-id="${contract.id}" 
+                         onclick="showContractDetail('${contract.id}')">
+                        <div>
+                            <span class="text-slate-400">Precio:</span>
+                            <span class="text-white ml-2">$${contract.precio_acordado || contract.servicio?.precio_base || 'N/A'}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Creado:</span>
+                            <span class="text-white ml-2">${new Date(contract.created_at || contract.fecha_creacion).toLocaleDateString()}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Vence:</span>
+                            <span class="text-white ml-2">${contract.fecha_fin ? new Date(contract.fecha_fin).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-xs text-slate-400 cursor-pointer contract-item" 
+                         data-contract-id="${contract.id}" 
+                         onclick="showContractDetail('${contract.id}')">
+                        <i class="fas fa-eye mr-1"></i>
+                        Haz clic para ver detalles completos
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            // Simple toast implementation
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            // You could implement a proper toast notification here
+        }
+
+        // Show contract detail modal
+        async function showContractDetail(contractId) {
+            try {
+                console.log('Cargando detalle del contrato:', contractId);
+                
+                // Find contract in current contracts array
+                const contracts = await loadContractsData();
+                const contract = contracts.find(c => c.id === contractId || c._id === contractId);
+                
+                if (!contract) {
+                    showToast('Contrato no encontrado', 'error');
+                    return;
+                }
+
+                // Populate modal with contract details
+                document.getElementById('modal-contract-title').textContent = 
+                    `Contrato - ${contract.servicio?.nombre || 'Servicio'}`;
+                document.getElementById('modal-contract-id').textContent = contract.id || contract._id;
+                document.getElementById('modal-service-name').textContent = contract.servicio?.nombre || 'No especificado';
+                document.getElementById('modal-service-description').textContent = 
+                    contract.servicio?.descripcion || 'Sin descripción';
+                document.getElementById('modal-contract-price').textContent = 
+                    `$${contract.precio_acordado || contract.servicio?.precio_base || 'N/A'}`;
+                document.getElementById('modal-contract-status').textContent = contract.estado || 'Desconocido';
+                document.getElementById('modal-contract-created').textContent = 
+                    new Date(contract.created_at || contract.fecha_creacion).toLocaleDateString();
+                document.getElementById('modal-contract-expires').textContent = 
+                    contract.fecha_fin ? new Date(contract.fecha_fin).toLocaleDateString() : 'Sin fecha';
+                document.getElementById('modal-contract-details').textContent = 
+                    contract.detalles || 'Sin detalles adicionales';
+
+                // Update status badge
+                const statusBadge = document.getElementById('modal-contract-status-badge');
+                statusBadge.className = `px-3 py-1 rounded-full text-sm font-semibold ${
+                    contract.estado === 'activo' ? 'bg-green-900 text-green-300' :
+                    contract.estado === 'pendiente' ? 'bg-yellow-900 text-yellow-300' :
+                    'bg-red-900 text-red-300'
+                }`;
+                statusBadge.textContent = contract.estado || 'Desconocido';
+
+                // Show modal
+                document.getElementById('contract-modal').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error cargando detalle del contrato:', error);
+                showToast('Error al cargar los detalles del contrato', 'error');
+            }
+        }
+
+        // Load contracts data (helper function)
+        async function loadContractsData() {
+            try {
+                const response = await fetch('/api/contratos/usuario', {
+                    headers: {
+                        ...window.getAuthHeaders()
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar contratos');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Error cargando contratos:', error);
+                return [];
+            }
+        }
+
+        // Show change password modal
+        function showChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.remove('hidden');
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+
+        // Handle password change
+        async function handleChangePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Todos los campos son obligatorios', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast('Las contraseñas nuevas no coinciden', 'error');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showToast('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/ecomerce/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...window.getAuthHeaders()
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('Contraseña cambiada exitosamente', 'success');
+                    document.getElementById('change-password-modal').classList.add('hidden');
+                } else {
+                    const error = await response.json();
+                    showToast(error.detail || 'Error al cambiar la contraseña', 'error');
+                }
+            } catch (error) {
+                console.error('Error cambiando contraseña:', error);
+                showToast('Error al cambiar la contraseña', 'error');
+            }
+        }
+
+        // Close modals
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Event listeners
+        document.getElementById('change-password-btn').addEventListener('click', showChangePasswordModal);
+        document.getElementById('change-password-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleChangePassword();
+        });
+
+        // Download contract PDF
+        async function downloadContractPDF(contractId) {
+            try {
+                showToast('Descargando PDF del contrato...', 'info');
+
+                const response = await fetch(`/api/contratos/${contractId}/pdf`, {
+                    headers: {
+                        ...window.getAuthHeaders()
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Contrato no encontrado');
+                    } else if (response.status === 403) {
+                        throw new Error('No tienes permiso para descargar este contrato');
+                    } else {
+                        throw new Error('Error al descargar el PDF');
+                    }
+                }
+
+                // Crear blob y descargar
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                // Crear enlace de descarga
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+
+                // Obtener nombre del archivo desde headers
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = `contrato_${contractId}.pdf`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch) {
+                        filename = filenameMatch[1];
+                    }
+                }
+                a.download = filename;
+
+                // Trigger download
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showToast('PDF descargado exitosamente', 'success');
+
+            } catch (error) {
+                console.error('Error descargando PDF:', error);
+                showToast(error.message || 'Error al descargar el PDF', 'error');
+            }
+        }
+    </script>
+
+    <!-- Contract Detail Modal -->
+    <div id="contract-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 rounded-t-lg">
+                    <div class="flex justify-between items-center">
+                        <h2 id="modal-contract-title" class="text-xl font-bold text-white">Detalle del Contrato</h2>
+                        <button onclick="closeModal('contract-modal')" class="text-white hover:text-gray-300">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">ID del Contrato</label>
+                            <p id="modal-contract-id" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500 font-mono text-sm"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Estado</label>
+                            <span id="modal-contract-status-badge" class="px-3 py-2 rounded-full text-sm font-semibold"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Servicio Contratado</label>
+                        <p id="modal-service-name" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Descripción del Servicio</label>
+                        <p id="modal-service-description" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500 min-h-[60px]"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Precio</label>
+                            <p id="modal-contract-price" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Fecha de Creación</label>
+                            <p id="modal-contract-created" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Fecha de Vencimiento</label>
+                            <p id="modal-contract-expires" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500"></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Detalles del Contrato</label>
+                        <p id="modal-contract-details" class="text-white bg-slate-600 px-3 py-2 rounded border border-slate-500 min-h-[80px] whitespace-pre-wrap"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700 max-w-md w-full">
+                <div class="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-4 rounded-t-lg">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-white">Cambiar Contraseña</h2>
+                        <button onclick="closeModal('change-password-modal')" class="text-white hover:text-gray-300">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <form id="change-password-form" class="p-6 space-y-4">
+                    <div>
+                        <label for="current-password" class="block text-sm font-medium text-slate-300 mb-1">Contraseña Actual</label>
+                        <input type="password" id="current-password" required
+                               class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label for="new-password" class="block text-sm font-medium text-slate-300 mb-1">Nueva Contraseña</label>
+                        <input type="password" id="new-password" required minlength="6"
+                               class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-slate-300 mb-1">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirm-password" required minlength="6"
+                               class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeModal('change-password-modal')"
+                                class="flex-1 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                                class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Cambiar Contraseña
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

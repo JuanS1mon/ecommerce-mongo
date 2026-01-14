@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pago Exitoso - MercadoPago</title>
+    <title>Pago Exitoso</title>
     <script src="/static/tailwind.js"></script>
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="max-w-4xl mx-auto p-6">
@@ -17,7 +16,7 @@
                 </div>
                 <div class="ml-4">
                     <h1 class="text-xl font-semibold text-green-800">¡Pago Exitoso!</h1>
-                    <p class="text-green-700">Tu pago ha sido procesado correctamente por MercadoPago</p>
+                    <p class="text-green-700">Tu pago ha sido procesado correctamente</p>
                 </div>
             </div>
         </div>
@@ -32,7 +31,7 @@
 
         <!-- Parámetros GET Recibidos -->
         <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Parámetros Recibidos de MercadoPago</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Parámetros Recibidos</h2>
             <div class="bg-gray-50 p-4 rounded-lg">
                 <h3 class="font-medium text-gray-700 mb-2">URL Actual:</h3>
                 <code id="current-url" class="text-sm text-gray-600 break-all"></code>
@@ -134,26 +133,26 @@
 
             // Mostrar información adicional si hay parámetros
             if (urlParams.toString()) {
-                console.log('=== PARÁMETROS RECIBIDOS DE MERCADOPAGO (SUCCESS) ===');
+                console.log('=== PARÁMETROS RECIBIDOS (SUCCESS) ===');
                 console.log('URL completa:', window.location.href);
                 console.log('Parámetros:', params);
                 console.log('Timestamp:', new Date().toISOString());
                 console.log('=====================================');
 
                 // Mostrar notificación
-                showToast('Parámetros de MercadoPago recibidos - revisa la consola', 'success');
+                showToast('Parámetros recibidos - revisa la consola', 'success');
 
-                // Procesar parámetros específicos de MercadoPago
-                processMercadoPagoParams(params);
+                // Procesar parámetros específicos
+                processPaymentParams(params);
             }
 
             return params;
         }
 
-        function processMercadoPagoParams(params) {
+        function processPaymentParams(params) {
             const paymentInfo = document.getElementById('payment-info');
 
-            // Parámetros importantes de MercadoPago
+            // Parámetros importantes
             const importantParams = {
                 'collection_id': { label: 'ID de Cobro', icon: 'fa-credit-card' },
                 'collection_status': { label: 'Estado del Cobro', icon: 'fa-info-circle' },
@@ -223,7 +222,7 @@
         // ============================================================================
 
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('=== PÁGINA DE ÉXITO MERCADOPAGO ===');
+            console.log('=== PÁGINA DE ÉXITO ===');
 
             // Actualizar información de depuración
             const params = updateDebugInfo();

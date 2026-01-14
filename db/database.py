@@ -34,11 +34,21 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Variables de entorno para MongoDB
 # Formato: mongodb+srv://<username>:<password>@<cluster>.mongo.cosmos.azure.com:10255/?ssl=true&retryWrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@<cluster>@
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
+DB_NAME = os.getenv("MONGO_DB_NAME", "db_sysne")
 
-# Configuración de MongoDB con Beanie
-client = AsyncIOMotorClient(MONGO_URL)
-database = client[DB_NAME]
+# Configuración de MongoDB con Beanie - Lazy initialization
+mongo_client = None
+mongo_database = None
+
+def get_database():
+    global mongo_client, mongo_database
+    if mongo_client is None:
+        MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+        DB_NAME = os.getenv("DB_NAME", "db_sysne")
+        mongo_client = AsyncIOMotorClient(MONGO_URL)
+        mongo_database = mongo_client[DB_NAME]
+        print(f"[DEBUG] Created database object: {type(mongo_database)}")
+    return mongo_database
 
 # Función para crear usuario admin por defecto si la base está vacía
 async def create_default_admin():
@@ -67,26 +77,10 @@ async def create_default_admin():
     print(f"[SUCCESS] Usuario admin creado: admin/admin123 (ID: {result.inserted_id})")
 
 # Función para inicializar Beanie con los modelos
-async def init_database():
-    print(f"[INFO] Inicializando base de datos: {DB_NAME}")
-
-    # Verificar si la base de datos existe y tiene datos
-    try:
-        collections = await database.list_collection_names()
-        admin_collection = database["admin_usuarios"]
-        admin_count = await admin_collection.count_documents({})
-
-        if not collections or admin_count == 0:
-            print(f"[INFO] Base de datos '{DB_NAME}' está vacía o no tiene admin. Creando usuario admin por defecto...")
-            await create_default_admin()
-        else:
-            print(f"[INFO] Base de datos '{DB_NAME}' ya existe con {len(collections)} colecciones y {admin_count} admins")
-
-    except Exception as e:
-        print(f"[WARNING] Error verificando base de datos: {e}. Intentando crear admin...")
-        await create_default_admin()
-
+async def init_beanie_db():
+    db = get_database()
     # Importar todos los modelos aquí
+<<<<<<< HEAD
     from Projects.ecomerce.models.usuarios import EcomerceUsuarios
     from Projects.ecomerce.models.productos_beanie import EcomerceProductos, EcomerceProductosVariantes
     from Projects.ecomerce.models.categorias_beanie import EcomerceCategorias
@@ -123,10 +117,12 @@ async def init_database():
         EcomercePedidoHistorial,
         EcomerceConfiguracion
     ])  # Lista de modelos Beanie
+    return True
 
-# Dependencia de base de datos (para FastAPI)
-def get_database():
-    return database
+initialize_beanie_db = init_beanie_db
+# Dependencia de base de datos (para FastAPI) - REMOVIDA
+# def get_database():
+#     return database
 
 # =============================
 # CONFIGURACIÓN DE SQLALCHEMY (COMENTADO - ELIMINADO)
@@ -296,9 +292,6 @@ def get_database():
 # # para evitar problemas de orden de creación
 # # create_database()  # Se omitirá en Heroku - COMMENTED OUT FOR MONGODB MIGRATION
 # # Las tablas se crearán explícitamente desde main.py
-
-    # Dummy generator that yields None
-    yield None
 
 # =============================
 # FUNCIONES DE COMPATIBILIDAD

@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pago Pendiente - MercadoPago</title>
+    <title>Pago Pendiente</title>
     <script src="/static/tailwind.js"></script>
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="max-w-4xl mx-auto p-6">
@@ -32,7 +31,7 @@
 
         <!-- Parámetros GET Recibidos -->
         <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Parámetros Recibidos de MercadoPago</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Parámetros Recibidos</h2>
             <div class="bg-gray-50 p-4 rounded-lg">
                 <h3 class="font-medium text-gray-700 mb-2">URL Actual:</h3>
                 <code id="current-url" class="text-sm text-gray-600 break-all"></code>
@@ -136,7 +135,7 @@
 
             // Mostrar información adicional si hay parámetros
             if (urlParams.toString()) {
-                console.log('=== PARÁMETROS RECIBIDOS DE MERCADOPAGO (PENDING) ===');
+                console.log('=== PARÁMETROS RECIBIDOS (PENDING) ===');
                 console.log('URL completa:', window.location.href);
                 console.log('Parámetros:', params);
                 console.log('Timestamp:', new Date().toISOString());
@@ -145,17 +144,17 @@
                 // Mostrar notificación
                 showToast('Parámetros de pago pendiente recibidos - revisa la consola', 'info');
 
-                // Procesar parámetros específicos de MercadoPago
-                processMercadoPagoPendingParams(params);
+                // Procesar parámetros específicos
+                processPaymentPendingParams(params);
             }
 
             return params;
         }
 
-        function processMercadoPagoPendingParams(params) {
+        function processPaymentPendingParams(params) {
             const pendingInfo = document.getElementById('pending-info');
 
-            // Parámetros importantes de pago pendiente de MercadoPago
+            // Parámetros importantes de pago pendiente
             const pendingParams = {
                 'collection_id': { label: 'ID de Cobro', icon: 'fa-credit-card' },
                 'collection_status': { label: 'Estado del Cobro', icon: 'fa-info-circle' },
@@ -248,7 +247,7 @@
         // ============================================================================
 
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('=== PÁGINA DE PENDIENTE MERCADOPAGO ===');
+            console.log('=== PÁGINA DE PENDIENTE ===');
 
             // Actualizar información de depuración
             const params = updateDebugInfo();

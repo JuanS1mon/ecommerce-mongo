@@ -1,0 +1,285 @@
+# routers/api_validation.py
+"""
+Endpoint de validación para sistemas externos
+Permite validar credenciales de usuario y acceso a proyectos
+"""
+from fastapi import APIRouter, HTTPException
+from models.models_beanie import Usuario, Proyecto, UsuarioProyecto
+from pydantic import BaseModel
+from datetime import datetime
+from security.ecommerce_auth import verify_password
+
+# Nuevos imports para Firebase
+import os
+from typing import Optional
+from firebase_admin import credentials, initialize_app
+from firebase_admin import firestore as fa_firestore
+
+router = APIRouter()
+
+# Helper para inicializar Firestore (una sola vez)
+_fire_app = None
+_firestore = None
+
+def get_firestore():
+    global _fire_app, _firestore
+    if _firestore:
+        return _firestore
+    cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+    try:
+        if cred_path and os.path.isfile(cred_path):
+            cred = credentials.Certificate(cred_path)
+            _fire_app = initialize_app(cred)
+        else:
+            # Intenta credenciales por defecto (ADC)
+            _fire_app = initialize_app()
+        _firestore = fa_firestore.client()
+        return _firestore
+    except Exception:
+        # Si no hay credenciales válidas, no bloquea la API
+        return None
+
+class ValidacionRequest(BaseModel):
+    email: str
+    password: str
+    proyecto_nombre: str
+
+class ValidacionResponse(BaseModel):
+    valid: bool
+    mensaje: str
+    datos_usuario: dict = None
+    fecha_vencimiento: str = None
+
+@router.post("/api/v1/validate", response_model=ValidacionResponse)
+async def validar_usuario_proyecto(data: ValidacionRequest):
+    """
+    Valida si un usuario tiene acceso activo a un proyecto específico.
+    
+    Validaciones:
+    1. Usuario existe y credenciales son correctas
+    2. Usuario está activo
+    3. Proyecto existe y está activo
+    4. Usuario está vinculado al proyecto
+    5. Vinculación está activa
+    6. Fecha de vencimiento no ha pasado
+    
+    Tracking:
+    - Actualiza last_validation_attempt siempre
+    - Actualiza last_validated_at solo si la validación es exitosa
+    """
+    
+    # Actualizar last_validation_attempt siempre
+    now = datetime.utcnow()
+    
+    # 1. Buscar usuario por email
+    usuario = await Usuario.find_one(Usuario.email == data.email)
+    if not usuario:
+        return ValidacionResponse(
+            valid=False,
+            mensaje="Credenciales inválidas"
+        )
+    
+    # Actualizar intento de validación
+    usuario.last_validation_attempt = now
+    
+    # 2. Verificar contraseña
+    if not verify_password(data.password, usuario.hashed_password):
+        await usuario.save()  # Guardar intento fallido
+        return ValidacionResponse(
+            valid=False,
+            mensaje="Credenciales inválidas"
+        )
+    
+    # 3. Verificar que el usuario esté activo
+    if not usuario.is_active:
+        await usuario.save()
+        return ValidacionResponse(
+            valid=False,
+            mensaje="Usuario inactivo"
+        )
+    
+    # 4. Buscar proyecto por nombre
+    proyecto = await Proyecto.find_one(Proyecto.nombre == data.proyecto_nombre)
+    if not proyecto:
+        await usuario.save()
+        return ValidacionResponse(
+            valid=False,
+            mensaje=f"Proyecto '{data.proyecto_nombre}' no encontrado"
+        )
+    
+    # 5. Verificar que el proyecto esté activo
+    if not proyecto.activo:
+        await usuario.save()
+        return ValidacionResponse(
+            valid=False,
+            mensaje=f"Proyecto '{data.proyecto_nombre}' está inactivo"
+        )
+    
+    # 6. Buscar vinculación usuario-proyecto
+    usuario_proyecto = await UsuarioProyecto.find_one(
+        UsuarioProyecto.usuario_id == str(usuario.id),
+        UsuarioProyecto.proyecto_id == str(proyecto.id)
+    )
+    
+    if not usuario_proyecto:
+        await usuario.save()
+        return ValidacionResponse(
+            valid=False,
+            mensaje=f"Usuario no está asignado al proyecto '{data.proyecto_nombre}'"
+        )
+    
+    # 7. Verificar que la vinculación esté activa
+    if not usuario_proyecto.activo:
+        await usuario.save()
+        return ValidacionResponse(
+            valid=False,
+            mensaje=f"Asignación al proyecto '{data.proyecto_nombre}' está inactiva"
+        )
+    
+    # 8. Verificar fecha de vencimiento
+    if usuario_proyecto.fecha_vencimiento < now:
+        await usuario.save()
+        return ValidacionResponse(
+            valid=False,
+            mensaje=f"Acceso al proyecto '{data.proyecto_nombre}' ha vencido",
+            fecha_vencimiento=usuario_proyecto.fecha_vencimiento.isoformat()
+        )
+    
+    # ✅ Validación exitosa - actualizar last_validated_at
+    usuario.last_validated_at = now
+    await usuario.save()
+    
+    return ValidacionResponse(
+        valid=True,
+        mensaje="Acceso válido",
+        datos_usuario={
+            "email": usuario.email,
+            "username": usuario.username,
+            "is_active": usuario.is_active,
+            "fecha_vencimiento": usuario_proyecto.fecha_vencimiento.isoformat()
+        },
+        fecha_vencimiento=usuario_proyecto.fecha_vencimiento.isoformat()
+    )
+
+
+@router.get("/api/v1/proyecto/{proyecto_nombre}/usuarios")
+async def listar_usuarios_proyecto(proyecto_nombre: str, sync: bool = False):
+    """
+    Lista todos los usuarios asignados a un proyecto específico.
+    Incluye el hash de contraseña para sincronización entre sistemas.
+    
+    Path Parameters:
+    - proyecto_nombre: Nombre del proyecto
+    
+    Retorna:
+    - Lista de usuarios con datos completos incluyendo hash de contraseña
+    """
+    
+    # 1. Buscar proyecto por nombre
+    proyecto_obj = await Proyecto.find_one(Proyecto.nombre == proyecto_nombre)
+    if not proyecto_obj:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Proyecto '{proyecto_nombre}' no encontrado"
+        )
+    
+    # 2. Buscar todas las vinculaciones del proyecto (activas e inactivas)
+    vinculaciones = await UsuarioProyecto.find(
+        UsuarioProyecto.proyecto_id == str(proyecto_obj.id)
+    ).to_list()
+    
+    # 3. Obtener información de cada usuario
+    usuarios_info = []
+    
+    for vinculacion in vinculaciones:
+        usuario = await Usuario.get(vinculacion.usuario_id)
+        if not usuario:
+            continue
+        
+        usuarios_info.append({
+            "email": usuario.email,
+            "username": usuario.username,
+            "nombre": usuario.username,  # o usar otro campo si existe
+            "activo": usuario.is_active and vinculacion.activo,
+            "fecha_vencimiento": vinculacion.fecha_vencimiento.isoformat(),
+            "clave_hash": usuario.hashed_password
+        })
+    
+    resultado = {
+        "proyecto": proyecto_obj.nombre,
+        "proyecto_activo": proyecto_obj.activo,
+        "usuarios": usuarios_info,
+        "total": len(usuarios_info)
+    }
+
+    # Exporta snapshot del proyecto a Firestore si sync=true
+    if sync:
+        db = get_firestore()
+        if db:
+            try:
+                now = datetime.utcnow()
+                db.collection("proyectos").document(str(proyecto_obj.id))\
+                  .collection("exports").document("usuarios").set({
+                      "usuarios": usuarios_info,
+                      "timestamp": now.isoformat()
+                  }, merge=True)
+            except Exception:
+                pass
+
+    return resultado
+
+
+@router.post("/api/v1/firebase/export")
+async def exportar_todo_a_firebase():
+    """
+    Exporta todas las colecciones (Usuarios, Proyectos y UsuarioProyecto) a Firestore.
+    Requiere tener FIREBASE_CREDENTIALS_PATH configurado o credenciales por defecto.
+    """
+    db = get_firestore()
+    if not db:
+        raise HTTPException(status_code=500, detail="Firebase no inicializado. Configure FIREBASE_CREDENTIALS_PATH.")
+
+    # Obtiene datos de Mongo/Beanie
+    usuarios = await Usuario.find_all().to_list()
+    proyectos = await Proyecto.find_all().to_list()
+    relaciones = await UsuarioProyecto.find_all().to_list()
+
+    # Escribe en batch
+    batch = db.batch()
+
+    for u in usuarios:
+        ref = db.collection("usuarios").document(str(u.id))
+        batch.set(ref, {
+            "email": u.email,
+            "username": u.username,
+            "is_active": u.is_active,
+            "hashed_password": u.hashed_password,
+            "last_validation_attempt": u.last_validation_attempt.isoformat() if getattr(u, "last_validation_attempt", None) else None,
+            "last_validated_at": u.last_validated_at.isoformat() if getattr(u, "last_validated_at", None) else None,
+        }, merge=True)
+
+    for p in proyectos:
+        ref = db.collection("proyectos").document(str(p.id))
+        batch.set(ref, {
+            "nombre": p.nombre,
+            "activo": p.activo,
+        }, merge=True)
+
+    for r in relaciones:
+        rel_id = f"{r.usuario_id}_{r.proyecto_id}"
+        ref = db.collection("usuario_proyectos").document(rel_id)
+        batch.set(ref, {
+            "usuario_id": r.usuario_id,
+            "proyecto_id": r.proyecto_id,
+            "activo": r.activo,
+            "fecha_vencimiento": r.fecha_vencimiento.isoformat() if r.fecha_vencimiento else None,
+        }, merge=True)
+
+    batch.commit()
+
+    return {
+        "firebase": "ok",
+        "usuarios_exportados": len(usuarios),
+        "proyectos_exportados": len(proyectos),
+        "relaciones_exportadas": len(relaciones)
+    }

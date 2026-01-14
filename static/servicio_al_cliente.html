@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicio al Cliente - Tienda Online</title>
+    <title>Servicio al Cliente - Sysneg</title>
     <script src="/static/tailwind.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="/static/config.js"></script>
@@ -25,25 +25,6 @@
         .hero-gradient {
             background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
         }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--ecommerce-blue) 0%, #0099cc 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
-        }
         .fade-in {
             animation: fadeIn 0.6s ease-in;
         }
@@ -61,7 +42,7 @@
                 <div class="flex items-center space-x-4">
                     <a href="/" class="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors">
                         <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
-                        <span class="font-bold text-lg">Tienda Online</span>
+                        <span class="font-bold text-lg">Sysneg</span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -69,7 +50,7 @@
                         <i class="fas fa-home"></i>
                         <span>Inicio</span>
                     </a>
-                    <a href="/ecomerce/productos/tienda" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                    <a href="/servicios" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
                         <i class="fas fa-store"></i>
                         <span>Productos</span>
                     </a>
@@ -161,7 +142,7 @@
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900">Email</h3>
-                                <p class="text-gray-600">info@tiendaonline.com</p>
+                                <p class="text-gray-600">info@sysneg.com</p>
                                 <p class="text-sm text-gray-500">Respondemos en 24 horas</p>
                             </div>
                         </div>
@@ -198,16 +179,16 @@
                 <div>
                     <div class="flex items-center mb-4">
                         <img src="/static/img/logo.png" alt="Logo" class="h-8 w-auto mr-2" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
-                        <span class="text-xl font-bold">Tienda Online</span>
+                        <span class="text-xl font-bold">Sysneg</span>
                     </div>
                     <p class="text-gray-400">
-                        Tu tienda online de confianza con los mejores productos y precios.
+                        Tu plataforma de servicios de confianza con los mejores servicios y precios.
                     </p>
                 </div>
                 <div>
                     <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
                     <ul class="space-y-2">
-                        <li><a href="/ecomerce/productos/tienda" class="text-gray-400 hover:text-white transition-colors">Tienda</a></li>
+                        <li><a href="/servicios" class="text-gray-400 hover:text-white transition-colors">Servicios</a></li>
                         <li><a href="/ecomerce/login" class="text-gray-400 hover:text-white transition-colors">Iniciar Sesión</a></li>
                         <li><a href="/ecomerce/register" class="text-gray-400 hover:text-white transition-colors">Registrarse</a></li>
                     </ul>
@@ -226,7 +207,7 @@
                     <ul class="space-y-2">
                         <li class="flex items-center">
                             <i class="fas fa-envelope mr-2"></i>
-                            <span class="text-gray-400">info@tiendaonline.com</span>
+                            <span class="text-gray-400">info@sysneg.com</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-phone mr-2"></i>
@@ -241,7 +222,7 @@
             </div>
             <div class="border-t border-gray-800 mt-8 pt-8 text-center">
                 <p class="text-gray-400">
-                    2025 Tienda Online. Todos los derechos reservados.
+                    2025 Sysneg. Todos los derechos reservados.
                 </p>
             </div>
         </div>
@@ -386,7 +367,5 @@
         });
     </script>
 
-    <script defer src="/static/ecomerce/carrito.js"></script>
-    <script defer src="/static/ecomerce/cart_button.js"></script>
 </body>
 </html>

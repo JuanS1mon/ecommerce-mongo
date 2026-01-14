@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio - Servicios Profesionales</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <!-- Config -->
+    <script src="/static/config.js"></script>
+    <script src="/static/ecomerce/auth.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-slate-900 shadow-lg border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img alt="Logo" class="h-8 w-auto" src="/static/img/logo.png" onerror="this.onerror=null; this.src='/static/img/logo.png'"/>
+                        <span class="font-bold text-lg text-white">Servicios Profesionales</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-slate-300 flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </span>
+                    <a href="/servicios" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                        <i class="fas fa-store"></i>
+                        <span>Servicios</span>
+                    </a>
+                    <!-- Usuario no autenticado -->
+                    <div id="auth-buttons" class="flex items-center space-x-2">
+                        <a href="/login" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                        <a href="/register" class="text-slate-300 hover:text-blue-400 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Registrarse</span>
+                        </a>
+                    </div>
+                    <!-- Usuario autenticado -->
+                    <div id="user-info" class="flex items-center space-x-2 hidden relative">
+                        <div class="relative">
+                            <button id="user-dropdown-btn" class="flex items-center space-x-2 text-slate-300 hover:text-blue-400 px-3 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="user-greeting">Hola, Usuario</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-slate-800 rounded-md shadow-lg z-50 hidden border border-slate-700">
+                                <div class="py-1">
+                                    <a href="/perfil" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 transition-colors">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <button onclick="logout()" class="flex items-center w-full px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 transition-colors">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>
+                                        Salir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-slate-800 rounded-lg shadow-xl overflow-hidden border border-slate-700">
+            <div class="md:flex">
+                <!-- Product Image -->
+                <div class="md:w-1/2">
+                    <div class="h-96 bg-slate-700 flex items-center justify-center border-r border-slate-700">
+                        <img id="product-image" src="/static/img/logo.png" alt="Producto" class="max-h-full max-w-full object-contain">
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="md:w-1/2 p-8">
+                    <div class="mb-6">
+                        <h1 id="product-name" class="text-3xl font-bold text-white mb-2">Cargando servicio...</h1>
+                        <p id="product-description" class="text-slate-300 text-lg">Cargando descripción...</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-3xl font-bold text-blue-400" id="product-price">$0.00</span>
+                            <span class="text-sm text-slate-400" id="product-category">Categoría</span>
+                        </div>
+
+                        <div class="flex items-center space-x-4 text-sm text-slate-400">
+                            <span id="product-stock">Stock: 0</span>
+                            <span id="product-status">Estado: Activo</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Actions -->
+                    <div class="space-y-4">
+                        <div class="flex space-x-4">
+                            <button id="request-info-btn" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                                <i class="fas fa-envelope mr-2"></i>
+                                Solicitar Información
+                            </button>
+                            <button id="contract-service-btn" class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-lg">
+                                <i class="fas fa-handshake mr-2"></i>
+                                Contratar Servicio
+                            </button>
+                            <a href="/servicios" class="bg-slate-700 text-slate-300 py-3 px-6 rounded-lg hover:bg-slate-600 transition-colors font-semibold border border-slate-600">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Volver a Servicios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Information Tabs -->
+        <div class="mt-8 bg-slate-800 rounded-lg shadow-xl border border-slate-700">
+            <div class="border-b border-slate-700">
+                <nav class="flex">
+                    <button class="tab-button active px-6 py-4 text-white font-medium border-b-2 border-blue-500" data-tab="details">
+                        Detalles del Producto
+                    </button>
+                    <button class="tab-button px-6 py-4 text-slate-400 font-medium hover:text-white transition-colors" data-tab="specs">
+                        Especificaciones
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-6">
+                <div id="details-tab" class="tab-content">
+                    <div id="product-details" class="prose max-w-none text-slate-300">
+                        <p>Cargando detalles del producto...</p>
+                    </div>
+                </div>
+
+                <div id="specs-tab" class="tab-content hidden">
+                    <div id="product-specs" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-white mb-2">Información General</h4>
+                                <ul class="space-y-1 text-sm text-slate-300">
+                                    <li><strong class="text-slate-400">ID:</strong> <span id="spec-id">Cargando...</span></li>
+                                    <li><strong class="text-slate-400">Categoría:</strong> <span id="spec-category">Cargando...</span></li>
+                                    <li><strong class="text-slate-400">Stock:</strong> <span id="spec-stock">Cargando...</span></li>
+                                    <li><strong class="text-slate-400">Estado:</strong> <span id="spec-status">Cargando...</span></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white mb-2">Fechas</h4>
+                                <ul class="space-y-1 text-sm text-slate-300">
+                                    <li><strong class="text-slate-400">Creado:</strong> <span id="spec-created">Cargando...</span></li>
+                                    <li><strong class="text-slate-400">Actualizado:</strong> <span id="spec-updated">Cargando...</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Product data injected by server
+        try {
+            window.productData = JSON.parse('{{ product | tojson | safe }}');
+        } catch (e) {
+            console.error('Error parsing product data:', e);
+            window.productData = null;
+        }
+    </script>
+    <script>
+        // Product data will be injected by the server
+        let productData = null;
+
+        // Tab switching functionality will be initialized with AuthManager
+
+        function loadProductData() {
+            // Product data is injected by the server template
+            if (typeof window.productData !== 'undefined' && window.productData) {
+                productData = window.productData;
+                renderProduct();
+            } else {
+                // Fallback: try to get from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = window.location.pathname.split('/').pop();
+
+                if (productId && productId !== 'productos') {
+                    fetchProductFromAPI(productId);
+                } else {
+                    showError('No se pudo cargar la información del servicio');
+                }
+            }
+        }
+
+        async function fetchProductFromAPI(productId) {
+            try {
+                const response = await fetch(`/api/servicios/${productId}`);
+                if (!response.ok) {
+                    throw new Error('Servicio no encontrado');
+                }
+                productData = await response.json();
+                renderProduct();
+            } catch (error) {
+                console.error('Error cargando servicio:', error);
+                showError('Error al cargar el servicio');
+            }
+        }
+
+        function renderProduct() {
+            if (!productData) return;
+
+            // Update page title
+            document.title = `${productData.nombre} - Servicios Profesionales`;
+
+            // Update product information
+            document.getElementById('product-name').textContent = productData.nombre;
+            document.getElementById('product-description').textContent = productData.descripcion || 'Sin descripción';
+
+            // Handle different field names for services vs products
+            const precio = productData.precio_base || productData.precio || 0;
+            const categoria = productData.tipo_servicio || productData.categoria || 'Servicio Profesional';
+            const stock = productData.stock || 'N/A (Servicio)';
+
+            document.getElementById('product-price').textContent = `Desde $${precio.toFixed(2)}`;
+            document.getElementById('product-category').textContent = categoria;
+            document.getElementById('product-stock').textContent = `Disponibilidad: ${stock}`;
+            document.getElementById('product-status').textContent = `Estado: ${productData.activo ? 'Disponible' : 'No disponible'}`;
+
+            // Update product image (services don't have images, show icon)
+            const imageElement = document.getElementById('product-image');
+            if (productData.imagen_url) {
+                imageElement.src = productData.imagen_url;
+                imageElement.alt = productData.nombre;
+            } else {
+                // For services, show a service icon
+                imageElement.style.display = 'none';
+                const container = imageElement.parentElement;
+                container.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <i class="fas fa-cogs text-8xl text-white"></i>
+                    </div>
+                `;
+            }
+
+            // Update specifications
+            document.getElementById('spec-id').textContent = productData.id;
+            document.getElementById('spec-category').textContent = categoria;
+            document.getElementById('spec-stock').textContent = stock;
+            document.getElementById('spec-status').textContent = productData.activo ? 'Disponible' : 'No disponible';
+
+            if (productData.created_at) {
+                document.getElementById('spec-created').textContent = new Date(productData.created_at).toLocaleDateString();
+            }
+            if (productData.updated_at) {
+                document.getElementById('spec-updated').textContent = new Date(productData.updated_at).toLocaleDateString();
+            }
+
+            // Update product details
+            document.getElementById('product-details').innerHTML = `
+                <p class="text-slate-300 mb-4">${productData.descripcion || 'Sin descripción detallada'}</p>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong class="text-slate-400">Precio base:</strong> $${precio.toFixed(2)}
+                    </div>
+                    <div>
+                        <strong class="text-slate-400">Tipo de servicio:</strong> ${categoria}
+                    </div>
+                    <div>
+                        <strong class="text-slate-400">Disponibilidad:</strong> ${stock}
+                    </div>
+                    <div>
+                        <strong class="text-slate-400">Estado:</strong> ${productData.activo ? 'Disponible' : 'No disponible'}
+                    </div>
+                </div>
+            `;
+
+            // Show contract service button (always visible for services)
+            const contractBtn = document.getElementById('contract-service-btn');
+            contractBtn.onclick = () => handleContractClick(productData.id);
+            
+            // Deshabilitar botón hasta que AuthManager esté inicializado
+            contractBtn.disabled = true;
+            contractBtn.textContent = 'Cargando...';
+            contractBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Habilitar botón cuando AuthManager esté listo
+            const enableButton = () => {
+                if (window.authManager && window.authManager.initialized) {
+                    contractBtn.disabled = false;
+                    contractBtn.textContent = 'Contratar Servicio';
+                    contractBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    setTimeout(enableButton, 100);
+                }
+            };
+            enableButton();
+        }
+
+        async function handleContractClick(serviceId) {
+            console.log('🛒 Intentando contratar servicio:', serviceId);
+
+            // Esperar a que el AuthManager esté inicializado
+            if (!window.authManager || !window.authManager.initialized) {
+                console.log('⏳ Esperando inicialización del AuthManager...');
+                await new Promise(resolve => {
+                    const checkInit = () => {
+                        if (window.authManager && window.authManager.initialized) {
+                            resolve();
+                        } else {
+                            setTimeout(checkInit, 50);
+                        }
+                    };
+                    checkInit();
+                });
+                console.log('✅ AuthManager listo');
+            }
+
+            // Obtener token usando la función global
+            const token = window.getAuthToken();
+            console.log('🔑 Token encontrado:', token ? 'SÍ' : 'NO', token ? `(longitud: ${token.length})` : '');
+
+            if (!token) {
+                console.log('❌ No hay token disponible, redirigiendo a login');
+                showToast('Para contratar un servicio necesitas iniciar sesión', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                }, 2000);
+                return;
+            }
+
+            console.log('✅ Token encontrado, verificando validez...');
+            
+            // Verificar que el token sea válido antes de redirigir
+            try {
+                const response = await fetch('/ecomerce/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('🔍 Respuesta de verificación:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Token válido:', data);
+                    console.log('🚀 Redirigiendo a /contrato/' + serviceId);
+                    window.location.href = `/contrato/${serviceId}`;
+                } else {
+                    console.log('❌ Token inválido (status ' + response.status + '), redirigiendo a login');
+                    const errorText = await response.text();
+                    console.log('Error details:', errorText);
+
+                    showToast('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('💥 Error verificando autenticación:', error);
+                showToast('Error verificando autenticación. Inténtalo de nuevo.', 'error');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('product-name').textContent = 'Error';
+            document.getElementById('product-description').textContent = message;
+            document.getElementById('product-price').textContent = '$0.00';
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' :
+                                   type === 'error' ? 'fa-exclamation-circle' :
+                                   'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.getElementById('toast-container').appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Función de logout
+        function logout() {
+            if (window.authManager) {
+                window.authManager.logout();
+            } else {
+                // Fallback manual
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('token_type');
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                window.location.href = '/';
+            }
+        }
+
+        // Toggle dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.getElementById('user-dropdown');
+            const userButton = document.getElementById('user-dropdown-btn');
+
+            if (userButton && !userButton.contains(event.target) && userDropdown && !userDropdown.contains(event.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+
+        // Event listener para el botón del dropdown
+        const dropdownBtn = document.getElementById('user-dropdown-btn');
+        if (dropdownBtn) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleUserDropdown();
+            });
+        }
+
+        // Inicializar AuthManager cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando AuthManager en servicio.html...');
+
+            // Crear instancia global del AuthManager si no existe
+            if (!window.authManager) {
+                window.authManager = new AuthManager();
+            }
+
+            // Inicializar autenticación
+            await window.authManager.init();
+
+            console.log('✅ AuthManager inicializado en servicio.html');
+
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', 'border-b-2', 'border-blue-500', 'text-white');
+                        btn.classList.add('text-slate-400');
+                    });
+
+                    // Add active class to clicked button
+                    button.classList.add('active', 'border-b-2', 'border-blue-500', 'text-white');
+                    button.classList.remove('text-slate-400');
+
+                    // Hide all tab contents
+                    tabContents.forEach(content => content.classList.add('hidden'));
+
+                    // Show selected tab content
+                    const tabId = button.dataset.tab + '-tab';
+                    document.getElementById(tabId).classList.remove('hidden');
+                });
+            });
+
+            // Load product data (will be injected by server)
+            loadProductData();
+
+            // Event listener para el botón del dropdown
+            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleUserDropdown();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
