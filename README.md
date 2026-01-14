@@ -5,17 +5,36 @@ Una aplicación FastAPI completa para un sistema de ecommerce con autenticación
 ## Características
 
 - 🚀 **FastAPI** - Framework web moderno y rápido
-- 🍃 **MongoDB** con **Beanie** - Base de datos NoSQL con ODM
-- 🔐 **Autenticación JWT** - Sistema seguro de autenticación
+- 🍃 **MongoDB** con **Beanie** - Base de datos NoSQL con ODM (Dual Database Architecture)
+- 🔐 **Autenticación JWT** - Sistema seguro de autenticación con validación de vencimientos
+- 🔄 **Sincronización de Usuarios** - Sistema automático de sincronización entre bases de datos
 - 💳 **MercadoPago** - Integración de pagos
 - 📧 **Sistema de correos** - Envío de emails
 - 🔍 **Azure Search** - Búsqueda avanzada de productos
 - 📱 **API RESTful** - Endpoints bien documentados
+- 🌐 **API de Validación Externa** - Integración con aplicaciones externas
+
+## 🗄️ Arquitectura de Bases de Datos
+
+Este proyecto utiliza **DOS bases de datos MongoDB separadas**:
+
+1. **Base de Datos Local (App)** - `db_ecomerce`
+   - Base de datos principal de la aplicación
+   - Almacena productos, pedidos, carritos, etc.
+   - Usuarios admin sincronizados
+
+2. **Base de Datos Externa (Remota)** - `db_sysne`
+   - Base de datos centralizada de usuarios admin
+   - Fuente de verdad para proyectos y vinculaciones
+   - Sistema multi-aplicación
+
+📖 **Ver documentación completa:** [ARQUITECTURA_BASES_DATOS.md](./ARQUITECTURA_BASES_DATOS.md)
 
 ## Requisitos
 
 - Python 3.11+
-- MongoDB
+- MongoDB (local o MongoDB Atlas)
+- Acceso a la base de datos externa `db_sysne`
 - Cuenta de MercadoPago (opcional)
 - Azure Search (opcional)
 
