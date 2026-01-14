@@ -16,25 +16,27 @@ Una aplicación FastAPI completa para un sistema de ecommerce con autenticación
 
 ## 🗄️ Arquitectura de Bases de Datos
 
-Este proyecto utiliza **DOS bases de datos MongoDB separadas**:
+Este proyecto utiliza **DOS bases de datos DIFERENTES**:
 
-1. **Base de Datos Local (App)** - `db_ecomerce`
+1. **Base de Datos Local (App)** - `db_ecomerce` (**Azure SQL Server**)
    - Base de datos principal de la aplicación
    - Almacena productos, pedidos, carritos, etc.
    - Usuarios admin sincronizados
+   - Motor: Microsoft SQL Server en Azure
 
-2. **Base de Datos Externa (Remota)** - `db_sysne`
+2. **Base de Datos Externa (Remota)** - `db_sysne` (**MongoDB Atlas**)
    - Base de datos centralizada de usuarios admin
    - Fuente de verdad para proyectos y vinculaciones
    - Sistema multi-aplicación
+   - Motor: MongoDB en Atlas
 
 📖 **Ver documentación completa:** [ARQUITECTURA_BASES_DATOS.md](./ARQUITECTURA_BASES_DATOS.md)
 
 ## Requisitos
 
 - Python 3.11+
-- MongoDB (local o MongoDB Atlas)
-- Acceso a la base de datos externa `db_sysne`
+- Azure SQL Database (ya configurada en servidumbre.database.windows.net)
+- Acceso a la base de datos externa MongoDB Atlas `db_sysne`
 - Cuenta de MercadoPago (opcional)
 - Azure Search (opcional)
 

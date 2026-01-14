@@ -2,37 +2,36 @@
 
 ## 📋 Resumen
 
-Esta aplicación utiliza **DOS bases de datos MongoDB** separadas:
+Esta aplicación utiliza **DOS bases de datos DIFERENTES**:
 
-1. **Base de Datos Local (App)** - Base de datos principal de la aplicación
-2. **Base de Datos Externa (Remota)** - Base de datos maestra de usuarios admin
+1. **Base de Datos Local (App)** - **Azure SQL Database** - Base de datos principal de la aplicación
+2. **Base de Datos Externa (Remota)** - **MongoDB Atlas** - Base de datos maestra de usuarios admin
 
 ---
 
-## 1️⃣ Base de Datos Local (App)
+## 1️⃣ Base de Datos Local (App) - **Azure SQL Server**
 
 ### Conexión
 
 ```env
 # En .env
-MONGO_URL=mongodb://localhost:27017
-MONGO_DB_NAME=db_ecomerce
-```
-
-**En Producción (Vercel/Azure):**
-```env
-MONGO_URL=mongodb+srv://usuario:password@cluster.mongodb.net/?appName=db_ecomerce
-MONGO_DB_NAME=db_ecomerce
+DB_TYPE=sqlserver
+DB_USER=JuAdmin
+DB_PASSWORD=Pantone123
+DB_HOST=servidumbre.database.windows.net
+DB_NAME=db_ecomerce
+DB_DRIVER=ODBC Driver 17 for SQL Server
 ```
 
 ### Propósito
 - Base de datos principal de la aplicación ecommerce
-- Almacena datos de la aplicación local
+- Almacena todos los datos transaccionales de la aplicación
+- Motor: **Microsoft SQL Server** en Azure
 
-### Colecciones Principales
+### Tablas Principales
 
 ```
-db_ecomerce/
+db_ecomerce (SQL Server)
 ├── admin_usuarios          # Usuarios admin sincronizados LOCALMENTE
 ├── ecomerce_usuarios       # Usuarios del ecommerce
 ├── ecomerce_productos      # Catálogo de productos
@@ -48,29 +47,31 @@ db_ecomerce/
 ```
 
 ### Características
-- ✅ Base de datos principal de la aplicación
-- ✅ Usuarios admin son **SINCRONIZADOS** desde la base externa
+- ✅ **Azure SQL Database** - Base de datos relacional
+- ✅ Alta disponibilidad y respaldo automático
+- ✅ Usuarios admin son **SINCRONIZADOS** desde la base externa MongoDB
 - ✅ Todos los datos del ecommerce se almacenan aquí
-- ✅ Puede ser local (desarrollo) o remota (producción)
+- ✅ Conexión vía ODBC Driver 17 para SQL Server
 
 ---
 
-## 2️⃣ Base de Datos Externa (Remota) - FUENTE DE VERDAD
+## 2️⃣ Base de Datos Externa (Remota) - **MongoDB Atlas** - FUENTE DE VERDAD
 
 ### Conexión
 
 ```env
-# En .env o variables de entorno
-MONGO_EXTERNAL_URL=mongodb+srv://Vercel-Admin-db_sysne:Pantone123@db-sysne.neh4dci.mongodb.net/?appName=db-sysne
-MONGO_EXTERNAL_DB_NAME=db_sysne
+# Conexión MongoDB Atlas
+MONGO_URL=mongodb+srv://Vercel-Admin-db_sysne:Pantone123@db-sysne.neh4dci.mongodb.net/?appName=db-sysne
+MONGO_DB_NAME=db_sysne
 ```
 
-**Importante:** Esta es la base de datos MAESTRA de usuarios admin.
+**Importante:** Esta es la base de datos MAESTRA de usuarios admin en MongoDB.
 
 ### Propósito
 - Base de datos centralizada de usuarios administradores
 - Fuente de verdad para proyectos y vinculaciones
 - Sistema multi-aplicación (varios proyectos usan esta base)
+- Motor: **MongoDB Atlas** (NoSQL)
 
 ### Colecciones Principales
 
@@ -96,7 +97,7 @@ db_sysne/
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│        BASE DE DATOS EXTERNA (db_sysne)                    │
+│     BASE DE DATOS EXTERNA - MongoDB Atlas (db_sysne)       │
 │                FUENTE DE VERDAD                             │
 │  mongodb+srv://...@db-sysne.neh4dci.mongodb.net            │
 └────────────────────────┬────────────────────────────────────┘
@@ -115,10 +116,10 @@ db_sysne/
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│         BASE DE DATOS LOCAL (db_ecomerce)                   │
+│    BASE DE DATOS LOCAL - Azure SQL (db_ecomerce)           │
 │            DATOS SINCRONIZADOS                              │
-│  mongodb://localhost:27017/db_ecomerce                      │
-│  - Usuarios admin sincronizados                             │
+│  servidumbre.database.windows.net                           │
+│  - Usuarios admin sincronizados (tabla SQL)                 │
 │  - Productos, pedidos, carritos del ecommerce               │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -126,11 +127,11 @@ db_sysne/
 ### Proceso Detallado
 
 1. **Usuario intenta hacer login** en `/admin/login`
-2. **Sistema busca usuario localmente** en `db_ecomerce.admin_usuarios`
+2. **Sistema busca usuario localmente** en `db_ecomerce.admin_usuarios` (Azure SQL)
 3. Si NO existe o datos desactualizados:
-   - **Consulta la base externa** `db_sysne`
+   - **Consulta la base externa** `db_sysne` (MongoDB Atlas)
    - **Obtiene datos actualizados** del usuario
-   - **Sincroniza localmente** en `db_ecomerce`
+   - **Sincroniza localmente** en `db_ecomerce` (Azure SQL)
 4. **Valida credenciales** con datos sincronizados
 5. **Valida fecha de vencimiento** local
 6. **Genera JWT** y permite acceso
@@ -144,11 +145,15 @@ db_sysne/
 **Para Desarrollo (.env):**
 
 ```env
-# ===== BASE DE DATOS LOCAL (APP) =====
-MONGO_URL=mongodb://localhost:27017
-MONGO_DB_NAME=db_ecomerce
+# ===== BASE DE DATOS LOCAL (APP) - Azure SQL =====
+DB_TYPE=sqlserver
+DB_USER=JuAdmin
+DB_PASSWORD=Pantone123
+DB_HOST=servidumbre.database.windows.net
+DB_NAME=db_ecomerce
+DB_DRIVER=ODBC Driver 17 for SQL Server
 
-# ===== BASE DE DATOS EXTERNA (REMOTA) =====
+# ===== BASE DE DATOS EXTERNA (REMOTA) - MongoDB =====
 # URL de la API que consulta db_sysne
 API_BASE_URL=http://127.0.0.1:8000
 
@@ -159,11 +164,15 @@ ADMIN_PROYECTO_NOMBRE=Ecomerce
 **Para Producción (Vercel/Azure):**
 
 ```env
-# ===== BASE DE DATOS LOCAL (APP) =====
-MONGO_URL=mongodb+srv://usuario:password@cluster-ecomerce.mongodb.net/?appName=db_ecomerce
-MONGO_DB_NAME=db_ecomerce
+# ===== BASE DE DATOS LOCAL (APP) - Azure SQL =====
+DB_TYPE=sqlserver
+DB_USER=JuAdmin
+DB_PASSWORD=Pantone123
+DB_HOST=servidumbre.database.windows.net
+DB_NAME=db_ecomerce
+DB_DRIVER=ODBC Driver 17 for SQL Server
 
-# ===== BASE DE DATOS EXTERNA (REMOTA) =====
+# ===== BASE DE DATOS EXTERNA (REMOTA) - MongoDB =====
 # URL de la API pública que consulta db_sysne
 API_BASE_URL=https://tu-api-principal.vercel.app
 
@@ -244,22 +253,25 @@ Content-Type: application/json
              │                                    │
              │                                    │
     ┌────────▼────────┐                  ┌────────▼─────────┐
-    │  BASE LOCAL     │                  │  API EXTERNA     │
+    │  AZURE SQL      │                  │  API EXTERNA     │
     │  db_ecomerce    │                  │  /api/v1/...     │
     │  (App Data)     │                  │  (Validación)    │
-    └─────────────────┘                  └────────┬─────────┘
-             │                                    │
+    │  SQL Server     │                  └────────┬─────────┘
+    └─────────────────┘                           │
              │                                    │
              │                            ┌───────▼──────────┐
-             │                            │ BASE EXTERNA     │
+             │                            │ MONGODB ATLAS    │
              │                            │ db_sysne         │
              │                            │ (Fuente Verdad)  │
              │                            └──────────────────┘
              │
     ┌────────▼────────────────────────────────────────────────┐
-    │  Datos Sincronizados Localmente:                        │
-    │  - admin_usuarios (sincronizados desde db_sysne)        │
-    │  - ecomerce_* (datos propios de la app)                 │
+    │  Datos en Azure SQL:                                    │
+    │  - admin_usuarios (tabla SQL sincronizada)              │
+    │  - ecomerce_* (tablas SQL propias de la app)            │
+    │  Datos en MongoDB Atlas:                                │
+    │  - admin_usuarios (colección MongoDB - fuente verdad)   │
+    │  - proyectos, usuario_proyectos (colecciones MongoDB)   │
     └─────────────────────────────────────────────────────────┘
 ```
 
@@ -290,16 +302,17 @@ La sincronización ocurre automáticamente en:
 
 ### Paso 1: Configurar Base de Datos Local
 
-**MongoDB Atlas (Recomendado para producción):**
+**Azure SQL Database:**
 
-1. Crear cluster en MongoDB Atlas
-2. Crear base de datos `db_ecomerce`
-3. Obtener string de conexión
-4. Configurar en Vercel:
-   ```
-   MONGO_URL=mongodb+srv://...
-   MONGO_DB_NAME=db_ecomerce
-   ```
+Ya está configurada en producción:
+```env
+DB_HOST=servidumbre.database.windows.net
+DB_NAME=db_ecomerce
+DB_USER=JuAdmin
+DB_PASSWORD=Pantone123
+```
+
+✅ No requiere cambios adicionales para Vercel
 
 ### Paso 2: Configurar Acceso a Base Externa
 
@@ -357,18 +370,17 @@ curl -X POST https://tu-api-principal.vercel.app/api/v1/validate \
 
 ### Desarrollo Local
 
-- [ ] MongoDB local corriendo en puerto 27017
-- [ ] Base de datos `db_ecomerce` creada
-- [ ] Variables `MONGO_URL` y `MONGO_DB_NAME` en `.env`
+- [ ] Azure SQL Server accesible (servidumbre.database.windows.net)
+- [ ] Credenciales de Azure SQL configuradas en `.env`
+- [ ] Variables `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` en `.env`
 - [ ] Variable `API_BASE_URL` apuntando a API externa
 - [ ] Variable `ADMIN_PROYECTO_NOMBRE` configurada
 - [ ] Script `sincronizar_usuarios_admin.py` ejecutado exitosamente
 
 ### Producción (Vercel)
 
-- [ ] MongoDB Atlas cluster creado
-- [ ] Base de datos `db_ecomerce` creada en Atlas
-- [ ] Variables de entorno configuradas en Vercel
+- [ ] Azure SQL Database activa y accesible
+- [ ] Variables de entorno de Azure SQL configuradas en Vercel
 - [ ] API externa accesible desde Vercel
 - [ ] Endpoint `/api/v1/proyecto/Ecomerce/usuarios` funcional
 - [ ] Endpoint `/api/v1/validate` funcional
@@ -387,21 +399,26 @@ curl -X POST https://tu-api-principal.vercel.app/api/v1/validate \
 
 ## ❓ FAQ
 
-### ¿Por qué dos bases de datos?
+### ¿Por qué dos bases de datos diferentes (SQL + MongoDB)?
 
-**Respuesta:** Sistema multi-aplicación. La base externa (`db_sysne`) gestiona usuarios admin para MÚLTIPLES proyectos desde un solo lugar. Cada aplicación (como este ecommerce) sincroniza sus usuarios localmente.
+**Respuesta:** Arquitectura híbrida optimizada:
+- **Azure SQL** (db_ecomerce): Ideal para datos transaccionales estructurados del ecommerce (productos, pedidos, carritos). Ofrece integridad referencial, transacciones ACID y consultas SQL complejas.
+- **MongoDB** (db_sysne): Ideal para sistema multi-aplicación de usuarios admin. Permite flexibilidad, esquema dinámico y fácil escalabilidad horizontal para gestionar múltiples proyectos.
 
-### ¿Qué pasa si la base externa no está disponible?
+### ¿Qué pasa si la base externa MongoDB no está disponible?
 
-**Respuesta:** El sistema continúa funcionando con los datos sincronizados localmente. La sincronización se reintentará en el próximo login.
+**Respuesta:** El sistema continúa funcionando con los datos sincronizados en Azure SQL. La sincronización se reintentará en el próximo login.
 
 ### ¿Cómo actualizo un usuario admin?
 
-**Respuesta:** Actualiza en la base externa (`db_sysne`). El cambio se sincronizará automáticamente en el próximo login del usuario.
+**Respuesta:** Actualiza en la base externa MongoDB (`db_sysne`). El cambio se sincronizará automáticamente en Azure SQL en el próximo login del usuario.
 
 ### ¿Puedo usar solo una base de datos?
 
-**Respuesta:** Sí, pero perderías la capacidad de gestionar usuarios centralizadamente para múltiples proyectos.
+**Respuesta:** Técnicamente sí, pero perderías:
+- Sistema centralizado multi-aplicación
+- Optimización por tipo de datos (SQL para transaccional, NoSQL para usuarios/proyectos)
+- Separación de responsabilidades
 
 ---
 
