@@ -19,6 +19,11 @@ class AdminUsuarios(Document):
     clave_hash: str = Field(..., description="Contraseña hasheada con bcrypt")
     activo: bool = Field(default=True, description="Estado activo/inactivo")
     imagen_perfil: Optional[str] = Field(default=None, description="URL de imagen de perfil")
+    
+    # Campos para sistema de proyectos con vencimiento
+    proyecto_nombre: Optional[str] = Field(default="Ecomerce", description="Nombre del proyecto asignado")
+    fecha_vencimiento: Optional[datetime] = Field(default=None, description="Fecha de vencimiento del acceso (null = sin vencimiento)")
+    
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Fecha de creación")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="Última actualización")
 

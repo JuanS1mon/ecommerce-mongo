@@ -426,6 +426,26 @@ if cupones_router:
 else:
     logger.warning("cupones_router no disponible; se omite su registro")
 
+# Importar y registrar el router de validación externa (API pública)
+try:
+    from Projects.Admin.routes.validacion_externa import router as validacion_externa_router
+    app.include_router(validacion_externa_router)
+    logger.info("Router validacion_externa registrado - Endpoint público /api/v1/validate")
+except Exception as e:
+    logger.error(f"Error registrando router validacion_externa: {e}")
+    import traceback
+    traceback.print_exc()
+
+# Importar y registrar el router de sincronización de usuarios
+try:
+    from Projects.Admin.routes.sync import router as sync_router
+    app.include_router(sync_router)
+    logger.info("Router sync registrado - Endpoints /admin/api/sync/*")
+except Exception as e:
+    logger.error(f"Error registrando router sync: {e}")
+    import traceback
+    traceback.print_exc()
+
 logger.info("carrito_router registrado")
 
 # Importar y registrar el router de páginas frontend

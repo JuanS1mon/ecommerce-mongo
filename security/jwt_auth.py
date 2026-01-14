@@ -247,6 +247,13 @@ async def get_current_admin_user(
         logger.warning(f"Admin inactivo intentó acceder: {token_data.username}")
         raise JWTAuthError("Usuario administrador inactivo")
     
+    # Validar fecha de vencimiento local (sin consultar API)
+    from Projects.Admin.services.validacion_vencimiento import validar_acceso_admin
+    
+    if not await validar_acceso_admin(user):
+        logger.warning(f"Admin con acceso vencido intentó acceder: {token_data.username}")
+        raise JWTAuthError("Su acceso ha vencido. Contacte al administrador del sistema.")
+    
     logger.debug(f"Admin autenticado: {user.usuario}")
     return user
 

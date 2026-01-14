@@ -32,7 +32,6 @@ from datetime import datetime
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Variables de entorno para MongoDB
-# Para Azure Cosmos DB, usa la cadena de conexión del Portal
 # Formato: mongodb+srv://<username>:<password>@<cluster>.mongo.cosmos.azure.com:10255/?ssl=true&retryWrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@<cluster>@
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "db_ecomerce")
@@ -100,6 +99,7 @@ async def init_database():
     # Importar modelos de Admin
     from Projects.Admin.models.admin_usuarios_beanie import AdminUsuarios
     from Projects.Admin.models.marketing_beanie import MarketingConfig, MarketingCampaign
+    from Projects.Admin.models.proyectos_beanie import Proyecto, UsuarioProyecto
     from Projects.ecomerce.models.presupuesto_beanie import EcomercePresupuestos
     from Projects.ecomerce.models.pedido_historial_beanie import EcomercePedidoHistorial
     from Projects.ecomerce.models.configuracion_beanie import EcomerceConfiguracion
@@ -117,6 +117,8 @@ async def init_database():
         AdminUsuarios,
         MarketingConfig,
         MarketingCampaign,
+        Proyecto,
+        UsuarioProyecto,
         EcomercePresupuestos,
         EcomercePedidoHistorial,
         EcomerceConfiguracion
