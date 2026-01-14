@@ -35,7 +35,7 @@ Este proyecto utiliza **DOS bases de datos DIFERENTES**:
 ## Requisitos
 
 - Python 3.11+
-- Azure SQL Database (ya configurada en servidumbre.database.windows.net)
+- Azure Cosmos DB con API de MongoDB (ecommerce-db)
 - Acceso a la base de datos externa MongoDB Atlas `db_sysne`
 - Cuenta de MercadoPago (opcional)
 - Azure Search (opcional)

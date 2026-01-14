@@ -47,11 +47,12 @@ db_ecomerce (SQL Server)
 ```
 
 ### Características
-- ✅ **Azure SQL Database** - Base de datos relacional
-- ✅ Alta disponibilidad y respaldo automático
-- ✅ Usuarios admin son **SINCRONIZADOS** desde la base externa MongoDB
-- ✅ Todos los datos del ecommerce se almacenan aquí
-- ✅ Conexión vía ODBC Driver 17 para SQL Server
+- ✅ **Azure Cosmos DB** - Base de datos NoSQL (DocumentDB)
+- ✅ API de MongoDB - Compatible con ecosistema MongoDB
+- ✅ Alta disponibilidad y distribución global
+- ✅ Usuarios admin son **SINCRONIZADOS** desde la base externa MongoDB Atlas
+- ✅ Todos los datos del ecommerce se almacenan aquí (productos, pedidos, carritos)
+- ✅ Conexión vía motor asíncrono de MongoDB
 
 ---
 
@@ -370,8 +371,8 @@ curl -X POST https://tu-api-principal.vercel.app/api/v1/validate \
 
 ### Desarrollo Local
 
-- [ ] Azure SQL Server accesible (servidumbre.database.windows.net)
-- [ ] Credenciales de Azure SQL configuradas en `.env`
+- [ ] Azure Cosmos DB accesible (connection string configurado)
+- [ ] Credenciales de Azure Cosmos DB configuradas en `.env` (MONGO_URL)
 - [ ] Variables `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` en `.env`
 - [ ] Variable `API_BASE_URL` apuntando a API externa
 - [ ] Variable `ADMIN_PROYECTO_NOMBRE` configurada
@@ -379,8 +380,8 @@ curl -X POST https://tu-api-principal.vercel.app/api/v1/validate \
 
 ### Producción (Vercel)
 
-- [ ] Azure SQL Database activa y accesible
-- [ ] Variables de entorno de Azure SQL configuradas en Vercel
+- [ ] Azure Cosmos DB activa y accesible
+- [ ] Variables de entorno de Azure Cosmos DB configuradas en Vercel (MONGO_URL)
 - [ ] API externa accesible desde Vercel
 - [ ] Endpoint `/api/v1/proyecto/Ecomerce/usuarios` funcional
 - [ ] Endpoint `/api/v1/validate` funcional
@@ -402,16 +403,16 @@ curl -X POST https://tu-api-principal.vercel.app/api/v1/validate \
 ### ¿Por qué dos bases de datos diferentes (SQL + MongoDB)?
 
 **Respuesta:** Arquitectura híbrida optimizada:
-- **Azure SQL** (db_ecomerce): Ideal para datos transaccionales estructurados del ecommerce (productos, pedidos, carritos). Ofrece integridad referencial, transacciones ACID y consultas SQL complejas.
+- **Azure Cosmos DB** (ecommerce-db): Base de datos NoSQL de alto rendimiento para el ecommerce, con esquema flexible para productos, pedidos, carritos. Ofrece baja latencia, distribución global y escalabilidad automática.
 - **MongoDB** (db_sysne): Ideal para sistema multi-aplicación de usuarios admin. Permite flexibilidad, esquema dinámico y fácil escalabilidad horizontal para gestionar múltiples proyectos.
 
 ### ¿Qué pasa si la base externa MongoDB no está disponible?
 
-**Respuesta:** El sistema continúa funcionando con los datos sincronizados en Azure SQL. La sincronización se reintentará en el próximo login.
+**Respuesta:** El sistema continúa funcionando con los datos sincronizados en Azure Cosmos DB. La sincronización se reintentará en el próximo login.
 
 ### ¿Cómo actualizo un usuario admin?
 
-**Respuesta:** Actualiza en la base externa MongoDB (`db_sysne`). El cambio se sincronizará automáticamente en Azure SQL en el próximo login del usuario.
+**Respuesta:** Actualiza en la base externa MongoDB Atlas (`db_sysne`). El cambio se sincronizará automáticamente en Azure Cosmos DB en el próximo login del usuario.
 
 ### ¿Puedo usar solo una base de datos?
 
